@@ -49,6 +49,9 @@ try {
     await p.waitForSelector('text=Check the receipt yourself', { timeout: 30000 });
     await p.getByRole('img', { name: 'Caught', exact: true }).waitFor();
     const t = await text(p); assert.match(t, /Car numbers\s*\n?\s*1, 2/);
+    await p.getByRole('img', { name: 'Confirmed mint, car 1', exact: true }).waitFor();
+    await p.getByRole('img', { name: 'Confirmed mint, car 2', exact: true }).waitFor();
+    await p.evaluate(() => { document.activeElement?.blur(); window.scrollTo(0, 0); });
     await shot(p, 'mint-done'); assert.deepEqual(p.errors, []); await p.context().close();
   });
 
@@ -111,6 +114,8 @@ try {
     await p.click('button:has-text("Step 2")'); await p.waitForSelector('text=Claim is permanent');
     await p.click('button:has-text("Claim car 3")');
     await p.waitForSelector('text=1 of 12 claimed', { timeout: 30000 });
+    await p.getByRole('img', { name: 'Claimed', exact: true }).waitFor();
+    await p.getByRole('img', { name: /^Claimed hidden car / }).waitFor();
     await p.context().close();
   });
 
