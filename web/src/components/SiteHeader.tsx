@@ -1,6 +1,7 @@
 'use client';
 
 import { MotionButton } from './fx/Motion';
+import { SoundButton } from './stage/SoundButton';
 import Link from 'next/link';
 import { useState } from 'react';
 import { Dialog } from './Dialog';
@@ -31,7 +32,7 @@ export function SiteHeader({ current }: { current?: string }) {
             ))}
           </ul>
         </nav>
-        <div className="header-actions"><MotionButton /><ConnectButton />
+        <div className="header-actions"><MotionButton /><SoundButton /><ConnectButton />
         <button type="button" className="btn btn--secondary menu-btn" onClick={() => setOpen(true)} aria-haspopup="dialog">
           <Icon name="menu" /><span>Menu</span>
         </button></div>

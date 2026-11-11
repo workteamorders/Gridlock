@@ -1,6 +1,11 @@
+'use client';
+
+import { useEffect } from 'react';
+import { play } from '@/lib/sound';
 import type { ReactNode } from 'react';
 
 export function ResultStamp({ kind, children }: { kind: 'caught' | 'claimed'; children?: ReactNode }) {
+  useEffect(() => { play('stamp'); }, []);
   return (
     <div className="result-stamp">
       {children}

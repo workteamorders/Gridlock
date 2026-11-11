@@ -13,3 +13,7 @@
 Anton, Barlow dan Space Mono tetap menggunakan file lokal dan lisensi yang sudah disertakan di `web/src/fonts/licenses/`. Kartu asli memakai SVG renderer melalui data chain.
 
 Jalankan `node scripts/make-images.mjs` dari `web/` untuk membuat ulang semua aset, atau `node scripts/make-art.mjs` untuk SVG dan modul TypeScript saja.
+
+## Panggung
+
+`web/scripts/make-hero.mjs` dijalankan oleh `make-art.mjs` dan membuat `public/art/hero-back.svg` (18 poster redup di atas halftone), `public/art/hero-front.svg` (7 poster besar) dan `public/art/climb-car.svg` (mobil untuk scroll climb). Semuanya deterministik, memakai siluet dari `src/art/cars.ts` dan warna dari `tokens.css`, tanpa teks dan bitmap. `HeroArt` menyisipkannya inline saat build. Pengujian `tests/stage.test.mjs` membandingkan hash hasil generator dengan berkas yang di-commit.

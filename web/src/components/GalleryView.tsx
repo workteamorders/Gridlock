@@ -16,6 +16,7 @@ import { CardImage } from './CardImage';
 import { DeadEnd } from './Signs';
 import { Gate } from './Gate';
 import { HeatStars } from './HeatStars';
+import { FlipCard } from './stage/FlipCard';
 
 const CHUNK = 24;
 
@@ -35,7 +36,21 @@ function Detail({ id }: { id: number }) {
   const link = car ? explorerAddress(car.owner) : undefined;
   return (
     <div className="split">
-      {failed ? <div className="empty"><p>Image unavailable</p></div> : <CardImage src={src} size={340} alt={car ? `${car.hidden ? 'Hidden car' : `Rank ${car.rank} car`}, number ${car.id}, serial ${car.serial}` : 'Loading card'} />}
+      {failed ? <div className="empty"><p>Image unavailable</p></div> : car ? (
+        <FlipCard
+          front={<CardImage src={src} size={340} alt={`${car.hidden ? 'Hidden car' : `Rank ${car.rank} car`}, number ${car.id}, serial ${car.serial}`} />}
+          back={(
+            <div className="panel panel--raised flip-sheet stack-tight">
+              <p className="label">Rap sheet</p>
+              <p className="flip-sheet-title">Car #{car.id}</p>
+              <p>{car.hidden ? 'Hidden car' : `Rank ${car.rank}`}, serial {car.serial}</p>
+              <HeatStars stars={car.stars as Stars} />
+              <p>{car.transferCount} transfers</p>
+              <p>Heat {car.heat} of {c.constants?.heatMax ?? 150}</p>
+            </div>
+          )}
+        />
+      ) : <CardImage src={src} size={340} alt="Loading card" />}
       <div className="stack">
         <h2>Car #{id}</h2>
         {car ? (

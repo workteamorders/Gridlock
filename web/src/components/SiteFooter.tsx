@@ -1,4 +1,5 @@
 import { MotionButton } from './fx/Motion';
+import { SoundButton } from './stage/SoundButton';
 import Link from 'next/link';
 import { AUDIT_REPORT_URL, CONTACT_URL } from '@/lib/config';
 
@@ -15,10 +16,10 @@ export function SiteFooter() {
             {CONTACT_URL ? <li><a href={CONTACT_URL} rel="noopener noreferrer">Contact</a></li> : null}
           </ul>
         </nav>
-        <MotionButton />
+        <div className="footer-settings"><MotionButton /><SoundButton /></div>
         <p>
           {AUDIT_REPORT_URL ? <>External audit report: <a href={AUDIT_REPORT_URL} rel="noopener noreferrer">read it</a>. </> : <strong>No external audit yet. </strong>}
-          Gridlock Cars are digital collectibles, not financial advice. No promise of value or return is made. This site stores no personal data. It uses browser storage to remember your wallet choice and motion setting.
+          Gridlock Cars are digital collectibles, not financial advice. No promise of value or return is made. This site stores no personal data. It uses browser storage to remember your wallet choice, your motion and sound settings, and whether the intro already played this session.
         </p>
         <p className="dim">Not affiliated with any chain, marketplace or game, and not affiliated with any reference work. All cars, plates and names are invented. The disclaimers above do not replace a legal review.</p>
       </div>

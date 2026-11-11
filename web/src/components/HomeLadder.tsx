@@ -11,6 +11,8 @@ import { formatEth, formatUtc } from '@/lib/format';
 import { Ladder, LoadingLadder } from './Ladder';
 import { Countdown } from './Countdown';
 import { Icon } from './Icon';
+import { ChapterHead } from './stage/ChapterHead';
+import { RollNumber } from './stage/RollNumber';
 
 /** Home hero: the live ladder, a countdown to the next event, and one action. */
 export function HomeLadder() {
@@ -40,13 +42,15 @@ export function HomeLadder() {
   return (
     <div className="hero-ladder">
       <div className="stack">
-        <div className="panel stack-tight"><h1>2,475 wanted-poster cars. One ladder.</h1>
-        <p>Gridlock Cars are original comic cards drawn fully on-chain. Rank 15 opens first and is the cheapest. Each next rank opens when the one before sells out or times out, up to rank 1. You see the exact car before you pay.</p></div>
+        <div className="panel stack-tight">
+          <ChapterHead n={1} id="ladder-title" kicker="the ladder">Climb the ladder</ChapterHead>
+          <p>Lit rungs are open. A locked rung opens when the one before it sells out or times out.</p>
+        </div>
 
         {live ? (
           <div key="live" className="panel stack-tight hero-panel">
             <span className="label">Minted so far</span>
-            <p className="big-number num">{ladderTotal} <small className="dim">of 2,475</small></p>
+            <p className="big-number num"><RollNumber value={ladderTotal} /> <small className="dim">of 2,475</small></p>
             {allSold ? (
               <p><Icon name="check" /> The ladder is finished. All 2,475 cars are minted. Hunt cars are still claimable.</p>
             ) : beforeStart && c.constants ? (
@@ -83,7 +87,7 @@ export function HomeLadder() {
           <div key="sk" className="panel skeleton hero-panel-sk" role="status" aria-busy="true" aria-label="Loading ladder" />
         )}
       </div>
-      <div>
+      <div id="ladder">
         {live ? <Ladder live rungs={toRungData(rungs)} /> : c.phase === 'undeployed' ? <Ladder rungs={exampleLadder()} /> : <LoadingLadder rungs={exampleLadder()} />}
       </div>
         {preview && preview.rank === rank && preview.sold === sold ? (

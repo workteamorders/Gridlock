@@ -83,4 +83,4 @@ export function makeArt(root = new URL('../', import.meta.url)) {
   save('public/icon.svg', icon);
 }
 
-if (process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url) makeArt();
+if (process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url) { makeArt(); (await import('./make-hero.mjs')).makeHero(); }

@@ -10,7 +10,7 @@ export function SupplyChart() {
   return (
     <figure className="chart">
       <figcaption>
-        <h4>{summary}</h4>
+        <h3 className="chart-title">{summary}</h3>
       </figcaption>
       <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={summary}>
         <line className="axis" x1={PL} y1={H - PB} x2={W} y2={H - PB} />

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { RungData } from '@/lib/mock';
 import { Icon, type IconName } from './Icon';
+import { play } from '@/lib/sound';
 
 const STATUS: Record<RungData['status'], { icon: IconName; word: string }> = {
   sold: { icon: 'x', word: 'Sold out' },
@@ -20,7 +21,7 @@ export function Rung({ r, cta, live = false }: { r: RungData; cta?: ReactNode; l
   const [opened, setOpened] = useState(false);
   const fill = useRef<HTMLSpanElement>(null);
   useEffect(() => {
-    if (live && previous.current !== r.status) setOpened(r.status === 'open' && document.documentElement.dataset.motion === 'full');
+    if (live && previous.current !== r.status) { const justOpened = r.status === 'open'; setOpened(justOpened && document.documentElement.dataset.motion === 'full'); if (justOpened) play('open'); }
     previous.current = r.status;
   }, [r.status, live]);
   useEffect(() => {

@@ -1,0 +1,113 @@
+/* Stage: hero poster wall, case-file chapters, tilted ribbon. Colors and sizes come from tokens.css. */
+
+.hero { position: relative; isolation: isolate; overflow: hidden; background: var(--surface-2); min-height: var(--hero-h); display: grid; align-items: center; border-bottom: var(--line-w-strong) solid var(--line); }
+.hero-art { position: absolute; inset: 0; z-index: -1; background: var(--surface-2); }
+.hero-layer { position: absolute; inset: -6%; will-change: transform; }
+.hero-svg { display: block; width: 100%; height: 100%; }
+html[data-motion=full] .hero[data-live] .hero-layer--back { translate: calc(var(--px, 0) * var(--hero-shift-back) * -1) calc(var(--py, 0) * var(--hero-shift-back) * -1); animation: hero-drift 38s ease-in-out infinite alternate; }
+html[data-motion=full] .hero[data-live] .hero-layer--front { translate: calc(var(--px, 0) * var(--hero-shift-front) * -1) calc(var(--py, 0) * var(--hero-shift-front) * -1); animation: hero-drift-front 26s ease-in-out infinite alternate; }
+.hero-layer { transition: translate var(--dur-panel) var(--ease-out); }
+@keyframes hero-drift { from { transform: translate3d(-1.5%, 0, 0); } to { transform: translate3d(1.5%, -1%, 0); } }
+@keyframes hero-drift-front { from { transform: translate3d(1.5%, 1%, 0); } to { transform: translate3d(-1.5%, -1%, 0); } }
+
+.hero-wrap { padding-block: var(--s-8); }
+.hero-plate { max-width: 44rem; background: var(--surface); border: var(--line-w-strong) solid var(--line); box-shadow: var(--plate-shadow); padding: var(--s-6); transform: rotate(var(--tilt)); }
+.hero-plate h1 { font-size: var(--fs-hero); line-height: 0.95; }
+.hero-plate h1 span { display: inline-block; }
+.hero-slash { color: var(--action); }
+.hero-kicker { color: var(--action); }
+.hero-plate .row { margin-top: var(--s-3); }
+html[data-motion=full] .hero-plate { animation: plate-slam var(--dur-panel) var(--ease-out) both; }
+html[data-motion=full] .hero-plate h1 span:nth-child(2) { animation: plate-slam var(--dur-panel) var(--ease-out) 120ms both; }
+@keyframes plate-slam { from { transform: translateY(28px) rotate(calc(var(--tilt) * 3)); } }
+#ladder { scroll-margin-top: calc(var(--header-h) + var(--s-4)); }
+
+.chapter { display: flex; gap: var(--s-4); align-items: center; }
+.chapter-num { font-family: var(--font-display); font-size: var(--chapter-num); line-height: 0.85; color: transparent; -webkit-text-stroke: var(--line-w) var(--line-dim); user-select: none; flex: none; }
+.chapter-kicker { color: var(--action); }
+
+.ribbon-stage { position: relative; overflow: hidden; padding-block: var(--s-6); background: var(--surface); }
+.ribbon-stage::before { content: ''; position: absolute; inset-inline: -4%; top: 50%; height: var(--s-7); translate: 0 -50%; transform: rotate(calc(var(--tilt) * -1.4)); background: var(--brush) url('/art/hazard.svg') repeat-x center; opacity: 0.9; }
+.ribbon { position: relative; overflow: hidden; background: var(--action); color: var(--text-on-action); border-block: var(--line-w-strong) solid var(--surface); transform: rotate(var(--tilt)) scale(1.04); box-shadow: 0 var(--s-1) 0 var(--surface); }
+.ribbon-track { display: flex; width: max-content; animation: ribbon-run var(--ribbon-speed) linear infinite; }
+.ribbon:hover .ribbon-track, .ribbon:focus-within .ribbon-track { animation-play-state: paused; }
+.ribbon-list { display: flex; flex: none; margin: 0; padding: 0; list-style: none; }
+.ribbon-list li { font-family: var(--font-display); font-size: var(--fs-20); letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap; padding: var(--s-3) var(--s-5); display: flex; align-items: center; gap: var(--s-5); }
+.ribbon-list li::after { content: ''; width: var(--s-2); height: var(--s-2); background: var(--surface); transform: rotate(45deg); }
+@keyframes ribbon-run { to { transform: translateX(-50%); } }
+html:not([data-motion=full]) .ribbon-track { width: auto; }
+html:not([data-motion=full]) .ribbon-list { flex-wrap: wrap; justify-content: center; }
+html:not([data-motion=full]) .ribbon-dup { display: none; }
+
+/* ladder climb: pinned while scrolling in full motion, plain list otherwise */
+.climb { padding-block: 0; }
+.climb-pin { padding-block: var(--gap-wide); }
+.climb-lead { color: var(--text-dim); }
+.climb-stage { position: relative; display: none; padding-top: calc(var(--climb-rise) * 2); }
+.climb-steps { display: flex; align-items: flex-end; gap: 2px; margin: 0; padding: 0; list-style: none; height: calc(var(--climb-rise) * (var(--steps, 15) + 1)); }
+.climb-step { flex: 1; min-width: 0; background: var(--surface-3); border-top: var(--line-w) solid var(--line-dim); transition: background var(--dur-element); }
+.climb-step[data-lit] { background: var(--action); border-top-color: var(--line); }
+.climb-step[data-here] { background: var(--brush); }
+.climb-step:nth-child(1) { height: calc(var(--climb-rise) * 1); }
+.climb-step:nth-child(2) { height: calc(var(--climb-rise) * 2); }
+.climb-step:nth-child(3) { height: calc(var(--climb-rise) * 3); }
+.climb-step:nth-child(4) { height: calc(var(--climb-rise) * 4); }
+.climb-step:nth-child(5) { height: calc(var(--climb-rise) * 5); }
+.climb-step:nth-child(6) { height: calc(var(--climb-rise) * 6); }
+.climb-step:nth-child(7) { height: calc(var(--climb-rise) * 7); }
+.climb-step:nth-child(8) { height: calc(var(--climb-rise) * 8); }
+.climb-step:nth-child(9) { height: calc(var(--climb-rise) * 9); }
+.climb-step:nth-child(10) { height: calc(var(--climb-rise) * 10); }
+.climb-step:nth-child(11) { height: calc(var(--climb-rise) * 11); }
+.climb-step:nth-child(12) { height: calc(var(--climb-rise) * 12); }
+.climb-step:nth-child(13) { height: calc(var(--climb-rise) * 13); }
+.climb-step:nth-child(14) { height: calc(var(--climb-rise) * 14); }
+.climb-step:nth-child(15) { height: calc(var(--climb-rise) * 15); }
+.climb-car { position: absolute; left: 0; bottom: 0; width: var(--climb-car-w); aspect-ratio: 68 / 32; background: url('/art/climb-car.svg') no-repeat center / contain; translate: calc(var(--p, 0) * (100cqw - var(--climb-car-w))) calc(var(--p, 0) * var(--climb-rise) * -14 - var(--climb-rise) - 4px); }
+.climb-stage { container-type: inline-size; }
+.climb-readout { display: none; font-family: var(--font-display); font-size: var(--h3); text-transform: uppercase; }
+.climb-readout b { color: var(--action); font-weight: 400; }
+.climb-list { margin: 0; padding-left: var(--s-5); columns: 2 220px; color: var(--text-dim); }
+html[data-motion=full] .climb { height: var(--climb-scroll); }
+html[data-motion=full] .climb-pin { position: sticky; top: var(--header-h); min-height: calc(100vh - var(--header-h)); display: grid; align-content: center; overflow: hidden; }
+html[data-motion=full] .climb-stage, html[data-motion=full] .climb-readout { display: block; }
+html[data-motion=full] .climb-list { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; columns: auto; }
+
+/* intro: one slam, never blocks input */
+.intro { position: fixed; inset: 0; z-index: 30; pointer-events: none; display: grid; place-items: center; overflow: hidden; animation: intro-life var(--intro-dur) linear both; }
+.intro-tape { position: absolute; inset-inline: -10%; top: 50%; height: var(--s-8); translate: 0 -50%; transform: rotate(var(--tilt)); background: var(--action) url('/art/hazard.svg') repeat-x center; animation: intro-tape 420ms var(--ease-out) both; }
+.intro-stamp { position: relative; font-family: var(--font-display); font-size: var(--fs-hero); text-transform: uppercase; color: var(--text-on-brush); background: var(--brush); border: var(--line-w-strong) solid var(--line); padding: var(--s-2) var(--s-5); box-shadow: var(--plate-shadow); transform: rotate(calc(var(--tilt) * 2)); animation: intro-slam 260ms var(--ease-out) 200ms both; }
+@keyframes intro-tape { from { transform: translateX(-110%) rotate(var(--tilt)); } }
+@keyframes intro-slam { from { transform: scale(2.2) rotate(calc(var(--tilt) * 6)); opacity: 0; } }
+@keyframes intro-life { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }
+
+/* flip card: a turn in full motion, a plain swap otherwise */
+.flip { display: grid; max-width: 300px; }
+.flip-inner { display: grid; }
+.flip-face { grid-area: 1 / 1; min-width: 0; }
+.flip-sheet { aspect-ratio: 300 / 420; align-content: start; height: 100%; }
+.flip-sheet-title { font-family: var(--font-display); font-size: var(--h3); text-transform: uppercase; }
+.flip:not([data-flipped]) .flip-back { visibility: hidden; }
+.flip[data-flipped] .flip-front { visibility: hidden; }
+html[data-motion=full] .flip { perspective: 900px; }
+html[data-motion=full] .flip-inner { transform-style: preserve-3d; transition: transform var(--flip-dur) var(--ease-out); }
+html[data-motion=full] .flip[data-flipped] .flip-inner { transform: rotateY(180deg); }
+html[data-motion=full] .flip-face { backface-visibility: hidden; visibility: visible; }
+html[data-motion=full] .flip-back { transform: rotateY(180deg); }
+
+/* misregistration: a print that slipped, shown while the card tilts */
+html[data-motion=full] .card-tilt[data-tracking] .cardimg img, html[data-motion=full] .card-tilt[data-tracking] .cardart svg { box-shadow: var(--misreg) var(--misreg) 0 var(--brush), calc(var(--misreg) * -1) calc(var(--misreg) * -1) 0 var(--action); }
+
+/* magnetic buttons ease back instead of snapping */
+@media (any-pointer: fine) { html[data-motion=full] .btn--primary { transition: translate var(--dur-micro) var(--ease-out), box-shadow var(--dur-micro); } }
+
+.hero-gl { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.sound-button { min-height: var(--target); padding-inline: var(--s-2); justify-self: start; align-self: flex-start; white-space: nowrap; border: var(--line-w) solid var(--line-dim); background: var(--surface); color: var(--text); font: 700 var(--fs-12)/1 var(--font-body); cursor: pointer; box-shadow: 3px 3px 0 var(--fx-shadow); }
+.sound-button:hover, .sound-button[aria-pressed=true] { border-color: var(--action); }
+.header-actions .sound-button { align-self: center; }
+html[data-motion=full] .sound-button:active { transform: translateY(2px); box-shadow: 1px 1px 0 var(--fx-shadow); }
+
+.footer-settings { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+@media (width < 480px) { .header-actions > :is(.motion-button, .sound-button) { display: none; } }
+.chart-title { font-size: var(--fs-20); }
+.flip-wrap { align-items: flex-start; }

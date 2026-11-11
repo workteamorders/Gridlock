@@ -269,6 +269,185 @@ try {
     await p.context().close();
   });
 
+  await step('intro: plays once per session, never blocks, any key skips it, and only in full motion', async () => {
+    const p = await newPage(browser);
+    await p.goto(SITE);
+    await p.waitForSelector('.intro');
+    assert.equal(await p.locator('.intro').getAttribute('aria-hidden'), 'true');
+    assert.equal(await p.locator('.intro').evaluate((el) => getComputedStyle(el).pointerEvents), 'none');
+    assert.equal(await p.evaluate(() => document.elementsFromPoint(innerWidth / 2, innerHeight / 2).some((el) => el.closest('.intro'))), false);
+    await p.keyboard.press('Tab');
+    await p.waitForFunction(() => !document.querySelector('.intro'), null, { timeout: 1000 });
+    await p.reload(); await p.waitForTimeout(700);
+    assert.equal(await p.locator('.intro').count(), 0, 'not shown again in the same session');
+    const reduced = await newPage(browser, { reducedMotion: 'reduce' });
+    await reduced.goto(SITE); await reduced.waitForTimeout(700);
+    assert.equal(await reduced.locator('.intro').count(), 0);
+    const off = await newPage(browser);
+    await off.goto(`${SITE}/?motion=off`); await off.waitForTimeout(700);
+    assert.equal(await off.locator('.intro').count(), 0);
+    assert.deepEqual([...p.errors, ...reduced.errors, ...off.errors], []);
+    await p.context().close(); await reduced.context().close(); await off.context().close();
+  });
+
+  await step('ribbon: live numbers equal the ones read from the chain, and the track is hidden from screen readers', async () => {
+    const p = await newPage(browser);
+    await p.goto(SITE); await p.waitForSelector('text=Minted so far');
+    await p.waitForSelector('.ribbon-list li');
+    const big = Number((await p.locator('.big-number').innerText()).match(/^\s*(\d+)/)[1]);
+    const first = await p.locator('.ribbon-list').first().locator('li').allTextContents();
+    assert.ok(first.includes(`${big} of 2,475 minted`), `ribbon shows ${big} minted: ${first.join(' | ')}`);
+    assert.ok(first.some((t) => /^Rank 15 open at /.test(t)));
+    assert.equal(await p.locator('.ribbon-dup').getAttribute('aria-hidden'), 'true');
+    assert.equal(await p.locator('.ribbon').getAttribute('aria-label'), 'Gridlock facts');
+    assert.deepEqual(p.errors, []);
+    await p.context().close();
+  });
+
+  await step('ladder climb: 15 steps from rank 15 to rank 1 while scrolling, a plain list without full motion', async () => {
+    const p = await newPage(browser);
+    await p.goto(SITE); await p.waitForSelector('.climb');
+    await p.waitForSelector('text=Minted so far'); await p.waitForTimeout(500);
+    const at = async (f) => {
+      await p.evaluate((f) => { const r = document.querySelector('.climb').getBoundingClientRect(); scrollTo(0, r.top + scrollY + (r.height - innerHeight) * f); }, f);
+      await p.waitForTimeout(250);
+      return p.evaluate(() => ({ step: document.querySelector('.climb').dataset.step, readout: document.querySelector('.climb-readout').textContent.replace(/\s+/g, ' ').trim() }));
+    };
+    const first0 = await at(0.001);
+    assert.deepEqual(first0, { step: '0', readout: 'Rank 15 400 cars' }, JSON.stringify(first0));
+    const last0 = await at(0.999);
+    assert.deepEqual(last0, { step: '14', readout: 'Rank 1 10 cars' }, JSON.stringify(last0));
+    const seen = new Set();
+    for (let i = 0; i <= 30; i++) seen.add((await at(i / 30)).step);
+    assert.equal(seen.size, 15, 'every step is reachable by scrolling');
+    assert.equal(await p.locator('.climb-list li').count(), 15);
+    assert.equal(await p.locator('.climb-stage').getAttribute('aria-hidden'), 'true');
+    const box = await p.locator('.climb-list').evaluate((el) => { const r = el.getBoundingClientRect(); return [r.width, r.height]; });
+    assert.ok(box[0] <= 1 && box[1] <= 1, 'the list is visually hidden while the story plays (still read by screen readers)');
+    const r = await newPage(browser, { reducedMotion: 'reduce' });
+    await r.goto(SITE); await r.waitForSelector('.climb');
+    const plain = await r.evaluate(() => ({ height: document.querySelector('.climb').getBoundingClientRect().height, view: innerHeight, stage: getComputedStyle(document.querySelector('.climb-stage')).display, list: document.querySelector('.climb-list').getBoundingClientRect().width }));
+    assert.ok(plain.height < plain.view * 1.5, `no tall pinned track in reduced motion (${plain.height})`);
+    assert.equal(plain.stage, 'none'); assert.ok(plain.list > 100);
+    assert.deepEqual([...p.errors, ...r.errors], []);
+    await p.context().close(); await r.context().close();
+  });
+
+  await step('flip card: button flips to the rap sheet and back, state is exposed, back face is not read twice', async () => {
+    const p = await newPage(browser);
+    await p.goto(`${SITE}/gallery/?id=1`); await p.waitForSelector('.flip');
+    const button = p.getByRole('button', { name: 'Flip to the rap sheet' });
+    assert.equal(await button.getAttribute('aria-pressed'), 'false');
+    assert.equal(await p.locator('.flip-back').getAttribute('aria-hidden'), 'true');
+    await button.click();
+    await p.waitForSelector('.flip[data-flipped]');
+    const back = p.getByRole('button', { name: 'Show the card' });
+    assert.equal(await back.getAttribute('aria-pressed'), 'true');
+    assert.match(await p.locator('.flip-back').textContent(), /Rap sheet[\s\S]*Car #1[\s\S]*Rank 15/);
+    await p.keyboard.press('Enter');
+    await p.waitForFunction(() => !document.querySelector('.flip[data-flipped]'));
+    const r = await newPage(browser, { reducedMotion: 'reduce' });
+    await r.goto(`${SITE}/gallery/?id=1`); await r.waitForSelector('.flip');
+    await r.getByRole('button', { name: 'Flip to the rap sheet' }).click();
+    assert.equal(await r.locator('.flip-front').evaluate((el) => getComputedStyle(el).visibility), 'hidden');
+    assert.equal(await r.locator('.flip-back').evaluate((el) => getComputedStyle(el).visibility), 'visible');
+    assert.deepEqual([...p.errors, ...r.errors], []);
+    await p.context().close(); await r.context().close();
+  });
+
+  await step('sound: off by default, no audio object before the toggle, remembered, armed by one gesture', async () => {
+    const p = await newPage(browser);
+    await p.addInitScript(() => {
+      window.__audio = 0;
+      const Native = window.AudioContext;
+      window.AudioContext = class extends Native { constructor(...a) { super(...a); window.__audio += 1; } };
+    });
+    await p.goto(SITE); await p.waitForSelector('header .sound-button');
+    const sound = p.locator('header .sound-button');
+    assert.match(await sound.innerText(), /Off/);
+    assert.equal(await sound.getAttribute('aria-pressed'), 'false');
+    await p.mouse.move(300, 300); await p.keyboard.press('Tab');
+    assert.equal(await p.evaluate(() => window.__audio), 0, 'nothing is created while sound is off');
+    await sound.click();
+    assert.match(await sound.innerText(), /On/);
+    assert.equal(await p.evaluate(() => [localStorage.getItem('gridlock.sound'), window.__audio]).then((v) => v.join()), 'on,1');
+    await p.reload(); await p.waitForSelector('header .sound-button');
+    assert.match(await p.locator('header .sound-button').innerText(), /On/);
+    assert.equal(await p.evaluate(() => window.__audio), 0, 'a remembered On still waits for a gesture');
+    await p.mouse.click(5, 400);
+    assert.equal(await p.evaluate(() => window.__audio), 1);
+    await p.locator('footer .sound-button').click();
+    assert.match(await p.locator('header .sound-button').innerText(), /Off/);
+    assert.equal(await p.evaluate(() => localStorage.getItem('gridlock.sound')), 'off');
+    assert.deepEqual(p.errors, []);
+    await p.context().close();
+  });
+
+  await step('WebGL hero: a decorative canvas only in full motion, removed when motion changes', async () => {
+    const p = await newPage(browser);
+    await p.goto(SITE); await p.waitForSelector('canvas.hero-gl');
+    const canvas = p.locator('canvas.hero-gl');
+    assert.equal(await canvas.getAttribute('aria-hidden'), 'true');
+    assert.equal(await canvas.evaluate((el) => getComputedStyle(el).pointerEvents), 'none');
+    await p.locator('header .motion-button').click();
+    await p.waitForFunction(() => document.documentElement.dataset.motion === 'reduced');
+    await p.waitForFunction(() => !document.querySelector('canvas.hero-gl'), null, { timeout: 2000 });
+    const r = await newPage(browser, { reducedMotion: 'reduce' });
+    await r.goto(SITE); await r.waitForTimeout(1500);
+    assert.equal(await r.locator('canvas.hero-gl').count(), 0);
+    assert.equal(await r.evaluate(() => document.getAnimations().filter((a) => a.effect?.getTiming().iterations === Infinity && a.playState === 'running').length), 0);
+    assert.deepEqual([...p.errors, ...r.errors], []);
+    await p.context().close(); await r.context().close();
+  });
+
+  await step('hero layers hold still without a GPU-drawn halftone and move with the pointer once it runs', async () => {
+    const p = await newPage(browser);
+    await p.goto(SITE); await p.waitForSelector('.hero-layer');
+    await p.waitForTimeout(800);
+    const running = () => p.evaluate(() => document.getAnimations().filter((a) => a.animationName && a.effect?.target?.classList?.contains('hero-layer') && a.playState === 'running').length);
+    const live = await p.evaluate(() => document.querySelector('.hero').dataset.live === 'true');
+    assert.equal((await running()) > 0, live, 'layers animate exactly when the engine marks the hero live');
+    await p.evaluate(() => { document.querySelector('.hero').dataset.live = 'true'; });
+    await p.waitForTimeout(150);
+    const n = await running(); assert.equal(n, 2, 'both layers drift when live, got ' + n);
+    await p.mouse.move(100, 200); await p.mouse.move(1100, 500, { steps: 10 });
+    await p.waitForTimeout(500);
+    const moved = await p.evaluate(() => getComputedStyle(document.querySelector('.hero-layer--front')).translate);
+    assert.notEqual(moved, 'none'); assert.notEqual(moved, '0px');
+    await p.locator('header .motion-button').click();
+    await p.waitForFunction(() => document.documentElement.dataset.motion === 'reduced');
+    assert.equal(await running(), 0, 'nothing moves in reduced motion even when live');
+    assert.deepEqual(p.errors, []);
+    await p.context().close();
+  });
+
+  await step('magnetic and tilt effects never block a click: the mint button still works and moves only a few pixels', async () => {
+    const p = await newPage(browser);
+    await p.goto(SITE); await p.waitForSelector('text=Mint at the open rung');
+    const button = p.getByRole('link', { name: 'Mint at the open rung' });
+    await button.scrollIntoViewIfNeeded();
+    const box = await button.boundingBox();
+    await p.mouse.move(box.x + box.width / 2 + 60, box.y + box.height / 2 + 20, { steps: 8 });
+    await p.waitForTimeout(250);
+    const shift = await button.evaluate((el) => (getComputedStyle(el).translate || '0px 0px'));
+    const [x, y] = shift === 'none' ? [0, 0] : shift.split(' ').map(parseFloat);
+    assert.ok(Math.hypot(x, y) > 0, `button leans toward the pointer (${shift})`);
+    assert.ok(Math.hypot(x, y) <= 8, `and only a little (${shift})`);
+    await button.click();
+    await p.waitForURL(/\/mint\/\?rank=15/);
+    assert.deepEqual(p.errors, []);
+    await p.context().close();
+  });
+
+  await step('mobile: no horizontal scroll on the home page at 360 px, header actions fit', async () => {
+    const p = await newPage(browser, { width: 360, height: 780 });
+    await p.goto(SITE); await p.waitForSelector('text=Minted so far'); await p.waitForTimeout(400);
+    assert.equal(await p.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+    assert.equal(await p.locator('footer .sound-button').isVisible(), true);
+    assert.deepEqual(p.errors, []);
+    await p.context().close();
+  });
+
   await step('RPC failure: dead end with retry, nothing crashes', async () => {
     const p = await newPage(browser);
     await p.route('http://127.0.0.1:8545/**', (r) => r.abort());

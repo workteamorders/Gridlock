@@ -43,6 +43,10 @@ try {
       await p.addStyleTag({ content: 'html{filter:grayscale(1)}' });
       await shot(p, slug + '-gray');
     }
+    if (MODE === 'undeployed' && path === '/') {
+      const ribbon = (await p.locator('.ribbon-list').first().locator('li').allTextContents()).join(' | ');
+      if (/minted|left|opens by|open at/i.test(ribbon)) p.errors.push(`ribbon shows live numbers without a deployment: ${ribbon}`);
+    }
     const hscroll = over.sw > over.iw + 1;
     if (hscroll || axe.length || p.errors.length) bad++;
     rows.push({ w, path, hscroll: hscroll ? `${over.sw}>${over.iw}` : '', axe: axe.map((a) => `${a.id}(${a.impact},${a.n}) ${a.sample}`), errors: p.errors });

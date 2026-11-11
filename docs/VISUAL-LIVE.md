@@ -8,3 +8,22 @@ Kota dilihat dari atas, dengan lajur kuning redup, mobil komik, persimpangan dan
 4. Tambahkan pita hazard dan wipe navigasi. Uji kontrol motion dan interaksi, lalu ukur build produksi.
 
 Anggaran per rute 20 KB gzip tambahan. Canvas memakai 14 atau 36 mobil dengan DPR maksimal 1,5 atau 2. Target 55 fps desktop, kurangi beban di atas 20 ms dan berhenti jika tetap di bawah 30 fps. Target Lighthouse mobile 95/98/95/95, CLS 0 dan TBT ≤ 150 ms. Jalankan axe WCAG 2.2 AA dan cek overflow pada 360, 768, serta 1440 px.
+
+## Panggung (tambahan)
+
+Hero dinding poster, bab "Case File", pita rantai miring, scroll climb 15 anak tangga, intro stempel sekali per sesi, flip kartu, angka bergulir, tombol magnetik, suara sintesis (default mati) dan halftone WebGL. Semuanya diatur kontrol Motion kecuali suara yang punya tombol sendiri.
+
+Hasil ukur build produksi lokal (Chrome headless, tanpa GPU):
+
+| Ukuran | Hasil |
+|---|---|
+| Unit test | 30 lulus (7 baru: climb, counter, magnet, suara, ribbon, hero art) |
+| E2E | 26 dari 26 langkah (9 baru) |
+| Axe WCAG 2.2 AA + overflow, 39 kombinasi halaman dan lebar | 0 temuan, live dan undeployed |
+| Lighthouse mobile Home | performa 97, aksesibilitas 100, best practices 100, LCP 1,5 s, CLS 0, TBT 154 ms |
+| Lighthouse mobile halaman lain | performa 97 sampai 100, aksesibilitas 100, TBT 90 sampai 150 ms |
+| JS tambahan per rute (gzip) | +4,8 sampai +6,7 KB, styleguide +10,5 KB, batas 20 KB |
+| fps `?motion=debug` (software) | 60 pada 360 px, 59 pada 768 px, 58 pada 1440 px |
+| CLS | 0 |
+
+SEO Lighthouse 66 sampai 69 karena build ini sengaja `noindex` (`NEXT_PUBLIC_INDEXABLE` belum diset). Efek yang butuh GPU (halftone WebGL dan gerak lapisan hero) tidak bisa diukur di lingkungan ini. Kodenya diuji pada renderer software dan jalur "live" diuji dengan menandai hero secara manual.
