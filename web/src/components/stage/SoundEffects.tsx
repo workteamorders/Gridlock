@@ -31,12 +31,14 @@ export function SoundEffects() {
       document.removeEventListener('pointerover', onOver);
     };
   }, []);
-  // The street chase on the Home page reports its two big moments: the siren as a pursuit starts, and the stamp when it ends in a bust.
+  // The street chase on the Home page reports its two big moments: the siren as a pursuit starts, the skid of a drift, the crash of a patrol car and the stamp when it ends in a bust.
   useEffect(() => {
     const onChase = (event: Event) => {
       const phase = (event as CustomEvent<string>).detail;
       if (phase === 'siren') play('siren');
       if (phase === 'busted') play('stamp');
+      if (phase === 'crash') play('crash');
+      if (phase === 'skid') play('skid');
     };
     window.addEventListener('gridlock:chase', onChase);
     return () => window.removeEventListener('gridlock:chase', onChase);

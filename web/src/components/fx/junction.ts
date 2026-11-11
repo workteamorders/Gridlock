@@ -28,6 +28,15 @@ const CHASE_AGAIN = 6500;
 const CHASE_AFTER_BUST = 9000;
 const BUST_SHOW = 2600;
 const FLASH_MS = 200;
+/** The drone camera: how far in it may zoom, how much it may roll, and how sharp the backdrop is kept for zooming. */
+const ZOOM_MIN = 1;
+const ZOOM_MAX = 1.8;
+const PATROL_ZOOM = 1.2;
+const ROLL_MAX = 0.045;
+const MAP_OVERSAMPLE = 1.5;
+const MAP_MAX_PIXELS = 3200;
+const SKID_LIFE = 3400;
+const clamp = (value: number, low: number, high: number) => Math.min(high, Math.max(low, value));
 const approaches = [
   { x: 1, y: 0, angle: 0, end: MID_X + 32 },
   { x: 0, y: 1, angle: Math.PI / 2, end: MID_Y + 32 },
@@ -232,7 +241,7 @@ export function startJunction(canvas: HTMLCanvasElement) {
   let lastGreen = -1;
   const cones = approaches.map(() => ({ pos: 0, until: 0 }));
   const debug = /^(debug|off)$/.test(new URLSearchParams(location.search).get('motion') ?? '')
-    ? { frames: 0, times: [] as number[], interactions: 0, brakes: 0, cones: 0, detours: 0, axis: 0, chases: 0, busted: 0, escaped: 0, heat: 0 }
+    ? { frames: 0, times: [] as number[], interactions: 0, brakes: 0, cones: 0, detours: 0, axis: 0, chases: 0, busted: 0, escaped: 0, heat: 0, crashes: 0, drifts: 0, zoom: 1, camX: 280, camY: 180, roll: 0 }
     : undefined;
   const host = window as Window & { __fx?: typeof debug };
   if (debug) host.__fx = debug;
@@ -251,24 +260,36 @@ export function startJunction(canvas: HTMLCanvasElement) {
   let effects = cars.length;
   let nextApproach = 0;
   let sized = false;
+  // Screen-space layer for the camera look (vignette and scan lines), painted once per size.
+  const overlay = document.createElement('canvas');
+  let base = { scale: 1, ox: 0, oy: 0 };
+  const cam = { x: MID_X, y: MID_Y, zoom: 1, roll: 0, vx: 0, vy: 0, vzoom: 0, vroll: 0 };
+  /** The camera as drawn this frame: the steady camera plus hand-held shake. */
+  const shot = { x: MID_X, y: MID_Y, cx: MID_X, cy: MID_Y, zoom: 1, roll: 0 };
+  let kick = 0;
+  let kickAt = -1e9;
+  let gustAt = 3200;
+  let gustStart = -1e9;
+  const skids: { x1: number; y1: number; x2: number; y2: number; born: number }[] = [];
   const governor = frameGovernor(cars.length);
 
-  interface Actor { slot: number; pos: number; lane: number; speed: number; spin: number }
-  interface Chase { approach: number; state: 'run' | 'busted'; since: number; bustedAt: number; nitroUntil: number; sirenAgain: boolean; smokeAt: number; actors: Actor[] }
+  interface Actor { slot: number; pos: number; lane: number; speed: number; spin: number; crashed: boolean }
+  interface Chase { approach: number; state: 'run' | 'busted'; since: number; bustedAt: number; nitroUntil: number; sirenAgain: boolean; smokeAt: number; crashPlanned: boolean; crashAt: number; drifted: boolean; lastSkid: ([number, number] | undefined)[]; actors: Actor[] }
   let chase: Chase | undefined;
   let chaseCount = 0;
   let nextChase = CHASE_FIRST;
   let heat = 0;
   const at = (a: (typeof approaches)[number], pos: number, lane: number): [number, number] => [MID_X + a.x * pos - a.y * lane, MID_Y + a.y * pos + a.x * lane];
   const mark = (name: string, value: string) => { if (value) figure?.setAttribute(name, value); else figure?.removeAttribute(name); };
-  const announce = (phase: 'siren' | 'busted') => window.dispatchEvent(new CustomEvent('gridlock:chase', { detail: phase }));
+  const announce = (phase: 'siren' | 'busted' | 'crash' | 'skid') => window.dispatchEvent(new CustomEvent('gridlock:chase', { detail: phase }));
   mark('data-heat', '0');
 
   function startChase(approach: number) {
     const a = approaches[approach]!;
     chase = {
       approach, state: 'run', since: time, bustedAt: 0, nitroUntil: 0, sirenAgain: true, smokeAt: 0,
-      actors: [0, 1, 2].map((slot) => ({ slot, pos: -a.end - 150 - slot * CHASE_GAP, lane: slot === 0 ? 0 : slot === 1 ? -5 : 5, speed: CHASE_SPEED, spin: 0 })),
+      crashPlanned: chaseCount % 2 === 0, crashAt: 0, drifted: false, lastSkid: [undefined, undefined],
+      actors: [0, 1, 2].map((slot) => ({ slot, pos: -a.end - 150 - slot * CHASE_GAP, lane: slot === 0 ? 0 : slot === 1 ? -5 : 5, speed: CHASE_SPEED, spin: 0, crashed: false })),
     };
     chaseCount++;
     if (debug) debug.chases++;
@@ -276,6 +297,28 @@ export function startJunction(canvas: HTMLCanvasElement) {
     announce('siren');
     const [bx, by] = at(a, -64, -46);
     say('WEEOOO!', bx, by - 18, true);
+  }
+
+  /** A hard knock: the camera jolts and settles. */
+  function bump(power: number) { kick = power; kickAt = time; }
+
+  /** Rear tyre marks and smoke from a sliding car. */
+  function slide(c: Chase, actor: Actor, a: (typeof approaches)[number], smoke: boolean) {
+    const [wx, wy] = at(a, actor.pos, actor.lane);
+    const heading = a.angle + actor.spin;
+    const cos = Math.cos(heading);
+    const sin = Math.sin(heading);
+    [-1, 1].forEach((side, index) => {
+      const px = wx - 13 * cos - sin * side * 6.5;
+      const py = wy - 13 * sin + cos * side * 6.5;
+      const last = c.lastSkid[index];
+      if (last && Math.hypot(px - last[0], py - last[1]) > 2) {
+        skids.push({ x1: last[0], y1: last[1], x2: px, y2: py, born: time });
+        if (skids.length > 160) skids.shift();
+        c.lastSkid[index] = [px, py];
+      } else if (!last) c.lastSkid[index] = [px, py];
+      if (smoke && effects >= 8 && index === 0 && puffs.length < 24) puffs.push({ x: px, y: py, vx: -cos * 8, vy: -sin * 8 - 8, born: time });
+    });
   }
 
   function endChase(escaped: boolean) {
@@ -301,7 +344,22 @@ export function startJunction(canvas: HTMLCanvasElement) {
       }
       racer.speed += ((time < c.nitroUntil ? cruise * 1.4 : cruise) - racer.speed) * Math.min(1, delta / 200);
       const blocked = cone.until > time;
-      const toward = blocked && racer.pos > cone.pos - 90 && racer.pos < cone.pos + 40 ? LANE - 5 : 0;
+      // Through the junction the racer drifts: the tail swings out one way, then the other, trailing smoke and tyre marks.
+      const u = (racer.pos + 70) / 140;
+      const drifting = u > 0 && u < 1 && !(blocked && racer.pos > cone.pos - 20);
+      const side = c.approach % 2 ? -1 : 1;
+      if (drifting) {
+        if (!c.drifted) {
+          c.drifted = true;
+          if (debug) debug.drifts++;
+          announce('skid');
+          say('SKRRT!', rx, ry - 30, true);
+        }
+        racer.spin = side * 0.55 * Math.sin(u * 2 * Math.PI);
+        if (time - c.smokeAt > 55) { c.smokeAt = time; slide(c, racer, a, true); }
+        else slide(c, racer, a, false);
+      } else if (racer.spin !== 0 && !blocked) racer.spin *= Math.exp(-delta / 90);
+      const toward = blocked && racer.pos > cone.pos - 90 && racer.pos < cone.pos + 40 ? LANE - 5 : drifting ? side * 9 * Math.sin(u * Math.PI) : 0;
       racer.lane += (toward - racer.lane) * Math.min(1, delta / 130);
       if (blocked && racer.pos > cone.pos - 16 && racer.pos < cone.pos + 30) {
         c.state = 'busted';
@@ -311,6 +369,7 @@ export function startJunction(canvas: HTMLCanvasElement) {
         mark('data-chase', 'busted');
         if (debug) { debug.busted++; debug.heat = 0; }
         announce('busted');
+        bump(1);
         say('BUSTED!', rx, ry - 28, true);
       }
     } else {
@@ -326,6 +385,30 @@ export function startJunction(canvas: HTMLCanvasElement) {
     racer.pos += racer.speed * seconds;
     for (const cop of c.actors) {
       if (cop.slot === 0) continue;
+      if (cop.crashed) {
+        // A patrol car that lost it in the junction: spins, slides to the kerb and stops, smoking.
+        const wreckAge = time - c.crashAt;
+        cop.speed *= Math.exp(-delta / 330);
+        cop.spin += 9 * Math.exp(-wreckAge / 620) * seconds;
+        cop.lane += ((cop.slot === 1 ? -1 : 1) * 24 - cop.lane) * Math.min(1, delta / 420);
+        cop.pos += cop.speed * seconds;
+        if (effects >= 8 && time - c.smokeAt > 90 && wreckAge < 1800 && puffs.length < 24) {
+          c.smokeAt = time;
+          const [px, py] = at(a, cop.pos, cop.lane);
+          puffs.push({ x: px, y: py, vx: Math.cos(time / 80) * 10, vy: -10, born: time });
+        }
+        continue;
+      }
+      if (c.crashPlanned && c.state === 'run' && cop.slot === 2 && cop.pos > -30) {
+        cop.crashed = true;
+        c.crashAt = time;
+        if (debug) debug.crashes++;
+        announce('crash');
+        bump(0.9);
+        const [px, py] = at(a, cop.pos, cop.lane);
+        say('CRASH!', px, py - 30, true);
+        continue;
+      }
       const gap = c.state === 'busted' ? 40 : CHASE_GAP;
       const target = racer.pos - gap * cop.slot;
       cop.speed = Math.max(0, Math.min(330, racer.speed + (target - cop.pos) * 2.4));
@@ -334,7 +417,7 @@ export function startJunction(canvas: HTMLCanvasElement) {
       const want = c.state === 'busted' ? side * 9 : side * 5 + Math.sin(time / 260 + cop.slot * 2) * 2.5;
       cop.lane += (want - cop.lane) * Math.min(1, delta / 140);
     }
-    if (c.state === 'run' && c.actors.every((actor) => actor.pos > a.end + 70)) {
+    if (c.state === 'run' && c.actors.every((actor) => (actor.crashed ? time - c.crashAt > 2600 : actor.pos > a.end + 70))) {
       heat = Math.min(5, heat + 1);
       mark('data-heat', String(heat));
       if (debug) { debug.escaped++; debug.heat = heat; }
@@ -355,6 +438,7 @@ export function startJunction(canvas: HTMLCanvasElement) {
       g.translate(actor.pos, actor.lane);
       g.rotate(actor.spin);
       g.scale(0.49, 0.49);
+      if (actor.crashed) g.globalAlpha *= clamp(1 - (time - c.crashAt - 2000) / 600, 0, 1);
       const cop = actor.slot > 0;
       if (!cop) {
         if (effects >= 8) {
@@ -384,7 +468,7 @@ export function startJunction(canvas: HTMLCanvasElement) {
             g.globalAlpha /= 0.55;
           }
         }
-      } else if (effects >= 8) {
+      } else if (effects >= 8 && !actor.crashed) {
         // A coloured wash on the road around a lit light bar.
         const lit = (flash + actor.slot) % 2;
         g.globalAlpha *= 0.95;
@@ -407,8 +491,77 @@ export function startJunction(canvas: HTMLCanvasElement) {
     g.globalAlpha = 1;
   }
 
-  /** On a wide, short stage the top and bottom of the map are cut off, so the vertical road is barely on screen: chases keep to the horizontal one. */
-  const cropped = () => canvas.clientHeight / Math.max(canvas.clientWidth / WIDTH, canvas.clientHeight / HEIGHT) < 300;
+  /** Where the operator wants the camera: a slow sweep over the town, or the racer, or a wreck, or a bust. */
+  function aim() {
+    const c = chase;
+    if (!c) return { x: MID_X + Math.sin(time / 7300) * 46, y: MID_Y + Math.sin(time / 5100 + 1) * 24, zoom: PATROL_ZOOM + 0.08 * Math.sin(time / 6100) };
+    const a = approaches[c.approach]!;
+    const wreck = c.actors.find((actor) => actor.crashed);
+    if (wreck && time - c.crashAt < 1500) {
+      const [wx, wy] = at(a, wreck.pos, wreck.lane);
+      return { x: wx, y: wy, zoom: 1.85 };
+    }
+    const racer = c.actors[0]!;
+    const [rx, ry] = at(a, racer.pos, racer.lane);
+    const lead = racer.speed * 0.28;
+    const inBox = Math.max(0, 1 - Math.abs(racer.pos) / 140);
+    const zoom = c.state === 'busted' ? (time - c.bustedAt < 1800 ? 1.85 : 1.6) : 1.4 + 0.3 * inBox;
+    return { x: rx + a.x * lead, y: ry + a.y * lead, zoom };
+  }
+
+  /** The camera follows with a spring, so it lags behind a fast car, overshoots a little and settles, like a person at the controls. */
+  function moveCamera(delta: number) {
+    const dt = Math.min(delta, 50) / 1000;
+    const goal = aim();
+    const tx = clamp(goal.x, MID_X - 210, MID_X + 210);
+    const ty = clamp(goal.y, MID_Y - 130, MID_Y + 130);
+    const follow = chase ? 16 : 5;
+    const damp = chase ? 5.2 : 3.2;
+    cam.vx += ((tx - cam.x) * follow - cam.vx * damp) * dt;
+    cam.vy += ((ty - cam.y) * follow - cam.vy * damp) * dt;
+    cam.x += cam.vx * dt;
+    cam.y += cam.vy * dt;
+    cam.vzoom += ((goal.zoom - cam.zoom) * 7 - cam.vzoom * 3.4) * dt;
+    cam.zoom = clamp(cam.zoom + cam.vzoom * dt, ZOOM_MIN, ZOOM_MAX);
+    const bank = -clamp(cam.vx / 260, -1, 1) * 0.03 + 0.012 * Math.sin(time / 2300);
+    cam.vroll += ((bank - cam.roll) * 10 - cam.vroll * 4) * dt;
+    cam.roll = clamp(cam.roll + cam.vroll * dt, -ROLL_MAX + 0.005, ROLL_MAX - 0.005);
+    // Never show past the edge of the map.
+    const visibleW = canvas.width / base.scale;
+    const visibleH = canvas.height / base.scale;
+    const halfW = visibleW / (2 * cam.zoom);
+    const halfH = visibleH / (2 * cam.zoom);
+    const marginX = halfW + halfH * ROLL_MAX + 8;
+    const marginY = halfH + halfW * ROLL_MAX + 8;
+    cam.x = marginX * 2 >= WIDTH ? MID_X : clamp(cam.x, marginX, WIDTH - marginX);
+    cam.y = marginY * 2 >= HEIGHT ? MID_Y : clamp(cam.y, marginY, HEIGHT - marginY);
+  }
+
+  /** The steady camera plus hand-held shake: a constant tremor, a gust now and then, and a jolt after every hit. */
+  function framing() {
+    if (time > gustAt) { gustStart = time; gustAt = time + 5200 + 3800 * Math.abs(Math.sin(time)); }
+    const gust = clamp(1 - (time - gustStart) / 1100, 0, 1);
+    const amp = (0.5 + 1.7 * gust + kick * 9 * Math.exp(-(time - kickAt) / 380)) * (cam.zoom > 1 ? 1 : 0);
+    const wobble = (f: number, p: number) => Math.sin(time * f + p);
+    shot.x = cam.x;
+    shot.y = cam.y;
+    shot.zoom = cam.zoom;
+    shot.cx = MID_X + amp * (wobble(0.021, 0) + 0.6 * wobble(0.047, 1.7) + 0.3 * wobble(0.11, 3));
+    shot.cy = MID_Y + amp * (wobble(0.017, 2) + 0.6 * wobble(0.053, 0.4) + 0.3 * wobble(0.13, 5));
+    shot.roll = cam.roll + 0.0035 * amp * wobble(0.037, 2);
+    if (debug) { debug.zoom = cam.zoom; debug.camX = cam.x; debug.camY = cam.y; debug.roll = shot.roll; }
+  }
+
+  function applyCamera(g: CanvasRenderingContext2D) {
+    g.setTransform(1, 0, 0, 1, 0, 0);
+    g.fillStyle = ink;
+    g.fillRect(0, 0, canvas.width, canvas.height);
+    g.setTransform(base.scale, 0, 0, base.scale, base.ox, base.oy);
+    g.translate(shot.cx, shot.cy);
+    g.rotate(shot.roll);
+    g.scale(shot.zoom, shot.zoom);
+    g.translate(-shot.x, -shot.y);
+  }
 
   function drawMap(g: CanvasRenderingContext2D) {
     g.fillStyle = paper;
@@ -540,6 +693,99 @@ export function startJunction(canvas: HTMLCanvasElement) {
     g.globalAlpha = 1;
   }
 
+  /** Tyre marks, drawn on the road before the cars and fading away. */
+  function drawSkids(g: CanvasRenderingContext2D) {
+    while (skids.length && time - skids[0]!.born > SKID_LIFE) skids.shift();
+    if (!skids.length) return;
+    g.strokeStyle = cream;
+    g.lineWidth = 2;
+    g.lineCap = 'butt';
+    for (const mark of skids) {
+      g.globalAlpha = 0.42 * (1 - (time - mark.born) / SKID_LIFE);
+      g.beginPath();
+      g.moveTo(mark.x1, mark.y1);
+      g.lineTo(mark.x2, mark.y2);
+      g.stroke();
+    }
+    g.globalAlpha = 1;
+  }
+
+  /** The look of a drone feed, in screen space: soft dark corners, scan lines, corner brackets, a crosshair and a read-out. */
+  function drawHud(g: CanvasRenderingContext2D) {
+    g.setTransform(1, 0, 0, 1, 0, 0);
+    if (overlay.width) g.drawImage(overlay, 0, 0);
+    const px = canvas.width / Math.max(1, canvas.clientWidth);
+    const inset = 12 * px;
+    const len = 20 * px;
+    const w = canvas.width;
+    const h = canvas.height;
+    g.strokeStyle = cream;
+    g.globalAlpha = 0.8;
+    g.lineWidth = 2 * px;
+    g.lineCap = 'butt';
+    g.beginPath();
+    for (const [cx, cy, sx, sy] of [[inset, inset, 1, 1], [w - inset, inset, -1, 1], [inset, h - inset, 1, -1], [w - inset, h - inset, -1, -1]] as const) {
+      g.moveTo(cx + sx * len, cy);
+      g.lineTo(cx, cy);
+      g.lineTo(cx, cy + sy * len);
+    }
+    g.stroke();
+    g.globalAlpha = 0.5;
+    g.lineWidth = 1.5 * px;
+    g.beginPath();
+    const mx = w / 2;
+    const my = h / 2;
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
+      g.moveTo(mx + dx * 7 * px, my + dy * 7 * px);
+      g.lineTo(mx + dx * 15 * px, my + dy * 15 * px);
+    }
+    g.stroke();
+    g.globalAlpha = 1;
+    if (effects < 8) return;
+    g.font = `700 ${11 * px}px ${display}`;
+    g.textBaseline = 'top';
+    const label = (text: string, tx: number, ty: number, align: CanvasTextAlign, tint: string) => {
+      g.textAlign = align;
+      g.fillStyle = ink;
+      g.fillText(text, tx + px, ty + px);
+      g.fillStyle = tint;
+      g.fillText(text, tx, ty);
+    };
+    const frames = Math.floor(time / 33) % 30;
+    const seconds = Math.floor(time / 1000);
+    const clock = `${String(Math.floor(seconds / 60) % 100).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}:${String(frames).padStart(2, '0')}`;
+    label(clock, w - inset - 8 * px, inset + 8 * px, 'right', cream);
+    if (Math.floor(time / 500) % 2 === 0) {
+      g.fillStyle = red;
+      g.beginPath();
+      g.arc(w - inset - 8 * px - g.measureText(clock).width - 14 * px, inset + 14 * px, 4.5 * px, 0, Math.PI * 2);
+      g.fill();
+    }
+    label(`AIR 7  ALT ${Math.round(190 / cam.zoom)} M  ${cam.zoom.toFixed(1)}X`, inset + 8 * px, h - inset - 20 * px, 'left', cream);
+    if (chase) label(chase.state === 'busted' ? 'SUSPECT STOPPED' : 'TRACKING SUSPECT', inset + 8 * px, h - inset - 36 * px, 'left', chase.state === 'busted' ? green : red);
+  }
+
+  /** Lock-on brackets around the racer, in map coordinates. */
+  function drawLock(g: CanvasRenderingContext2D) {
+    const c = chase;
+    if (!c) return;
+    const a = approaches[c.approach]!;
+    const racer = c.actors[0]!;
+    const [rx, ry] = at(a, racer.pos, racer.lane);
+    const r = 24 + 2 * Math.sin(time / 110);
+    g.strokeStyle = c.state === 'busted' ? green : red;
+    g.lineWidth = 1.8;
+    g.beginPath();
+    for (const sx of [-1, 1]) {
+      for (const sy of [-1, 1]) {
+        g.moveTo(rx + sx * r, ry + sy * (r - 8));
+        g.lineTo(rx + sx * r, ry + sy * r);
+        g.lineTo(rx + sx * (r - 8), ry + sy * r);
+      }
+    }
+    g.stroke();
+  }
+
   const widths = new Map<string, number>();
   function say(word: string, wx: number, wy: number, force = false) {
     if (effects < 8 || (force ? bursts.length >= 6 : bursts.length >= 3 || time - lastBurst < 800)) return;
@@ -619,9 +865,13 @@ export function startJunction(canvas: HTMLCanvasElement) {
     }
     if (delta) {
       if (chase) moveChase(chase, delta);
-      else if (greenNow && time >= nextChase && phase % SIGNAL_PHASE < CHASE_WINDOW && !(axis === 1 && cropped())) startChase(axis + 2 * (chaseCount % 2));
+      else if (greenNow && time >= nextChase && phase % SIGNAL_PHASE < CHASE_WINDOW) startChase(axis + 2 * (chaseCount % 2));
+      moveCamera(delta);
     }
+    framing();
+    applyCamera(g);
     g.drawImage(map, 0, 0, WIDTH, HEIGHT);
+    drawSkids(g);
 
     if (x >= 0 && effects >= 8) {
       g.save();
@@ -752,7 +1002,8 @@ export function startJunction(canvas: HTMLCanvasElement) {
       }
       g.restore();
     }
-    if (effects >= 8) drawEffects(g);
+    if (effects >= 8) { drawLock(g); drawEffects(g); }
+    drawHud(g);
     if (debug) debug.frames++;
   }
 
@@ -801,21 +1052,48 @@ export function startJunction(canvas: HTMLCanvasElement) {
     const scale = Math.max(width / WIDTH, height / HEIGHT);
     canvas.width = width;
     canvas.height = height;
-    map.width = Math.ceil(WIDTH * scale);
-    map.height = Math.ceil(HEIGHT * scale);
+    // The backdrop is painted sharper than the screen needs so the camera can zoom in without it going soft.
+    const sharp = Math.min(scale * MAP_OVERSAMPLE, MAP_MAX_PIXELS / WIDTH);
+    map.width = Math.ceil(WIDTH * sharp);
+    map.height = Math.ceil(HEIGHT * sharp);
     sized = true;
+    base = { scale, ox: (width - WIDTH * scale) / 2, oy: (height - HEIGHT * scale) / 2 };
     backdrop!.setTransform(map.width / WIDTH, 0, 0, map.height / HEIGHT, 0, 0);
     drawMap(backdrop!);
-    ctx!.setTransform(scale, 0, 0, scale, (width - WIDTH * scale) / 2, (height - HEIGHT * scale) / 2);
+    paintOverlay(width, height, dpr);
     draw(ctx!, 0);
+  }
+
+  function paintOverlay(width: number, height: number, px: number) {
+    overlay.width = width;
+    overlay.height = height;
+    const o = overlay.getContext('2d');
+    if (!o) return;
+    o.fillStyle = ink;
+    o.globalAlpha = 0.1;
+    for (let line = 0; line < height; line += 4 * px) o.fillRect(0, line, width, px);
+    // Dark corners: frames of ink laid one inside the other, each fainter than the last.
+    const band = Math.min(width, height) * 0.03;
+    o.strokeStyle = ink;
+    o.lineWidth = band;
+    for (let k = 0; k < 12; k++) {
+      o.globalAlpha = 0.05 * ((12 - k) / 12) ** 1.5;
+      const inset = band / 2 + k * band * 0.55;
+      o.strokeRect(inset, inset, width - 2 * inset, height - 2 * inset);
+    }
   }
 
   function move(event: PointerEvent) {
     if (!active || !event.isPrimary) return;
     const box = stage!.getBoundingClientRect();
     const scale = Math.max(box.width / WIDTH, box.height / HEIGHT);
-    x = (event.clientX - box.left - box.width / 2) / scale + MID_X;
-    y = (event.clientY - box.top - box.height / 2) / scale + MID_Y;
+    // From the screen back to the map, through the camera: undo the roll and the zoom, then the pan.
+    const sx = (event.clientX - box.left - box.width / 2) / scale + MID_X - shot.cx;
+    const sy = (event.clientY - box.top - box.height / 2) / scale + MID_Y - shot.cy;
+    const cos = Math.cos(shot.roll);
+    const sin = Math.sin(shot.roll);
+    x = shot.x + (sx * cos + sy * sin) / shot.zoom;
+    y = shot.y + (-sx * sin + sy * cos) / shot.zoom;
     if (debug) debug.interactions++;
   }
 

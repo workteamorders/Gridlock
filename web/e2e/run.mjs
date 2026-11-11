@@ -304,10 +304,23 @@ try {
     const p = await newPage(browser);
     await p.goto(`${SITE}/?motion=debug`);
     await p.waitForFunction(() => window.__fx?.frames > 5);
+    // The drone camera is never still: sample where it points and how far it is zoomed while the chase runs.
+    await p.evaluate(() => {
+      window.__cams = [];
+      window.__camTimer = setInterval(() => window.__cams.push([window.__fx.camX, window.__fx.camY, window.__fx.zoom, window.__fx.roll]), 100);
+    });
     await p.waitForFunction(() => window.__fx.escaped === 1, null, { timeout: 20000 });
     const figure = p.locator('figure.junction');
     assert.equal(await figure.getAttribute('data-heat'), '1');
     assert.equal(await p.evaluate(() => window.__fx.busted), 0);
+    // The first chase has a drift through the junction and a patrol car that spins out.
+    assert.deepEqual(await p.evaluate(() => [window.__fx.drifts, window.__fx.crashes]), [1, 1]);
+    const cams = await p.evaluate(() => window.__cams);
+    const range = (i) => Math.max(...cams.map((c) => c[i])) - Math.min(...cams.map((c) => c[i]));
+    assert.ok(range(0) > 40, `camera pans ${range(0)}`);
+    assert.ok(range(2) > 0.25, `camera zooms ${range(2)}`);
+    assert.ok(Math.max(...cams.map((c) => Math.abs(c[3]))) > 0.003, 'camera rolls');
+    assert.ok(Math.max(...cams.map((c) => c[2])) <= 1.8 + 1e-6 && Math.min(...cams.map((c) => c[2])) >= 1 - 1e-6, 'zoom stays in range');
     assert.deepEqual(p.errors, []);
     await p.context().close();
   });

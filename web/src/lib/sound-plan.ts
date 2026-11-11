@@ -1,5 +1,5 @@
 /** Sound recipes as plain data: a few short tones and noise bursts each. Pure, so tests can check them. */
-export type SoundKind = 'stamp' | 'open' | 'rev' | 'click' | 'flip' | 'step' | 'summit' | 'hover' | 'whoosh' | 'siren';
+export type SoundKind = 'stamp' | 'open' | 'rev' | 'click' | 'flip' | 'step' | 'summit' | 'hover' | 'whoosh' | 'siren' | 'crash' | 'skid';
 export interface Filter { type: 'lowpass' | 'highpass' | 'bandpass'; freq: number; q?: number }
 export interface Tone { wave: 'sine' | 'triangle' | 'square' | 'sawtooth' | 'noise'; from: number; to: number; at: number; length: number; gain: number; filter?: Filter }
 
@@ -14,7 +14,7 @@ export const stepFrequency = (level: number) => {
 };
 
 /** Minimum gap in milliseconds between two plays of the same sound, so fast scrolling or hovering stays pleasant. */
-export const MIN_GAP: Record<SoundKind, number> = { stamp: 150, open: 150, rev: 150, click: 40, flip: 150, step: 70, summit: 400, hover: 90, whoosh: 500, siren: 400 };
+export const MIN_GAP: Record<SoundKind, number> = { stamp: 150, open: 150, rev: 150, click: 40, flip: 150, step: 70, summit: 400, hover: 90, whoosh: 500, siren: 400, crash: 300, skid: 600 };
 
 export function soundPlan(kind: SoundKind, level = 0): Tone[] {
   switch (kind) {
@@ -73,6 +73,18 @@ export function soundPlan(kind: SoundKind, level = 0): Tone[] {
       { wave: 'triangle', from: 1280, to: 1960, at: 0, length: 0.23, gain: 0.25 },
       { wave: 'triangle', from: 1960, to: 1280, at: 0.23, length: 0.23, gain: 0.25 },
     ];
+    // Metal on metal: a heavy thud, a crunch of noise and a short rattle.
+    case 'crash': return [
+      { wave: 'sine', from: 150, to: 45, at: 0, length: 0.3, gain: 1 },
+      { wave: 'noise', from: 0, to: 0, at: 0, length: 0.35, gain: 0.85, filter: { type: 'lowpass', freq: 2400 } },
+      { wave: 'square', from: 420, to: 90, at: 0.02, length: 0.14, gain: 0.45, filter: { type: 'lowpass', freq: 1800 } },
+      { wave: 'noise', from: 0, to: 0, at: 0.16, length: 0.2, gain: 0.45, filter: { type: 'bandpass', freq: 3200, q: 1.2 } },
+    ];
+    // Tyres sliding: a rising scream of filtered noise over a thin whine.
+    case 'skid': return [
+      { wave: 'noise', from: 0, to: 0, at: 0, length: 0.42, gain: 0.7, filter: { type: 'bandpass', freq: 2300, q: 3 } },
+      { wave: 'sawtooth', from: 900, to: 1350, at: 0, length: 0.4, gain: 0.25, filter: { type: 'bandpass', freq: 1500, q: 2 } },
+    ];
     // Poster turned over: a paper swish and a soft tap.
     case 'flip': return [
       { wave: 'noise', from: 0, to: 0, at: 0, length: 0.16, gain: 0.7, filter: { type: 'bandpass', freq: 2600, q: 0.7 } },
@@ -81,7 +93,7 @@ export function soundPlan(kind: SoundKind, level = 0): Tone[] {
   }
 }
 
-export const SOUND_KINDS: SoundKind[] = ['stamp', 'open', 'rev', 'click', 'flip', 'step', 'summit', 'hover', 'whoosh', 'siren'];
+export const SOUND_KINDS: SoundKind[] = ['stamp', 'open', 'rev', 'click', 'flip', 'step', 'summit', 'hover', 'whoosh', 'siren', 'crash', 'skid'];
 
 /** Total length in seconds, for tests and for closing nodes. */
 export const planLength = (kind: SoundKind, level = 0) => Math.max(...soundPlan(kind, level).map((t) => t.at + t.length));
