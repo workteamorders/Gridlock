@@ -64,24 +64,118 @@ export function startJunction(canvas: HTMLCanvasElement) {
     texture.globalAlpha = 0.35;
     texture.fill(dots);
   }
+  const display = color('--font-display');
+  /** A soft round glow, built from stacked faint discs so no colour with transparency is needed. */
+  const glowSprite = (tint: string) => {
+    const c = document.createElement('canvas');
+    c.width = 64;
+    c.height = 64;
+    const g = c.getContext('2d');
+    if (g) {
+      g.fillStyle = tint;
+      g.globalAlpha = 0.07;
+      for (let r = 30; r >= 6; r -= 4) { g.beginPath(); g.arc(32, 32, r, 0, Math.PI * 2); g.fill(); }
+    }
+    return c;
+  };
+  const glows = { yellow: glowSprite(yellow), red: glowSprite(red), green: glowSprite(green) };
+  /** Headlight cone, drawn in front of a car. Fades out along its length in slices. */
+  const beam = document.createElement('canvas');
+  beam.width = 96;
+  beam.height = 64;
+  const beamContext = beam.getContext('2d');
+  if (beamContext) {
+    beamContext.fillStyle = yellow;
+    for (let k = 0; k < 16; k++) {
+      const x0 = k * 6;
+      const x1 = x0 + 6.5;
+      const half0 = 4 + (x0 / 96) * 14;
+      const half1 = 4 + (x1 / 96) * 14;
+      beamContext.globalAlpha = 0.3 * (1 - k / 16) ** 1.4;
+      beamContext.beginPath();
+      beamContext.moveTo(x0, 32 - half0);
+      beamContext.lineTo(x1, 32 - half1);
+      beamContext.lineTo(x1, 32 + half1);
+      beamContext.lineTo(x0, 32 + half0);
+      beamContext.fill();
+    }
+  }
+  /** Comic shading: a field of small dots, laid over the lower half of each car. */
+  const shade = new Path2D();
+  for (let row = 1; row < 15; row += 3) {
+    for (let col = -32; col < 32; col += 3) {
+      const offset = (row / 3) % 2 ? 1.5 : 0;
+      shade.moveTo(col + offset + 0.8, row);
+      shade.arc(col + offset, row, 0.8, 0, Math.PI * 2);
+    }
+  }
+  const SPRITE_SCALE = 2;
   const sprites = Array.from({ length: approaches.length * CARS_PER_APPROACH }, (_, i) => {
     const sprite = document.createElement('canvas');
-    sprite.width = 72;
-    sprite.height = 42;
+    sprite.width = 72 * SPRITE_SCALE;
+    sprite.height = 42 * SPRITE_SCALE;
     const g = sprite.getContext('2d');
     if (!g) return sprite;
+    g.scale(SPRITE_SCALE, SPRITE_SCALE);
     g.translate(36, 21);
-    g.fillStyle = border;
-    g.fillRect(-23, -15, 9, 30);
-    g.fillRect(11, -15, 9, 30);
-    g.strokeStyle = ink;
-    g.lineWidth = 4;
-    g.stroke(bodies[i % bodies.length]!);
-    g.fillStyle = paint[i % paint.length]!;
-    g.fill(bodies[i % bodies.length]!);
+    const body = bodies[i % bodies.length]!;
+    const glassShape = glass[i % glass.length]!;
+    // Ink drop shadow, offset like a printed second plate.
+    g.save();
+    g.translate(2.5, 3);
     g.fillStyle = ink;
-    g.fill(glass[i % glass.length]!);
+    g.fill(body);
+    g.restore();
+    // Wheels poke out above and below the body.
+    g.fillStyle = ink;
+    g.strokeStyle = border;
+    g.lineWidth = 1.2;
+    for (const wheel of [-25, 10]) {
+      for (const top of [-16, 8]) {
+        g.fillRect(wheel, top, 13, 8);
+        g.strokeRect(wheel, top, 13, 8);
+      }
+    }
+    g.fillStyle = paint[i % paint.length]!;
+    g.fill(body);
+    // Halftone shade on the lower half, clipped to the body.
+    g.save();
+    g.clip(body);
+    g.fillStyle = ink;
+    g.globalAlpha = 0.42;
+    g.fill(shade);
+    g.restore();
+    g.strokeStyle = ink;
+    g.lineWidth = 3;
+    g.lineJoin = 'round';
+    g.stroke(body);
+    // Glass with two glare strokes, then the livery.
+    g.fillStyle = ink;
+    g.fill(glassShape);
+    g.save();
+    g.clip(glassShape);
+    g.strokeStyle = cream;
+    g.globalAlpha = 0.55;
+    g.lineWidth = 1.4;
+    g.beginPath();
+    g.moveTo(-14, 10); g.lineTo(-2, -10);
+    g.moveTo(-8, 10); g.lineTo(4, -10);
+    g.stroke();
+    g.restore();
+    g.fillStyle = ink;
     g.fill(stripes[i % stripes.length]!);
+    // Specular streak along the roof edge, and two warm headlights at the nose.
+    g.strokeStyle = cream;
+    g.globalAlpha = 0.85;
+    g.lineWidth = 1.4;
+    g.lineCap = 'round';
+    g.beginPath();
+    g.moveTo(-16, -11); g.lineTo(6, -11);
+    g.stroke();
+    g.globalAlpha = 1;
+    g.fillStyle = yellow;
+    g.fillRect(27, -9, 3, 4);
+    g.fillRect(27, 5, 3, 4);
     return sprite;
   });
   const cars = Array.from({ length: approaches.length * CARS_PER_APPROACH }, (_, i) => ({
@@ -89,7 +183,13 @@ export function startJunction(canvas: HTMLCanvasElement) {
     lane: LANE,
     speed: 0,
     cruise: 117 + i % 4 * 9,
+    puffAt: 0,
+    honked: false,
   }));
+  const puffs: { x: number; y: number; vx: number; vy: number; born: number }[] = [];
+  const bursts: { x: number; y: number; word: string; born: number; rot: number }[] = [];
+  let lastBurst = -1e9;
+  let lastGreen = -1;
   const cones = approaches.map(() => ({ pos: 0, until: 0 }));
   const debug = /^(debug|off)$/.test(new URLSearchParams(location.search).get('motion') ?? '')
     ? { frames: 0, times: [] as number[], interactions: 0, brakes: 0, cones: 0, detours: 0, axis: 0 }
@@ -161,6 +261,153 @@ export function startJunction(canvas: HTMLCanvasElement) {
       for (let lane = -54; lane < 55; lane += 14) g.fillRect(-56, lane, 10, 6);
       g.restore();
     }
+    drawScenery(g);
+  }
+
+  /** Details that never move, painted once into the map: rooftops, trees, lamps, skid marks. */
+  function drawScenery(g: CanvasRenderingContext2D) {
+    // Rooftops: an air-conditioning unit and a halftone shadow on the right half of each roof.
+    for (let i = 0; i < 4; i++) {
+      const left = i % 2 ? 374 : 22;
+      const top = i < 2 ? 16 : 267;
+      g.save();
+      g.beginPath();
+      g.rect(left + 83, top, 81, 64);
+      g.clip();
+      g.fillStyle = ink;
+      g.globalAlpha = 0.34;
+      for (let row = top + 3; row < top + 64; row += 6) for (let col = left + 85 + (row % 12 ? 3 : 0); col < left + 164; col += 6) g.fillRect(col, row, 2, 2);
+      g.restore();
+      g.fillStyle = ink;
+      g.fillRect(left + 133, top + 40, 22, 17);
+      g.fillStyle = border;
+      g.fillRect(left + 131, top + 38, 22, 17);
+      g.strokeStyle = ink;
+      g.lineWidth = 2;
+      g.strokeRect(left + 131, top + 38, 22, 17);
+      g.beginPath();
+      g.arc(left + 142, top + 46.5, 5.5, 0, Math.PI * 2);
+      g.stroke();
+      g.beginPath();
+      g.moveTo(left + 137, top + 46.5); g.lineTo(left + 147, top + 46.5);
+      g.moveTo(left + 142, top + 41.5); g.lineTo(left + 142, top + 51.5);
+      g.stroke();
+    }
+    // Round comic trees with an ink shadow, halftone shade and a highlight.
+    const trees: [number, number, number][] = [[44, 99, 11], [112, 101, 9], [488, 99, 11], [420, 101, 9], [60, 342, 11], [150, 344, 9], [500, 342, 11], [412, 344, 9]];
+    for (const [tx, ty, r] of trees) {
+      g.fillStyle = ink;
+      g.beginPath(); g.arc(tx + 3, ty + 3, r, 0, Math.PI * 2); g.fill();
+      g.fillStyle = green;
+      g.beginPath(); g.arc(tx, ty, r, 0, Math.PI * 2); g.fill();
+      g.save();
+      g.beginPath(); g.arc(tx, ty, r, 0, Math.PI * 2); g.clip();
+      g.fillStyle = ink;
+      g.globalAlpha = 0.4;
+      for (let row = -r; row <= r; row += 3) for (let col = -r + (row % 2 ? 1.5 : 0); col <= r; col += 3) if (col + row > 1) g.fillRect(tx + col, ty + row, 1.4, 1.4);
+      g.restore();
+      g.strokeStyle = ink;
+      g.lineWidth = 2;
+      g.beginPath(); g.arc(tx, ty, r, 0, Math.PI * 2); g.stroke();
+      g.strokeStyle = cream;
+      g.globalAlpha = 0.7;
+      g.lineWidth = 1.4;
+      g.beginPath(); g.arc(tx, ty, r - 3, Math.PI * 1.1, Math.PI * 1.45); g.stroke();
+      g.globalAlpha = 1;
+    }
+    // Street lamps at the four corners, each with a warm pool of light on the road.
+    for (const [lx, ly] of [[210, 108], [350, 108], [210, 252], [350, 252]] as const) {
+      g.globalAlpha = 0.9;
+      g.drawImage(glows.yellow, lx - 32, ly - 32, 64, 64);
+      g.globalAlpha = 1;
+      g.fillStyle = ink;
+      g.beginPath(); g.arc(lx, ly, 4.5, 0, Math.PI * 2); g.fill();
+      g.fillStyle = yellow;
+      g.beginPath(); g.arc(lx, ly, 2.6, 0, Math.PI * 2); g.fill();
+    }
+    // Skid marks before each stop line.
+    g.strokeStyle = ink;
+    g.globalAlpha = 0.7;
+    g.lineWidth = 2;
+    for (const approach of approaches) {
+      g.save();
+      g.translate(MID_X, MID_Y);
+      g.rotate(approach.angle);
+      for (const lane of [LANE - 4, LANE + 4, -LANE - 6]) {
+        g.beginPath();
+        g.moveTo(STOP - 34, lane); g.lineTo(STOP - 6, lane + 0.6);
+        g.stroke();
+      }
+      g.restore();
+    }
+    g.globalAlpha = 1;
+  }
+
+  const widths = new Map<string, number>();
+  function say(word: string, wx: number, wy: number) {
+    if (effects < 8 || bursts.length >= 3 || time - lastBurst < 800) return;
+    lastBurst = time;
+    bursts.push({ x: wx, y: wy, word, born: time, rot: ((bursts.length + Math.floor(time / 100)) % 3 - 1) * 0.12 });
+  }
+
+  /** Comic word balloons and exhaust clouds are drawn in map coordinates, over the cars. */
+  function drawEffects(g: CanvasRenderingContext2D) {
+    for (let k = puffs.length - 1; k >= 0; k--) {
+      const puff = puffs[k]!;
+      const age = (time - puff.born) / 650;
+      if (age >= 1) { puffs.splice(k, 1); continue; }
+      const r = 2.5 + age * 7;
+      const px = puff.x + puff.vx * age;
+      const py = puff.y + puff.vy * age;
+      g.globalAlpha = 0.85 * (1 - age);
+      g.fillStyle = cream;
+      g.strokeStyle = ink;
+      g.lineWidth = 1.4;
+      for (const [dx, dy, scale] of [[-r * 0.6, 0, 0.75], [r * 0.5, -r * 0.2, 0.85], [0, r * 0.5, 0.7]] as const) {
+        g.beginPath();
+        g.arc(px + dx, py + dy, r * scale, 0, Math.PI * 2);
+        g.fill();
+        g.stroke();
+      }
+    }
+    g.globalAlpha = 1;
+    g.font = `700 13px ${display}`;
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    for (let k = bursts.length - 1; k >= 0; k--) {
+      const b = bursts[k]!;
+      const age = (time - b.born) / 900;
+      if (age >= 1) { bursts.splice(k, 1); continue; }
+      let width = widths.get(b.word);
+      if (width === undefined) { width = g.measureText(b.word).width; widths.set(b.word, width); }
+      const pop = age < 0.18 ? 0.5 + age * 2.8 : 1;
+      const rx = width / 2 + 11;
+      const ry = 17;
+      g.save();
+      g.translate(b.x, b.y - age * 10);
+      g.rotate(b.rot);
+      g.scale(pop, pop);
+      g.globalAlpha = age > 0.7 ? (1 - age) / 0.3 : 1;
+      g.beginPath();
+      for (let n = 0; n < 20; n++) {
+        const angle = (n / 20) * Math.PI * 2;
+        const spike = n % 2 ? 0.74 : 1;
+        g.lineTo(Math.cos(angle) * rx * spike, Math.sin(angle) * ry * spike);
+      }
+      g.closePath();
+      g.fillStyle = ink;
+      g.save(); g.translate(2, 2.5); g.fill(); g.restore();
+      g.fillStyle = yellow;
+      g.fill();
+      g.strokeStyle = ink;
+      g.lineWidth = 2;
+      g.lineJoin = 'round';
+      g.stroke();
+      g.fillStyle = ink;
+      g.fillText(b.word, 0, 1);
+      g.restore();
+    }
+    g.globalAlpha = 1;
   }
 
   function draw(g: CanvasRenderingContext2D, delta: number) {
@@ -168,6 +415,11 @@ export function startJunction(canvas: HTMLCanvasElement) {
     const axis = phase < SIGNAL_PHASE ? 0 : 1;
     const greenNow = phase % SIGNAL_PHASE < GREEN_TIME;
     if (debug) debug.axis = greenNow ? axis : -1;
+    const greenAxis = greenNow ? axis : -1;
+    if (delta && greenAxis !== lastGreen) {
+      lastGreen = greenAxis;
+      if (greenAxis >= 0) { const lead = approaches[greenAxis]!; say('VROOM!', MID_X + lead.x * (STOP + 22), MID_Y + lead.y * (STOP + 22) + lead.x * 40); }
+    }
     g.drawImage(map, 0, 0, WIDTH, HEIGHT);
 
     if (x >= 0 && effects >= 8) {
@@ -197,6 +449,11 @@ export function startJunction(canvas: HTMLCanvasElement) {
       g.fillRect(-80, 67, 10, 9);
       g.fillStyle = open ? green : roof;
       g.fillRect(-65, 67, 10, 9);
+      if (effects >= 8) {
+        g.globalAlpha = 0.85;
+        g.drawImage(open ? glows.green : glows.red, open ? -80 : -95, 51, 40, 40);
+        g.globalAlpha = 1;
+      }
 
       const first = i * CARS_PER_APPROACH;
       const end = first + CARS_PER_APPROACH;
@@ -215,11 +472,30 @@ export function startJunction(canvas: HTMLCanvasElement) {
         const targetLane = detour || nearPointer ? DETOUR : LANE;
         car.lane += (targetLane - car.lane) * Math.min(1, delta / 155);
         const braking = nearPointer || (detour && Math.abs(targetLane - car.lane) > 5);
+        if (nearPointer || detour) {
+          if (!car.honked) {
+            car.honked = true;
+            const wx = MID_X + approach.x * car.pos - approach.y * car.lane;
+            const wy = MID_Y + approach.y * car.pos + approach.x * car.lane;
+            say(nearPointer ? 'BEEP!' : 'SCREECH!', wx - approach.y * 6, wy - 26);
+          }
+        } else car.honked = false;
         const speed = braking ? 44 : car.cruise;
         car.speed += (speed - car.speed) * Math.min(1, delta / (braking ? 75 : 270));
         if (debug && delta && braking) debug.brakes++;
         if (debug && delta && detour && car.lane > LANE + 10) debug.detours++;
         car.pos = Math.max(car.pos, Math.min(limit, car.pos + car.speed * delta / 1000));
+        // Pulling away from the stop line: a puff of exhaust behind the car.
+        if (effects >= 8 && delta && open && car.speed > 12 && car.speed < 85 && car.pos < -20 && time - car.puffAt > 130 && puffs.length < 24) {
+          car.puffAt = time;
+          puffs.push({
+            x: MID_X + approach.x * (car.pos - 24) - approach.y * car.lane,
+            y: MID_Y + approach.y * (car.pos - 24) + approach.x * car.lane,
+            vx: -approach.x * 10 + approach.y * 4,
+            vy: -approach.y * 10 - 7,
+            born: time,
+          });
+        }
         if (car.pos > approach.end) {
           // Re-enter behind the last car on the same approach.
           car.pos = -approach.end;
@@ -234,7 +510,22 @@ export function startJunction(canvas: HTMLCanvasElement) {
           g.fillRect(-44, -10, 14, 3);
           g.fillRect(-44, 7, 14, 3);
         }
-        g.drawImage(sprites[j]!, -36, -21);
+        if (effects >= 8 && car.speed > 25) {
+          // Headlight cone in front and, when fast, a few speed lines behind.
+          g.globalAlpha = Math.min(0.9, car.speed / 80);
+          g.drawImage(beam, 30, -32, 96, 64);
+          g.globalAlpha = 1;
+          if (car.speed > 100) {
+            g.fillStyle = cream;
+            g.globalAlpha = 0.55;
+            const reach = 14 + (car.speed - 100) * 0.9;
+            g.fillRect(-46 - reach, -9, reach, 2);
+            g.fillRect(-46 - reach * 0.7, 0, reach * 0.7, 2);
+            g.fillRect(-46 - reach * 0.85, 8, reach * 0.85, 2);
+            g.globalAlpha = 1;
+          }
+        }
+        g.drawImage(sprites[j]!, -36, -21, 72, 42);
         g.fillStyle = braking || car.pos >= limit ? red : cream;
         g.fillRect(-29, -7, 4, 4);
         g.fillRect(-29, 3, 4, 4);
@@ -255,6 +546,7 @@ export function startJunction(canvas: HTMLCanvasElement) {
       }
       g.restore();
     }
+    if (effects >= 8) drawEffects(g);
     if (debug) debug.frames++;
   }
 
