@@ -82,3 +82,5 @@
 @media (760px <= width < 1050px) {
   .comic-wanted { grid-template-columns: minmax(0, 1fr); }
 }
+
+.comic-wanted-note { grid-column: 1 / -1; justify-self: start; }

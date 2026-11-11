@@ -5,10 +5,13 @@ import { useEffect, useState } from 'react';
 import { readPreview, svgToDataUri } from '@/lib/chain';
 import { CardImage } from './CardImage';
 import { useChain } from '@/lib/chain-context';
-import { nextOpening, openRung } from '@/lib/ladder-view';
+import { nextOpening, openRung, toRungData } from '@/lib/ladder-view';
 import { formatEth, formatUtc } from '@/lib/format';
 import { Countdown } from './Countdown';
 import { Icon } from './Icon';
+import { exampleLadder } from '@/lib/mock';
+import { Ladder, LoadingLadder } from './Ladder';
+import { ChapterHead } from './stage/ChapterHead';
 import { RollNumber } from './stage/RollNumber';
 
 /** The wanted poster and ladder panels share one view of the current rank. */
@@ -43,16 +46,17 @@ export function HomeLadder() {
       <section className="comic-wanted" aria-labelledby="wanted-title">
         <header className="comic-wanted-copy stack-tight">
           <h2 id="wanted-title">Wanted</h2>
-          <p>{currentPreview ? `Rank ${currentPreview.rank} · next card` : 'Example poster'}</p>
+          <p>{currentPreview ? `Rank ${currentPreview.rank} · next card` : 'Example card'}</p>
         </header>
         <CardImage
           src={currentPreview?.src ?? '/art/example-card.svg'}
           example={!currentPreview}
           size={300}
-          alt={currentPreview ? `Wanted poster for the next car at rank ${currentPreview.rank}` : 'Illustrated wanted poster of an orange comic car'}
+          alt={currentPreview ? `Wanted poster for the next car at rank ${currentPreview.rank}` : 'Example wanted-poster card with an invented comic car. Not a real card.'}
         />
+        {!currentPreview ? <p className="comic-wanted-note dim">Real cards are drawn by the contract itself, each with its own car, paint and livery.</p> : null}
       </section>
-      <section id="ladder" className="comic-ladder stack" aria-labelledby="ladder-title">
+      <section id="ladder-summary" className="comic-ladder stack" aria-labelledby="ladder-title">
         <h2 id="ladder-title">The Ladder</h2>
         <div className="comic-ladder-status stack-tight" aria-busy={c.phase === 'loading'}>
           {live ? (
@@ -83,7 +87,7 @@ export function HomeLadder() {
               )}
             </>
           ) : c.phase === 'undeployed' ? (
-            <p>Gridlock is not deployed yet. See the Ladder for an example of the 15 ranks.</p>
+            <p>Gridlock is not deployed yet. The example below shows all 15 ranks.</p>
           ) : c.phase === 'error' ? (
             <p>Live ladder status is unavailable. The network is not answering.</p>
           ) : (
@@ -96,5 +100,33 @@ export function HomeLadder() {
         </nav>
       </section>
     </>
+  );
+}
+
+
+export function HomeRankDetails() {
+  const { phase, rungs } = useChain();
+
+  return (
+    <section id="ladder" className="wrap section home-ladder-section" aria-labelledby="ladder-detail-title">
+      <div className="hero-ladder">
+        <div className="stack">
+          <div className="panel panel--chapter stack-tight">
+            <ChapterHead n={1} id="ladder-detail-title" kicker="the ladder">Climb the ladder</ChapterHead>
+            <p>Lit rungs are open. A locked rung opens when the one before it sells out or times out.</p>
+          </div>
+          {phase === 'undeployed' ? (
+            <div className="panel panel--sample stack-tight">
+              <span className="badge badge--example">Example</span>
+              <p>Gridlock is not deployed yet. The ladder on this page shows the real caps with example prices and sales so you can see how it will work.</p>
+            </div>
+          ) : null}
+        </div>
+        {phase === 'ready' ? <Ladder live rungs={toRungData(rungs)} /> :
+          phase === 'undeployed' ? <Ladder rungs={exampleLadder()} /> :
+          phase === 'loading' ? <LoadingLadder rungs={exampleLadder()} /> :
+          <p className="panel panel--failure">Live ladder status is unavailable. The network is not answering.</p>}
+      </div>
+    </section>
   );
 }
