@@ -4,9 +4,11 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { readPreview, svgToDataUri } from '@/lib/chain';
 import { CardImage } from './CardImage';
+import { CardTilt } from './fx/CardTilt';
 import { useChain } from '@/lib/chain-context';
 import { nextOpening, openRung, toRungData } from '@/lib/ladder-view';
 import { formatEth, formatUtc } from '@/lib/format';
+import type { ReactNode } from 'react';
 import { Countdown } from './Countdown';
 import { Icon } from './Icon';
 import { exampleLadder } from '@/lib/mock';
@@ -15,7 +17,7 @@ import { ChapterHead } from './stage/ChapterHead';
 import { RollNumber } from './stage/RollNumber';
 
 /** The wanted poster and ladder panels share one view of the current rank. */
-export function HomeLadder() {
+export function HomeLadder({ exampleArt }: { exampleArt?: ReactNode }) {
   const c = useChain();
   const live = c.phase === 'ready';
   const rungs = live ? c.rungs : [];
@@ -48,12 +50,13 @@ export function HomeLadder() {
           <h2 id="wanted-title">Wanted</h2>
           <p>{currentPreview ? `Rank ${currentPreview.rank} · next card` : 'Example card'}</p>
         </header>
-        <CardImage
-          src={currentPreview?.src ?? '/art/example-card.svg'}
-          example={!currentPreview}
-          size={300}
-          alt={currentPreview ? `Wanted poster for the next car at rank ${currentPreview.rank}` : 'Example wanted-poster card with an invented comic car. Not a real card.'}
-        />
+        {currentPreview ? (
+          <CardImage src={currentPreview.src} size={300} priority alt={`Wanted poster for the next car at rank ${currentPreview.rank}`} />
+        ) : exampleArt ? (
+          <figure className="cardimg"><span className="badge badge--example">Example</span><CardTilt>{exampleArt}</CardTilt></figure>
+        ) : (
+          <CardImage src="/art/example-card.svg" example size={300} priority alt="Example wanted-poster card with an invented comic car. Not a real card." />
+        )}
         {!currentPreview ? <p className="comic-wanted-note dim">Real cards are drawn by the contract itself, each with its own car, paint and livery.</p> : null}
       </section>
       <section id="ladder-summary" className="comic-ladder stack" aria-labelledby="ladder-title">

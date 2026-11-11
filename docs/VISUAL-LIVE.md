@@ -11,7 +11,7 @@ Anggaran per rute 20 KB gzip tambahan. Canvas memakai 14 atau 36 mobil dengan DP
 
 ## Panggung (tambahan)
 
-Hero dinding poster, bab "Case File", pita rantai miring, scroll climb 15 anak tangga, intro stempel sekali per sesi, flip kartu, angka bergulir, tombol magnetik, suara sintesis (default mati) dan halftone WebGL. Semuanya diatur kontrol Motion kecuali suara yang punya tombol sendiri.
+Hero dinding poster, bab "Case File", pita rantai miring, scroll climb 15 anak tangga, gerbang satu tombol "Open the case" (menyalakan suara) lalu intro pita, stempel dan mobil sekali per sesi, flip kartu, angka bergulir, tombol magnetik, suara sintesis (default mati) dan halftone WebGL. Semuanya diatur kontrol Motion kecuali suara yang punya tombol sendiri.
 
 Hasil ukur build produksi lokal (Chrome headless, tanpa GPU):
 

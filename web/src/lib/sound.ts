@@ -13,6 +13,8 @@ function load() {
 }
 
 export const soundOn = () => { load(); return enabled; };
+/** What the visitor chose last time: null when they never chose, so "off" can be told apart from "never asked". */
+export const soundChoice = (): 'on' | 'off' | null => { try { const v = localStorage.getItem(key); return v === 'on' || v === 'off' ? v : null; } catch { return null; } };
 export const subscribeSound = (listener: () => void) => {
   window.addEventListener('gridlock:sound', listener);
   return () => window.removeEventListener('gridlock:sound', listener);
@@ -27,11 +29,12 @@ function context(): AudioContext | undefined {
   return ctx;
 }
 
-export function setSound(on: boolean) {
+/** `quiet` skips the confirmation sound, for callers that play their own. */
+export function setSound(on: boolean, quiet = false) {
   load();
   enabled = on;
   try { localStorage.setItem(key, on ? 'on' : 'off'); } catch {}
-  if (on) { void context()?.resume(); play('open'); }
+  if (on) { void context()?.resume(); if (!quiet) play('open'); }
   window.dispatchEvent(new Event('gridlock:sound'));
 }
 

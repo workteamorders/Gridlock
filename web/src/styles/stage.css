@@ -75,13 +75,24 @@ html[data-motion=full] .climb-pin { position: sticky; top: var(--header-h); min-
 html[data-motion=full] .climb-stage, html[data-motion=full] .climb-readout { display: block; }
 html[data-motion=full] .climb-list { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; columns: auto; }
 
-/* intro: one slam, never blocks input */
-.intro { position: fixed; inset: 0; z-index: 30; pointer-events: none; display: grid; place-items: center; overflow: hidden; animation: intro-life var(--intro-dur) linear both; }
-.intro-tape { position: absolute; inset-inline: -10%; top: 50%; height: var(--s-8); translate: 0 -50%; transform: rotate(var(--tilt)); background: var(--action) url('/art/hazard.svg') repeat-x center; animation: intro-tape 420ms var(--ease-out) both; }
-.intro-stamp { position: relative; font-family: var(--font-display); font-size: var(--fs-hero); text-transform: uppercase; color: var(--text-on-brush); background: var(--brush); border: var(--line-w-strong) solid var(--line); padding: var(--s-2) var(--s-5); box-shadow: var(--plate-shadow); transform: rotate(calc(var(--tilt) * 2)); animation: intro-slam 260ms var(--ease-out) 200ms both; }
+/* intro: a gate that asks for one press (so sound is allowed), then 2.4 s of tape, stamp and a car driving past; the page is wiped in behind it */
+.intro { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; overflow: hidden; background: var(--surface); }
+.intro--play { pointer-events: none; animation: intro-life var(--intro-dur) linear both; }
+.intro-tape { position: absolute; inset-inline: -10%; top: 50%; height: var(--s-8); translate: 0 -50%; transform: rotate(var(--tilt)); background: var(--action) url('/art/hazard.svg') repeat-x center; }
+.intro--play .intro-tape { animation: intro-tape 420ms var(--ease-out) both; }
+.intro--gate .intro-tape { opacity: 0.35; }
+.intro-stamp { position: relative; font-family: var(--font-display); font-size: var(--fs-hero); text-transform: uppercase; color: var(--text-on-brush); background: var(--brush); border: var(--line-w-strong) solid var(--line); padding: var(--s-2) var(--s-5); box-shadow: var(--plate-shadow); transform: rotate(calc(var(--tilt) * 2)); animation: intro-slam 260ms var(--ease-out) 600ms both; }
+.intro-run { position: absolute; left: 0; bottom: 18%; display: flex; align-items: center; width: clamp(240px, 34vw, 440px); animation: intro-drive 760ms cubic-bezier(0.5, 0, 0.9, 0.6) 1250ms both; }
+.intro-car { width: 100%; height: auto; aspect-ratio: 290 / 106; display: block; }
+.intro-speed { position: absolute; right: 100%; top: 30%; bottom: 30%; width: 60vw; background: repeating-linear-gradient(0deg, var(--action) 0 var(--s-1), transparent var(--s-1) var(--s-3)); opacity: 0.8; }
+.gate-card { position: relative; max-width: min(32rem, calc(100vw - var(--s-6))); text-align: center; align-items: center; box-shadow: var(--plate-shadow); transform: rotate(var(--tilt)); }
+.gate-title { font-family: var(--font-display); font-size: var(--fs-32); text-transform: uppercase; }
+.gate-note { font-size: var(--fs-14); }
+.gate-actions { display: flex; flex-wrap: wrap; gap: var(--s-3); justify-content: center; }
 @keyframes intro-tape { from { transform: translateX(-110%) rotate(var(--tilt)); } }
 @keyframes intro-slam { from { transform: scale(2.2) rotate(calc(var(--tilt) * 6)); opacity: 0; } }
-@keyframes intro-life { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes intro-drive { from { translate: -110% 0; } to { translate: 100vw 0; } }
+@keyframes intro-life { 0%, 83% { clip-path: inset(0 0 0 0); } 100% { clip-path: inset(0 0 0 100%); } }
 
 /* flip card: a turn in full motion, a plain swap otherwise */
 .flip { display: grid; max-width: 300px; }

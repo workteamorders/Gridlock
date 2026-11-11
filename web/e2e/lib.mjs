@@ -62,8 +62,10 @@ export async function launch() {
     ? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' : '/usr/bin/google-chrome'), args: ['--no-sandbox'] });
   return browser;
 }
-export async function newPage(browser, { wallet = false, width = 1280, height = 900, reducedMotion = 'no-preference', headers = {} } = {}) {
+export async function newPage(browser, { wallet = false, width = 1280, height = 900, reducedMotion = 'no-preference', headers = {}, intro = false } = {}) {
   const ctx = await browser.newContext({ viewport: { width, height }, reducedMotion, extraHTTPHeaders: headers });
+  // The first-visit gate would cover every page of every test, so it is marked as already seen unless a test asks for it.
+  if (!intro) await ctx.addInitScript(() => { try { sessionStorage.setItem('gridlock.intro', '1'); } catch {} });
   if (wallet) await ctx.addInitScript(MOCK_WALLET(ACCOUNT));
   const page = await ctx.newPage();
   const errors = [];

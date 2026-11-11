@@ -8,6 +8,7 @@ import { SupplyChart } from '@/components/SupplyChart';
 import { ChainRibbon } from '@/components/stage/ChainRibbon';
 import { LadderClimb } from '@/components/stage/LadderClimb';
 import { ChapterHead } from '@/components/stage/ChapterHead';
+import { ExampleCardArt } from '@/components/stage/ExampleCardArt';
 
 export const metadata: Metadata = { title: 'Gridlock: 2,475 wanted-poster cars, one ladder', alternates: { canonical: '/' } };
 
@@ -20,7 +21,7 @@ export default function HomePage() {
             <Link className="btn btn--primary btn--sm comic-ladder-shortcut" href="/ladder/">See the Ladder</Link>
           } />
         </section>
-        <HomeLadder />
+        <HomeLadder exampleArt={<ExampleCardArt />} />
       </div>
       <HomeRankDetails />
       <ChainRibbon />

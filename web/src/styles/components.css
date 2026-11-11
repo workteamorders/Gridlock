@@ -265,6 +265,8 @@ dialog.drawer[open] { animation: slide-in var(--dur-panel) var(--ease-out); }
 .cardimg { position: relative; margin: 0; max-width: 300px; }
 .cardimg img { display: block; width: 100%; height: auto; aspect-ratio: 300 / 420; }
 .cardimg .badge { position: absolute; top: var(--s-2); left: var(--s-2); z-index: 1; }
+.cardimg-inline { display: block; }
+.cardimg-inline svg { display: block; width: 100%; height: auto; aspect-ratio: 300 / 420; }
 .cardimg-ph { aspect-ratio: 300 / 420; width: 100%; }
 .gate-sk { height: 160px; }
 .gate-empty { min-height: 160px; }

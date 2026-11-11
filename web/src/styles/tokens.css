@@ -149,7 +149,7 @@
 
 /* stage: intro, flip, misregistration */
 :root {
-  --intro-dur: 1300ms;
+  --intro-dur: 2400ms;
   --flip-dur: 520ms;
   --misreg: 4px;
 }
