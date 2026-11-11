@@ -369,6 +369,29 @@ try {
     for (const x of [p, muted, esc, reduced, off, inner]) await x.context().close();
   });
 
+  await step('junction: rests under the intro, keeps moving after it, and starts again after a slow stretch', async () => {
+    const p = await newPage(browser, { intro: true });
+    await p.goto(`${SITE}/?motion=debug`); await p.waitForSelector('.intro--gate');
+    const frames = () => p.evaluate(() => window.__fx?.frames ?? 0);
+    await p.waitForTimeout(600);
+    const gateA = await frames(); await p.waitForTimeout(500);
+    assert.equal(await frames(), gateA, 'nothing is drawn under the gate');
+    await p.getByRole('button', { name: 'Open the case' }).click();
+    await p.waitForFunction(() => !document.querySelector('.intro'), null, { timeout: 5000 });
+    const after = await frames(); await p.waitForTimeout(800);
+    assert.ok(await frames() > after + 20, 'the junction runs after the intro');
+    // Starve the page of CPU until the engine gives up, then give it back: it must resume by itself.
+    const cdp = await p.context().newCDPSession(p);
+    await cdp.send('Emulation.setCPUThrottlingRate', { rate: 40 });
+    await p.waitForFunction(() => document.querySelector('[data-running]') === null, null, { timeout: 20000 });
+    await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 });
+    await p.waitForFunction(() => document.querySelector('[data-running]') !== null, null, { timeout: 15000 });
+    const resumed = await frames(); await p.waitForTimeout(800);
+    assert.ok(await frames() > resumed + 20, 'the junction keeps moving after it recovers');
+    assert.deepEqual(p.errors, []);
+    await p.context().close();
+  });
+
   await step('ribbon: live numbers equal the ones read from the chain, and the track is hidden from screen readers', async () => {
     const p = await newPage(browser);
     await p.goto(SITE); await p.waitForSelector('text=Minted so far');

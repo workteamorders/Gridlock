@@ -17,5 +17,7 @@ export function frameGovernor(initial: number) {
       return count;
     },
     pause() { elapsed = 0; frames = 0; slowWindows = 0; },
+    /** Back to the full effect count, for a second try after the scene gave up. */
+    reset() { count = initial; elapsed = 0; frames = 0; slowWindows = 0; },
   };
 }

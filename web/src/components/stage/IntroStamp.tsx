@@ -11,6 +11,14 @@ const CUES: [number, 'whoosh' | 'stamp' | 'rev'][] = [[0, 'whoosh'], [600, 'stam
 
 type Phase = 'idle' | 'gate' | 'play';
 
+/** Tells the live scenes underneath (the junction) to rest while the intro covers them, and to start fresh when it ends. */
+function setCovered(on: boolean) {
+  const root = document.documentElement;
+  if (on === root.hasAttribute('data-intro')) return;
+  if (on) root.setAttribute('data-intro', 'on'); else root.removeAttribute('data-intro');
+  window.dispatchEvent(new Event('gridlock:intro'));
+}
+
 /**
  * Once per session on the home page, in full motion only: a gate asks for one press (a press is what lets the browser
  * play sound), then tape, stamp and a car drive past with sound while the page is wiped in. Nothing is asked: sound just
@@ -97,6 +105,11 @@ export function IntroStamp() {
       window.removeEventListener('gridlock:motion', finish);
     };
   }, [phase, finish]);
+
+  useEffect(() => {
+    setCovered(phase !== 'idle');
+    return () => setCovered(false);
+  }, [phase]);
 
   if (phase === 'gate') {
     return (

@@ -48,3 +48,12 @@ test('paused time and isolated slow windows do not stop traffic', () => {
   assert.equal(sample(g, 16, 125), 9);
   assert.equal(sample(g, 40, 50), 6);
 });
+
+test('a governor that gave up can be reset for another try', () => {
+  const g = frameGovernor(36);
+  assert.equal(sample(g, 40, 50), 25);
+  assert.equal(sample(g, 40, 50), 0);
+  assert.equal(g.sample(16), 0, 'it stays at zero until it is reset');
+  g.reset();
+  assert.equal(sample(g, 16, 125), 36);
+});

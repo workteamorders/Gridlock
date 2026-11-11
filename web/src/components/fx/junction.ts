@@ -15,6 +15,9 @@ const GREEN_TIME = 4500;
 const CLEAR_TIME = 1700;
 const SIGNAL_PHASE = GREEN_TIME + CLEAR_TIME;
 const CONE_LIFE = 4600;
+/** A slow stretch stops the animation, but not for good: it tries again after this long, up to RETRIES times. */
+const RETRY_AFTER = 6000;
+const RETRIES = 4;
 const approaches = [
   { x: 1, y: 0, angle: 0, end: MID_X + 32 },
   { x: 0, y: 1, angle: Math.PI / 2, end: MID_Y + 32 },
@@ -103,6 +106,8 @@ export function startJunction(canvas: HTMLCanvasElement) {
   let visible = true;
   let active = false;
   let exhausted = false;
+  let retries = 0;
+  let retryTimer = 0;
   let effects = cars.length;
   let nextApproach = 0;
   let sized = false;
@@ -263,6 +268,8 @@ export function startJunction(canvas: HTMLCanvasElement) {
         exhausted = true;
         sync();
         draw(ctx!, 0);
+        // The slow stretch may have been a one-off (a tab in the background, another page busy), so look again later.
+        if (retries < RETRIES) retryTimer = window.setTimeout(() => { retries++; exhausted = false; governor.reset(); effects = cars.length; sync(); }, RETRY_AFTER);
         return;
       }
     }
@@ -274,7 +281,8 @@ export function startJunction(canvas: HTMLCanvasElement) {
 
   function sync() {
     const mode = document.documentElement.dataset.motion;
-    const run = visible && mode === 'full' && !exhausted;
+    // The entry intro covers the page, so nothing underneath is drawn while it runs and its frames are never counted against this scene.
+    const run = visible && mode === 'full' && !exhausted && !document.documentElement.dataset.intro;
     if (run && !active) frameId = requestAnimationFrame(frame);
     if (!run && active) {
       cancelAnimationFrame(frameId);
@@ -363,6 +371,7 @@ export function startJunction(canvas: HTMLCanvasElement) {
   canvas.addEventListener('gridlock:cone', drop);
   window.addEventListener('resize', resize);
   window.addEventListener('gridlock:motion', sync);
+  window.addEventListener('gridlock:intro', sync);
   resize();
   sync();
 
@@ -379,6 +388,8 @@ export function startJunction(canvas: HTMLCanvasElement) {
     canvas.removeEventListener('gridlock:cone', drop);
     window.removeEventListener('resize', resize);
     window.removeEventListener('gridlock:motion', sync);
+    window.removeEventListener('gridlock:intro', sync);
+    window.clearTimeout(retryTimer);
     if (host.__fx === debug) delete host.__fx;
   };
 }
