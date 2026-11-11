@@ -29,6 +29,7 @@ export function LadderView() {
       <Gate needs={example ? 'none' : 'ready'}>
         {live ? <p className="dim num">{total} of {caps} ladder cars minted.</p> : null}
         <Ladder
+          live={live}
           rungs={live ? toRungData(c.rungs) : exampleLadder()}
           ctaFor={live ? (r) => (r.status === 'open' && !disabled ? <Link className="btn btn--primary btn--sm" href={`/mint/?rank=${r.rank}`}>Mint rank {r.rank}</Link> : null) : undefined}
         />

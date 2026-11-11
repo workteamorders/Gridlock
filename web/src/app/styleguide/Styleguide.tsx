@@ -1,5 +1,10 @@
 'use client';
 
+import { MotionButton } from '@/components/fx/Motion';
+import { ResultStamp } from '@/components/fx/ResultStamp';
+import { StatusArt } from '@/components/fx/StatusArt';
+import { CardTilt } from '@/components/fx/CardTilt';
+import { CardImage } from '@/components/CardImage';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/Button';
 import { CardArt } from '@/components/CardArt';
@@ -9,7 +14,7 @@ import { Field } from '@/components/Field';
 import { HeatStars } from '@/components/HeatStars';
 import { Icon } from '@/components/Icon';
 import { Ladder } from '@/components/Ladder';
-import { SiteHeader } from '@/components/SiteHeader';
+import { Shell } from '@/components/Shell';
 import { DeadEnd, Detour, SpeedLimit, StopSign, TollGate, YieldSign } from '@/components/Signs';
 import { SupplyChart } from '@/components/SupplyChart';
 import { useToast } from '@/components/Toast';
@@ -103,9 +108,7 @@ export function Styleguide() {
   const target = 1_790_000_000;
 
   return (
-    <>
-      <SiteHeader />
-      <main id="main">
+    <Shell>
         <div className="wrap section sg-intro">
           <div className="stack">
             <span className="badge badge--example">Internal page</span>
@@ -116,7 +119,7 @@ export function Styleguide() {
             </p>
             <div className="slash-rule" aria-hidden="true" />
             <nav aria-label="On this page" className="row">
-              {['colors', 'type', 'shape', 'buttons', 'forms', 'panels', 'overlays', 'data', 'status', 'signs', 'ladder', 'cards'].map((s) => (
+              {['colors', 'type', 'shape', 'buttons', 'forms', 'panels', 'overlays', 'data', 'status', 'signs', 'ladder', 'cards', 'live'].map((s) => (
                 <a key={s} className="chip" href={`#${s}`}>{s}</a>
               ))}
             </nav>
@@ -358,6 +361,7 @@ export function Styleguide() {
         <section id="ladder" className="wrap section">
           <div className="stack">
             <h2>Ladder, every state</h2>
+            <p>Live progress follows confirmed chain reads. An open rank stamps once when it changes state.</p>
             <div className="row"><span className="badge badge--example">Example data</span><span className="dim">Rank 15 and 14 sold out, 13 open, 12 waits for 13 or a timeout, 11 has a set time, the rest are locked.</span></div>
             <div className="panel stack">
               <span className="label">Before the start time</span>
@@ -376,7 +380,7 @@ export function Styleguide() {
             <h2>Cards and heat</h2>
             <p className="dim">The three card kinds below are a mock for the styleguide. The real art comes from the renderer contract.</p>
             <div className="grid sg-cards">
-              <div className="stack-tight"><CardArt kind="standard" rank={9} plate="GR-09" shape="hatch" stars={2} transfers={3} peak={2} /><span className="label">Standard, rank 9</span></div>
+              <div className="stack-tight"><a className="card-link" href="#live"><CardTilt><CardArt kind="standard" rank={9} plate="GR-09" shape="hatch" stars={2} transfers={3} peak={2} /></CardTilt></a><span className="label">Standard, rank 9</span></div>
               <div className="stack-tight"><CardArt kind="rank1" rank={1} plate="GR-01" shape="coupe" stars={5} transfers={11} peak={5} /><span className="label">Rank 1</span></div>
               <div className="stack-tight"><CardArt kind="hidden" plate="HT-07" shape="van" stars={0} /><span className="label">Hidden car</span></div>
             </div>
@@ -393,7 +397,21 @@ export function Styleguide() {
             <div className="alert alert--info"><Icon name="info" /><p>Heat is a picture of recent moves. It does not change price, rules, or rights, and it drains by 1 point each hour.</p></div>
           </div>
         </section>
-      </main>
-    </>
+      <section id="live" className="wrap section stack" aria-labelledby="sg-live">
+        <h2 id="sg-live">Live effects</h2>
+        <p>Move or drag to reveal halftone and redirect traffic. Tap to place a cone. Hover a card to tilt it. Use Tab to focus a card link. Cycle Motion to compare Full, Reduced and Off.</p>
+        <MotionButton />
+        <div className="hazard-tape" aria-hidden="true" />
+        <div className="row">
+          <CardImage src={null} alt="Loading card" size={120} />
+          <StatusArt kind="empty" /><StatusArt kind="offline" /><StatusArt kind="error" />
+        </div>
+        <div className="panel stack">
+          <span className="badge badge--example">Example</span>
+          <ResultStamp kind="caught" /><ResultStamp kind="claimed" />
+        </div>
+        <p>Open <code>?motion=off</code> to lock Motion and hide the background.</p>
+      </section>
+    </Shell>
   );
 }

@@ -36,17 +36,19 @@ export function Countdown({ target, frozenNow, nowFn, label }: CountdownProps) {
   }, [frozenNow, nowFn]);
 
   if (now === null) {
-    return <div className="countdown skeleton" aria-label={`${label}: loading`} role="timer">&nbsp;</div>;
+    return <div className="countdown" aria-label={`${label}: loading`} role="timer" aria-live="off">
+      {['Days', 'Hrs', 'Min', 'Sec'].map((unit) => <div key={unit} aria-hidden="true"><span className="skeleton">–</span><small>{unit}</small></div>)}
+    </div>;
   }
   const p = parts(target - now);
   const text = `${p.d} days ${p.h} hours ${p.m} minutes ${p.s} seconds`;
   return (
-    <div role="timer" aria-label={`${label}: ${text}`}>
+    <div role="timer" aria-live="off" aria-label={`${label}: ${text}`}>
       <div className="countdown" aria-hidden="true">
-        <div><span>{p.d}</span><small>Days</small></div>
-        <div><span>{pad(p.h)}</span><small>Hrs</small></div>
-        <div><span>{pad(p.m)}</span><small>Min</small></div>
-        <div><span>{pad(p.s)}</span><small>Sec</small></div>
+        <div><span><b key={p.d} className="countdown-digit">{p.d}</b></span><small>Days</small></div>
+        <div><span><b key={p.h} className="countdown-digit">{pad(p.h)}</b></span><small>Hrs</small></div>
+        <div><span><b key={p.m} className="countdown-digit">{pad(p.m)}</b></span><small>Min</small></div>
+        <div><span><b key={p.s} className="countdown-digit">{pad(p.s)}</b></span><small>Sec</small></div>
       </div>
     </div>
   );

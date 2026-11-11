@@ -1,5 +1,8 @@
 'use client';
 
+import { CardImage } from './CardImage';
+import { ResultStamp } from './fx/ResultStamp';
+import { readTokenImage } from '@/lib/chain';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { readCommit, readHunt, readHuntHash } from '@/lib/chain';
@@ -34,6 +37,7 @@ export function HuntView() {
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [confirm, setConfirm] = useState(false);
   const [receipt, setReceipt] = useState<string | null>(null);
+  const [claimed, setClaimed] = useState<{ hash: string; id: number; image: string | null } | null>(null);
   const cars = c.deployment?.cars;
   const account = w.account;
   const hasCommit = commit !== null && commit.commitment !== ZERO;
@@ -81,10 +85,18 @@ export function HuntView() {
     const v = await validate();
     if (!v) return;
     if (huntCommitment(v.s, account, v.i).toLowerCase() !== commit.commitment.toLowerCase()) { setErrs({ secret: 'This code and car number do not match your step 1. Use the same ones.' }); return; }
+    setClaimed(null);
     setBusy('reveal');
     try {
       const t = await sendTx({ cars, functionName: 'revealClaim', args: [BigInt(v.i), v.s, huntSalt(account, v.i)] }, account, w.walletClient, w.walletPublic);
       setReceipt(t.hash); setMsg({ ok: true, text: 'Claimed. The hidden car is in your Garage.' }); setSecret('');
+      setClaimed({ hash: t.hash, id: 0, image: null });
+      void readHunt(cars).then(async (hunt) => {
+        const id = hunt.tokenIds[v.i];
+        if (!id) return;
+        const image = await readTokenImage(cars, id);
+        setClaimed((current) => current?.hash === t.hash ? { hash: t.hash, id, image } : current);
+      }).catch(() => undefined);
       await c.refresh(); await load();
     } catch (e) { setMsg({ ok: false, text: (e instanceof TxError ? e : explainError(e)).message }); } finally { setBusy(null); }
   };
@@ -135,6 +147,9 @@ export function HuntView() {
               </div>
               {hasCommit ? <YieldSign title="A new step 1 replaces the old one"><p>Saving a claim again overwrites your earlier saved claim. Only do it if you are starting over.</p></YieldSign> : null}
               {confirm ? <StopSign title="Claim is permanent"><p>This sends your code to the network, where anyone can see it. Claim now?</p><div className="row"><Button variant="secondary" onClick={() => setConfirm(false)}>Go back</Button><Button variant="primary" onClick={() => void doReveal()}>Claim car {index}</Button></div></StopSign> : null}
+              {claimed && receipt === claimed.hash && msg?.ok ? <ResultStamp key={claimed.hash} kind="claimed">
+                {claimed.image ? <CardImage src={claimed.image} size={180} alt={`Claimed hidden car ${claimed.id}`} /> : null}
+              </ResultStamp> : null}
               {msg ? <div className={`alert ${msg.ok ? 'alert--ok' : 'alert--bad'}`} role={msg.ok ? 'status' : 'alert'}><p>{msg.text} {receipt && msg.ok && explorerTx(receipt) ? <a href={explorerTx(receipt)} rel="noopener noreferrer">View the receipt</a> : null}</p></div> : null}
             </>
           )}

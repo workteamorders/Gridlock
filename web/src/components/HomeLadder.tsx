@@ -1,6 +1,9 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { readPreview, svgToDataUri } from '@/lib/chain';
+import { CardImage } from './CardImage';
 import { useChain } from '@/lib/chain-context';
 import { exampleLadder } from '@/lib/mock';
 import { nextOpening, openRung, toRungData } from '@/lib/ladder-view';
@@ -20,13 +23,25 @@ export function HomeLadder() {
   const now = live ? c.now() : 0;
   const beforeStart = live && c.constants !== null && now < c.constants.startTime;
   const next = live ? nextOpening(rungs, now) : null;
+  const cars = c.deployment?.cars;
+  const rank = open?.rank;
+  const sold = open?.sold;
+  const [preview, setPreview] = useState<{ rank: number; sold: number; src: string } | null>(null);
+  useEffect(() => {
+    if (!cars || rank === undefined || sold === undefined) return;
+    let cancelled = false;
+    void readPreview(cars, rank).then(({ svg }) => {
+      if (!cancelled) setPreview({ rank, sold, src: svgToDataUri(svg) });
+    }).catch(() => undefined);
+    return () => { cancelled = true; };
+  }, [cars, rank, sold]);
   const disabled = c.viewOnly || c.mismatches.length > 0;
 
   return (
     <div className="hero-ladder">
       <div className="stack">
-        <h1>2,475 wanted-poster cars. One ladder.</h1>
-        <p>Gridlock Cars are original comic cards drawn fully on-chain. Rank 15 opens first and is the cheapest. Each next rank opens when the one before sells out or times out, up to rank 1. You see the exact car before you pay.</p>
+        <div className="panel stack-tight"><h1>2,475 wanted-poster cars. One ladder.</h1>
+        <p>Gridlock Cars are original comic cards drawn fully on-chain. Rank 15 opens first and is the cheapest. Each next rank opens when the one before sells out or times out, up to rank 1. You see the exact car before you pay.</p></div>
 
         {live ? (
           <div key="live" className="panel stack-tight hero-panel">
@@ -64,12 +79,15 @@ export function HomeLadder() {
         ) : c.phase === 'error' ? (
           <div className="panel hero-panel"><p>The network is not answering, so live numbers are not shown. Nothing is affected. Try again in a moment.</p></div>
         ) : (
-          <div key="sk" className="panel skeleton hero-panel-sk" aria-busy="true" aria-label="Loading ladder" />
+          <div key="sk" className="panel skeleton hero-panel-sk" role="status" aria-busy="true" aria-label="Loading ladder" />
         )}
       </div>
       <div>
-        {live ? <Ladder rungs={toRungData(rungs)} /> : c.phase === 'undeployed' ? <Ladder rungs={exampleLadder()} /> : <LoadingLadder rungs={exampleLadder()} />}
+        {live ? <Ladder live rungs={toRungData(rungs)} /> : c.phase === 'undeployed' ? <Ladder rungs={exampleLadder()} /> : <LoadingLadder rungs={exampleLadder()} />}
       </div>
+        {preview && preview.rank === rank && preview.sold === sold ? (
+          <div className="panel stack-tight home-preview"><p className="label">Next card at rank {rank}</p><CardImage src={preview.src} size={220} alt={`Next card at rank ${rank}, drawn by the contract`} /></div>
+        ) : null}
     </div>
   );
 }

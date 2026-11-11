@@ -1,5 +1,6 @@
 'use client';
 
+import { StatusArt } from '@/components/fx/StatusArt';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { readCar, readOwned, type CarInfo } from '@/lib/chain';
@@ -59,7 +60,14 @@ export function GarageView() {
     setBusy(true); setMsg(null);
     try {
       const t = await sendTx({ cars: cars0, functionName: 'safeTransferFrom', args: [account, r.value, BigInt(sending.id)] }, account, w.walletClient, w.walletPublic);
+      const sent = sending.id;
       setReceipt(t.hash); setConfirm(false); setSending(null);
+      const tile = document.getElementById(`garage-car-${sent}`);
+      if (tile && document.documentElement.dataset.motion === 'full') {
+        tile.dataset.departing = 'true';
+        await new Promise<void>((resolve) => window.setTimeout(resolve, 240));
+      }
+      setCars((current) => current?.filter((car) => car.id !== sent) ?? null);
       toast.push({ kind: 'ok', title: 'Car sent', text: `Car #${sending.id} was sent.` });
       await c.refresh(); await load();
     } catch (e) { setMsg((e instanceof TxError ? e : explainError(e)).message); setConfirm(false); } finally { setBusy(false); }
@@ -67,6 +75,7 @@ export function GarageView() {
 
   return (
     <Gate>
+      {receipt ? <div className="alert alert--ok" role="status"><p>Sent. {explorerTx(receipt) ? <a href={explorerTx(receipt)} rel="noopener noreferrer">View the receipt</a> : null}</p></div> : null}
       {!account ? (
         <div className="empty"><div className="stack-tight"><h2>Connect to see your cars</h2><p>Your Garage lists the cars your wallet owns. Connecting only reads your address. It never moves anything.</p><ConnectButton /></div></div>
       ) : w.wrongNetwork ? (
@@ -74,17 +83,17 @@ export function GarageView() {
       ) : failed ? (
         <div className="alert alert--bad" role="alert"><p>Your cars could not be loaded. Nothing changed.</p><Button variant="secondary" onClick={() => void load()}>Try again</Button></div>
       ) : cars === null ? (
-        <div className="skeleton gate-sk" aria-busy="true" aria-label="Loading your cars" />
+        <div className="skeleton gate-sk" role="status" aria-busy="true" aria-label="Loading your cars" />
       ) : cars.length === 0 ? (
-        <div className="empty"><div className="stack-tight"><h2>Your Garage is empty</h2><p>No cars in {shortAddress(account)} yet.</p><Link className="btn btn--primary" href="/mint/">Go to Mint</Link></div></div>
+        <div className="empty"><StatusArt kind="empty" /><div className="stack-tight"><h2>Your Garage is empty</h2><p>No cars in {shortAddress(account)} yet.</p><Link className="btn btn--primary" href="/mint/">Go to Mint</Link></div></div>
       ) : (
         <div className="stack">
           <p className="dim">{cars.length} car{cars.length > 1 ? 's' : ''} in {shortAddress(account)}.</p>
-          {receipt ? <div className="alert alert--ok" role="status"><p>Sent. {explorerTx(receipt) ? <a href={explorerTx(receipt)} rel="noopener noreferrer">View the receipt</a> : null}</p></div> : null}
+
           {msg ? <div className="alert alert--bad" role="alert"><p>{msg}</p></div> : null}
           <ul className="card-grid">
             {cars.map((car) => (
-              <li key={car.id} className="stack-tight">
+              <li key={car.id} className="stack-tight" id={`garage-car-${car.id}`}>
                 <CarTile car={car} />
                 {car.heat > 0 && car.heatZeroAt ? <p className="dim">Heat 0 at {formatUtc(car.heatZeroAt)} if not moved.</p> : null}
                 <Button variant="secondary" size="sm" onClick={() => open(car)} disabled={c.viewOnly}>Send car #{car.id}</Button>

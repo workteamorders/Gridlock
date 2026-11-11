@@ -1,4 +1,6 @@
 /* Mock data for /styleguide only. Everything here is labeled EXAMPLE in the UI. */
+import { exampleSales } from '@/art/cars';
+
 export type RungStatus = 'sold' | 'open' | 'timed' | 'after' | 'locked';
 
 export interface RungData {
@@ -22,11 +24,9 @@ export function exampleLadder(): RungData[] {
   for (let rank = 15; rank >= 1; rank -= 1) {
     const cap = RANK_CAPS[rank] ?? 0;
     const price = `${(0.002 + (15 - rank) * 0.0015).toFixed(4)} ETH`;
-    let status: RungStatus = 'locked';
-    let sold = 0;
-    const base: RungData = { rank, status, sold, cap, price };
-    if (rank === 15 || rank === 14) { base.status = 'sold'; base.sold = cap; }
-    else if (rank === 13) { base.status = 'open'; base.sold = 212; }
+    const sold = exampleSales.find(([sample]) => sample === rank)?.[1] ?? 0;
+    const base: RungData = { rank, status: sold >= cap ? 'sold' : sold > 0 ? 'open' : 'locked', sold, cap, price };
+    if (rank === 13) base.status = 'open';
     else if (rank === 12) { base.status = 'after'; base.afterRank = 13; base.openAt = 'or 7 days after rank 13 opens'; }
     else if (rank === 11) { base.status = 'timed'; base.openAt = 'Thu 20 Nov 2026, 14:00 UTC'; }
     out.push(base);

@@ -11,9 +11,10 @@ export default function HomePage() {
     <Shell current="/">
       <section className="wrap section"><HomeLadder /></section>
 
+      <div className="hazard-tape" aria-hidden="true" />
       <section className="wrap section" aria-labelledby="why">
         <div className="split">
-          <div className="stack">
+          <div className="panel stack">
             <h2 id="why">Why it is built this way</h2>
             <p>Every card is decided by its rank and serial number, with no randomness. The next card for each rank is shown before you sign, drawn by the contract itself.</p>
             <p>The contracts have no owner and no admin functions. The price, the timers and the caps are fixed when they are deployed, and sales go to one treasury address you can read on the Contracts page.</p>
@@ -24,7 +25,7 @@ export default function HomePage() {
       </section>
 
       <section className="wrap section" aria-labelledby="how">
-        <div className="stack">
+        <div className="panel stack">
           <h2 id="how">How it works</h2>
           <ol className="stack steps">
             <li><b>Pick a rung.</b> Only open ranks can be minted. Each wallet can take 2 cars per rank for ranks 15 to 6, and 1 car per rank for ranks 5 to 1.</li>
@@ -35,7 +36,7 @@ export default function HomePage() {
       </section>
 
       <section className="wrap section" aria-labelledby="hunt">
-        <div className="stack">
+        <div className="panel stack">
           <h2 id="hunt">The Hunt</h2>
           <p>12 hidden cars cannot be bought. Each one is claimed by finding a secret code somewhere outside this site. Claiming costs only gas. It is about finding information, not luck, and codes leak once they are found.</p>
           <p><Link className="btn btn--secondary" href="/hunt/">See the 12 hidden cars</Link></p>

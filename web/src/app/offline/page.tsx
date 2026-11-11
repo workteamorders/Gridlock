@@ -1,3 +1,4 @@
+import { StatusArt } from '@/components/fx/StatusArt';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Shell } from '@/components/Shell';
@@ -8,6 +9,7 @@ export default function OfflinePage() {
   return (
     <Shell>
       <section className="wrap section stack">
+        <StatusArt kind="offline" />
         <h1>Offline or not loading</h1>
         <p>If live numbers are missing, the site cannot reach the network. Your cars and ETH are not affected. They live on the chain, not on this site.</p>
         <ul className="stack-tight">

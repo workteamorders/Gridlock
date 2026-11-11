@@ -1,18 +1,11 @@
+import { useId } from 'react';
+import { carBodies, carWindows, liveries, carPaint } from '@/art/cars';
 import { HeatStars } from './HeatStars';
 
 export type CarShape = 'hatch' | 'coupe' | 'van';
 export type CardKind = 'standard' | 'rank1' | 'hidden';
 
-const BODY: Record<CarShape, string> = {
-  hatch: 'M24 140 L44 140 Q52 100 96 96 L156 96 Q196 98 220 128 L240 132 L240 160 L24 160 Z',
-  coupe: 'M20 142 L48 138 Q74 108 124 104 L170 106 Q204 110 228 134 L248 138 L248 162 L20 162 Z',
-  van: 'M28 160 L28 94 Q28 86 38 86 L184 86 Q204 86 216 112 L244 134 L244 160 Z',
-};
-const WINDOW: Record<CarShape, string> = {
-  hatch: 'M62 126 L74 106 L100 104 L100 126 Z M110 104 L152 104 Q172 108 188 126 L110 126 Z',
-  coupe: 'M78 128 L94 112 L128 110 L128 128 Z M138 110 L168 112 Q190 118 204 130 L138 130 Z',
-  van: 'M44 118 L44 98 L104 98 L104 118 Z M114 98 L180 98 Q192 100 200 118 L114 118 Z',
-};
+const SHAPES = { hatch: 0, coupe: 1, van: 2 } as const;
 
 interface CardArtProps {
   kind: CardKind;
@@ -22,11 +15,9 @@ interface CardArtProps {
   stars: 0 | 1 | 2 | 3 | 4 | 5;
   transfers?: number;
   peak?: number;
-  /** Label shown above the card. The styleguide art is a mock, not renderer output. */
-  example?: boolean;
 }
 
-export function CardArt({ kind, rank, plate, shape = 'hatch', stars, transfers = 0, peak = 0, example = true }: CardArtProps) {
+export function CardArt({ kind, rank, plate, shape = 'hatch', stars, transfers = 0, peak = 0 }: CardArtProps) {
   const hidden = kind === 'hidden';
   const top = kind === 'rank1';
   const paper = top ? 'var(--action)' : hidden ? 'var(--surface)' : 'var(--surface-2)';
@@ -38,10 +29,12 @@ export function CardArt({ kind, rank, plate, shape = 'hatch', stars, transfers =
   const desc = hidden
     ? 'Hidden car, claimed only through the hunt'
     : `Rank ${rank}, plate ${plate}, heat ${stars} of 5, ${transfers} transfers, peak heat ${peak}`;
-  const uid = `${kind}-${plate}`.replace(/[^a-z0-9]/gi, '');
+  const uid = useId();
+  const variant = SHAPES[shape];
+  const paint = carPaint[(rank ?? 0) % carPaint.length];
   return (
     <figure className="cardart">
-      {example ? <span className="badge badge--example">Example mock</span> : null}
+      <span className="badge badge--example">Example</span>
       <svg viewBox="0 0 300 420" role="img" aria-label={desc}>
         <defs>
           <pattern id={`dots-${uid}`} width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(30)">
@@ -59,11 +52,11 @@ export function CardArt({ kind, rank, plate, shape = 'hatch', stars, transfers =
             <rect x="46" y="154" width="130" height="26" fill="var(--text)" />
           </g>
         ) : (
-          <g stroke={ink} strokeWidth="5" strokeLinejoin="round">
-            <path d={BODY[shape]} fill={ink === 'var(--text)' ? 'var(--text)' : 'var(--text-on-action)'} />
-            <path d={WINDOW[shape]} fill={paper} strokeWidth="3" />
-            <circle cx="76" cy="162" r="20" fill={paper} />
-            <circle cx="200" cy="162" r="20" fill={paper} />
+          <g transform="translate(149 152) rotate(-12) scale(3.6)">
+            <path d={carBodies[variant]} fill="var(--surface)" transform="translate(1.8 2)" />
+            <path d={carBodies[variant]} fill={`var(${paint})`} stroke="var(--surface)" strokeWidth="1.5" />
+            <path d={carWindows[variant]} fill="var(--surface)" />
+            <path d={liveries[(rank ?? 0) % liveries.length]} fill="var(--surface)" />
           </g>
         )}
         <text x="22" y="352" fontFamily="var(--font-display)" fontSize="112" fill={ink}>{rankText}</text>

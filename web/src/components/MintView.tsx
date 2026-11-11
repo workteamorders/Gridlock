@@ -12,6 +12,7 @@ import { formatEth, shortAddress } from '@/lib/format';
 import { checkQuantity } from '@/lib/validation';
 import { openRung } from '@/lib/ladder-view';
 import { Button } from './Button';
+import { ResultStamp } from './fx/ResultStamp';
 import { CardImage } from './CardImage';
 import { Dialog } from './Dialog';
 import { Gate } from './Gate';
@@ -38,7 +39,7 @@ export function MintView() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [phase, setPhase] = useState<Phase>('idle');
   const [message, setMessage] = useState<{ kind: 'bad' | 'warn'; text: string } | null>(null);
-  const [result, setResult] = useState<{ hash: `0x${string}`; ids: number[] } | null>(null);
+  const [result, setResult] = useState<{ hash: `0x${string}`; ids: number[]; previews: string[] } | null>(null);
 
   const cars = chain.deployment?.cars;
   const openRungs = useMemo(() => chain.rungs.filter((r) => r.isOpen && r.sold < r.cap).sort((a, b) => b.rank - a.rank), [chain.rungs]);
@@ -115,7 +116,7 @@ export function MintView() {
       const r = await sendTx({ cars, functionName: 'mint', args: [BigInt(rung.rank), BigInt(qty), BigInt(serial)], value: total }, account, wallet.walletClient, wallet.walletPublic, () => setPhase('waiting'));
       await chain.refresh();
       const owned = await readOwned(cars, account, chain.totalMinted + qty + 50);
-      setResult({ hash: r.hash, ids: owned.slice(-qty) });
+      setResult({ hash: r.hash, ids: owned.slice(-qty), previews: images });
       setPhase('done');
       toast.push({ kind: 'ok', title: 'Minted', text: `${qty} car${qty > 1 ? 's' : ''} minted.` });
     } catch (e) {
@@ -124,7 +125,7 @@ export function MintView() {
       if (err.kind === 'serial') { await chain.refresh(); setMessage({ kind: 'warn', text: err.message }); }
       else setMessage({ kind: err.kind === 'rejected' ? 'warn' : 'bad', text: err.message });
     }
-  }, [cars, rung, account, wallet.walletClient, wallet.walletPublic, serial, qty, total, chain, toast]);
+  }, [cars, rung, account, wallet.walletClient, wallet.walletPublic, serial, qty, total, chain, toast, images]);
 
   const busy = phase === 'checking' || phase === 'signing' || phase === 'waiting';
   const label = phase === 'checking' ? 'Checking the transaction' : phase === 'signing' ? 'Confirm in your wallet' : phase === 'waiting' ? 'Waiting for the network' : `Review ${qty} car${qty > 1 ? 's' : ''}`;
@@ -139,6 +140,9 @@ export function MintView() {
         <div className="stack">
           <div className="alert alert--ok" role="status"><Icon name="check" /><div><h2>Minted</h2><p>Your cars are minted. Check the receipt yourself.</p>
             <dl className="kv"><dt>Receipt</dt><dd>{explorerTx(result.hash) ? <a href={explorerTx(result.hash)} rel="noopener noreferrer">{shortAddress(result.hash)}</a> : <span className="num">{result.hash}</span>}</dd><dt>Car numbers</dt><dd className="num">{result.ids.join(', ')}</dd></dl></div></div>
+          <ResultStamp kind="caught" key={result.hash}>
+            <div className="row">{result.previews.map((src, i) => <CardImage key={src} src={src} size={180} alt={`Confirmed mint, car ${i + 1}`} />)}</div>
+          </ResultStamp>
           <div className="row"><Link className="btn btn--primary" href="/garage/">Open your Garage</Link><Button variant="secondary" onClick={() => { setResult(null); setPhase('idle'); }}>Mint another</Button></div>
         </div>
       ) : rung ? (

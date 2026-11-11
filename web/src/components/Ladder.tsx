@@ -1,3 +1,6 @@
+'use client';
+
+import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { RungData } from '@/lib/mock';
 import { Icon, type IconName } from './Icon';
@@ -10,14 +13,30 @@ const STATUS: Record<RungData['status'], { icon: IconName; word: string }> = {
   locked: { icon: 'lock', word: 'Locked' },
 };
 
-export function Rung({ r, cta }: { r: RungData; cta?: ReactNode }) {
+export function Rung({ r, cta, live = false }: { r: RungData; cta?: ReactNode; live?: boolean }) {
   const st = STATUS[r.status];
   const left = r.cap - r.sold;
+  const previous = useRef(r.status);
+  const [opened, setOpened] = useState(false);
+  const fill = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    if (live && previous.current !== r.status) setOpened(r.status === 'open' && document.documentElement.dataset.motion === 'full');
+    previous.current = r.status;
+  }, [r.status, live]);
+  useEffect(() => {
+    const bar = fill.current;
+    if (!bar) return;
+    const ratio = String(r.cap ? r.sold / r.cap : 0);
+    if (live && bar.style.getPropertyValue('--fill') && bar.style.getPropertyValue('--fill') !== ratio) {
+      bar.dataset.changed = 'true';
+    }
+    bar.style.setProperty('--fill', ratio);
+  }, [r.sold, r.cap, live]);
   return (
-    <li className={`rung rung--${r.status}`}>
+    <li className={`rung rung--${r.status}`} data-just-opened={live && opened || undefined} onAnimationEnd={() => setOpened(false)}>
       <div className="rung-rank"><small>Rank</small>{r.rank}</div>
       <div className="rung-main">
-        <span className="rung-status"><Icon name={st.icon} />{st.word}{r.status === 'timed' && r.openAt ? ` ${r.openAt}` : ''}</span>
+        <span className={`rung-status${live && (r.status === 'sold' || r.status === 'open') ? ' rung-stamp' : ''}`}><Icon name={st.icon} />{st.word}{r.status === 'timed' && r.openAt ? ` ${r.openAt}` : ''}</span>
         <span className="rung-meta">
           <span>Price <b>{r.price}</b></span>
           <span>Cap <b>{r.cap}</b></span>
@@ -28,6 +47,9 @@ export function Rung({ r, cta }: { r: RungData; cta?: ReactNode }) {
           <span className="rung-meta">After rank {r.afterRank} sells out, {r.openAt}</span>
         ) : null}
         {r.status === 'locked' ? <span className="rung-meta">Opens when rank {r.rank + 1} sells out or times out</span> : null}
+        <span className="rung-progress" role="progressbar" aria-label={`Rank ${r.rank} minted`} aria-valuemin={0} aria-valuemax={r.cap} aria-valuenow={r.sold}>
+          <span ref={fill} />
+        </span>
       </div>
       {cta ? <div className="rung-cta">{cta}</div> : null}
     </li>
@@ -35,12 +57,12 @@ export function Rung({ r, cta }: { r: RungData; cta?: ReactNode }) {
 }
 
 /** DOM order is rank 15 to rank 1 (the order they open); CSS shows rank 1 on top. */
-export function Ladder({ rungs, ctaFor }: { rungs: RungData[]; ctaFor?: (r: RungData) => ReactNode }) {
+export function Ladder({ rungs, ctaFor, live = false }: { rungs: RungData[]; live?: boolean; ctaFor?: (r: RungData) => ReactNode }) {
   const ordered = [...rungs].sort((a, b) => b.rank - a.rank);
   return (
     <ol className="ladder ladder--up" aria-label="Ladder of 15 ranks, rank 15 opens first">
       {ordered.map((r) => (
-        <Rung key={r.rank} r={r} cta={ctaFor?.(r)} />
+        <Rung key={r.rank} r={r} live={live} cta={ctaFor?.(r)} />
       ))}
     </ol>
   );

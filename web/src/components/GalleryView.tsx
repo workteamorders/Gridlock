@@ -1,5 +1,6 @@
 'use client';
 
+import { StatusArt } from '@/components/fx/StatusArt';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -88,7 +89,7 @@ function List() {
   const shown = useMemo(() => cars.filter((x) =>
     (rank === 'all' || String(x.rank) === rank) && (stars === 'all' || String(x.stars) === stars) && (hidden === 'all' || (hidden === 'yes') === x.hidden)).reverse(), [cars, rank, stars, hidden]);
 
-  if (total === 0) return <div className="empty"><div><h2>No cars yet</h2><p>Cars appear here as soon as the first one is minted.</p></div></div>;
+  if (total === 0) return <div className="empty"><StatusArt kind="empty" /><div><h2>No cars yet</h2><p>Cars appear here as soon as the first one is minted.</p></div></div>;
   return (
     <div className="stack">
       <div className="row" role="group" aria-label="Filters">
