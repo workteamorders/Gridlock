@@ -18,12 +18,12 @@ Hasil ukur build produksi lokal (Chrome headless, tanpa GPU):
 | Ukuran | Hasil |
 |---|---|
 | Unit test | 30 lulus (7 baru: climb, counter, magnet, suara, ribbon, hero art) |
-| E2E | 26 dari 26 langkah (9 baru) |
+| E2E | 27 dari 27 langkah (9 baru dari panggung, sisanya dari persimpangan dan alur sebelumnya) |
 | Axe WCAG 2.2 AA + overflow, 39 kombinasi halaman dan lebar | 0 temuan, live dan undeployed |
-| Lighthouse mobile Home | performa 97, aksesibilitas 100, best practices 100, LCP 1,5 s, CLS 0, TBT 154 ms |
+| Lighthouse mobile Home (dengan persimpangan) | performa 99, aksesibilitas 100, best practices 100, LCP 1,5 s, CLS 0, TBT 124 ms |
 | Lighthouse mobile halaman lain | performa 97 sampai 100, aksesibilitas 100, TBT 90 sampai 150 ms |
-| JS tambahan per rute (gzip) | +4,8 sampai +6,7 KB, styleguide +10,5 KB, batas 20 KB |
-| fps `?motion=debug` (software) | 60 pada 360 px, 59 pada 768 px, 58 pada 1440 px |
+| JS tambahan per rute (gzip) | Home +10,0 KB (sudah termasuk mesin persimpangan), rute lain +4,8 sampai +5,7 KB, batas 20 KB |
+| fps `?motion=debug` (software) | 60 pada 360, 768 dan 1440 px |
 | CLS | 0 |
 
 SEO Lighthouse 66 sampai 69 karena build ini sengaja `noindex` (`NEXT_PUBLIC_INDEXABLE` belum diset). Efek yang butuh GPU (halftone WebGL dan gerak lapisan hero) tidak bisa diukur di lingkungan ini. Kodenya diuji pada renderer software dan jalur "live" diuji dengan menandai hero secara manual.

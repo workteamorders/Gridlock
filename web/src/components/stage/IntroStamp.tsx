@@ -10,9 +10,20 @@ export function IntroStamp() {
   useEffect(() => {
     let seen = false;
     try { seen = sessionStorage.getItem(key) === '1'; } catch { seen = true; }
-    if (seen || document.documentElement.dataset.motion !== 'full') return;
-    try { sessionStorage.setItem(key, '1'); } catch {}
-    setOn(true);
+    if (seen) return;
+    // The Motion setting is applied by whichever component mounts first, so wait until it exists.
+    const decide = () => {
+      const mode = document.documentElement.dataset.motion;
+      if (!mode) return false;
+      window.removeEventListener('gridlock:motion', decide);
+      if (mode !== 'full') return true;
+      try { sessionStorage.setItem(key, '1'); } catch {}
+      setOn(true);
+      return true;
+    };
+    if (decide()) return;
+    window.addEventListener('gridlock:motion', decide);
+    return () => window.removeEventListener('gridlock:motion', decide);
   }, []);
   useEffect(() => {
     if (!on) return;

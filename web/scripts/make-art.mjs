@@ -48,6 +48,26 @@ const status = (kind) => {
   return svg(160, 90, frame + art);
 };
 
+const junction = svg(560, 360,
+  '<g id="junction-map">' + rect(0, 0, 560, 360, '--surface-2')
+  + [[22, 16], [374, 16], [22, 267], [374, 267]].map(([x, y], i) =>
+    rect(x + 5, y + 5, 164, 64, '--surface') + rect(x, y, 164, 64, '--surface-3')
+    + rect(x + 8, y + 8, 99, 42, '--surface-2') + rect(x + 117, y + 8, 38, 42, '--surface-2')
+    + rect(x + 8, y + 52, 74, 5, i % 2 ? '--brush' : '--action')).join('')
+  + rect(0, 115, 560, 130, '--line-dim') + rect(215, 0, 130, 360, '--line-dim')
+  + rect(0, 118, 560, 124, '--surface') + rect(218, 0, 124, 360, '--surface')
+  + rect(231, 131, 98, 98, '--surface-2')
+  + `<path fill="none" stroke="${token('--action')}" stroke-dasharray="12 12" stroke-width="2" d="M0 180h186m188 0h186M280 0v86m0 188v86"/>`
+  + [0, 90, 180, 270].map((angle, i) => at(`translate(280 180) rotate(${angle})`,
+    rect(-65, 3, 3, 56, '--action')
+    + Array.from({ length: 8 }, (_, j) => rect(-56, -54 + j * 14, 10, 6, '--text-dim')).join('')
+    + rect(-84, 64, 33, 15, '--surface')
+    + rect(-80, 67, 10, 9, i % 2 ? '--brush' : '--surface-3')
+    + rect(-65, 67, 10, 9, i % 2 ? '--surface-3' : '--ok')
+    + [78, 113, 148, 183].map((distance, j) =>
+      at(`translate(${-distance} 17) scale(.49)`, car((i + j) % bodies.length, (i * 3 + j) % paint.length, j))).join('')
+  )).join('') + '</g>');
+
 export const icon = svg(180, 180, rect(0, 0, 180, 180, '--surface') + at('translate(10 12) scale(5)', dots) + at('translate(90 90) rotate(-18) scale(2.4)', car(5, 0, 2)));
 export const social = svg(1200, 630,
   rect(0, 0, 1200, 630, '--surface')
@@ -72,6 +92,7 @@ export function makeArt(root = new URL('../', import.meta.url)) {
       .map(([name, data]) => `export const ${name} = ${JSON.stringify(data, null, 2)} as const;\n`).join(''));
   save('public/art/cars.svg', svg(640, 1056, rect(0, 0, 640, 1056, '--surface-3') + variants.join('')));
   save('public/art/cone.svg', svg(48, 42, cone));
+  save('public/art/junction.svg', junction);
   save('public/art/hazard.svg', svg(32, 16, hazard));
   save('public/art/halftone.svg', svg(32, 32, dots));
   save('public/art/signal.svg', svg(32, 64, rect(0, 0, 32, 64, '--surface') + rect(8, 8, 16, 20, '--brush') + rect(8, 36, 16, 20, '--ok')));

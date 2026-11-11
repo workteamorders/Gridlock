@@ -1,5 +1,5 @@
 import { writeFileSync } from 'node:fs';
-import { launch, newPage, SHOTS, SITE, startSite } from './lib.mjs';
+import { launch, newPage, SHOTS, shot, SITE, startSite } from './lib.mjs';
 
 const server = await startSite(new URL('../out/', import.meta.url).pathname);
 const browser = await launch();
@@ -9,8 +9,12 @@ try {
     const p = await newPage(browser, { width });
     await p.goto(`${SITE}/?motion=debug`);
     await p.waitForFunction(() => window.__fx?.times.length >= 10);
+    const scene = p.locator('.junction-scene');
+    const box = await scene.boundingBox();
+    if (!box) throw new Error('The junction scene is missing');
+    if (width === 360 || width === 1440) await shot(p, `junction-${width}`, { fullPage: false });
     for (let i = 0; i < 6; i++) {
-      await p.mouse.move(Math.min(width - 5, 35 + 80 * i), 180 + 75 * i, { steps: 6 });
+      await p.mouse.move(box.x + box.width * (0.19 + 0.12 * i), box.y + box.height * (0.42 + 0.04 * i), { steps: 6 });
       await p.waitForTimeout(600);
     }
     const frames = await p.evaluate(() => window.__fx.times.slice(8));

@@ -12,7 +12,7 @@ import { SoundEffects } from './stage/SoundEffects';
 export function Shell({ current, children }: { current?: string; children: ReactNode }) {
   return (
     <>
-      <LiveBackground mint={current === '/mint/'} />
+      {current === '/' ? null : <LiveBackground mint={current === '/mint/'} />}
       <RouteWipe />
       {current === '/' ? <IntroStamp /> : null}
       <Magnetic />

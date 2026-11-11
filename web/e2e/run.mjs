@@ -247,26 +247,43 @@ try {
     await p.context().close();
   });
 
-  await step('traffic canvas is decorative and leaves pointer and keyboard actions available', async () => {
+  await step('junction canvas is decorative and a keyboard cone causes a detour', async () => {
     const p = await newPage(browser);
     await p.goto(`${SITE}/?motion=debug`);
     await p.waitForFunction(() => window.__fx?.frames > 5);
-    const canvas = p.locator('canvas.live-background');
+    const canvas = p.locator('canvas.junction-canvas');
     assert.equal(await canvas.getAttribute('aria-hidden'), 'true');
     assert.equal(await canvas.evaluate((el) => getComputedStyle(el).pointerEvents), 'none');
     const brand = p.locator('header .brand');
     await brand.focus();
     await p.keyboard.press('Tab');
     assert.match(await p.locator(':focus').innerText(), /home/i);
-    for (const [x, y] of [[38, 200], [144, 250], [260, 320], [360, 420]]) {
-      await p.mouse.move(x, y, { steps: 12 });
-      await p.waitForTimeout(70);
-    }
-    await p.waitForFunction(() => window.__fx.interactions > 0 && window.__fx.brakes > 0);
+    const drop = p.getByRole('button', { name: 'Drop cone' });
+    await drop.focus();
+    await p.keyboard.press('Enter');
+    await p.waitForFunction(() => window.__fx.cones === 1 && window.__fx.detours > 0);
+    const box = await canvas.boundingBox();
+    assert.ok(box);
+    await p.mouse.move(box.x + box.width * 0.27, box.y + box.height * 0.56, { steps: 8 });
+    await p.mouse.click(box.x + box.width * 0.27, box.y + box.height * 0.56);
+    await p.waitForFunction(() => window.__fx.interactions > 0 && window.__fx.cones === 2 && window.__fx.brakes > 0);
     await p.locator('header .motion-button').click();
     await p.waitForFunction(() => document.documentElement.dataset.motion === 'reduced');
     assert.deepEqual(p.errors, []);
     await p.context().close();
+  });
+
+  await step('a phone-width tap places a cone inside the junction', async () => {
+    const context = await browser.newContext({ viewport: { width: 360, height: 800 }, hasTouch: true });
+    try {
+      const p = await context.newPage();
+      await p.goto(`${SITE}/?motion=debug`);
+      await p.waitForFunction(() => window.__fx?.frames > 5);
+      const scene = p.locator('.junction-scene');
+      await scene.tap({ position: { x: 76, y: 118 } });
+      await p.waitForFunction(() => window.__fx.cones === 1 && window.__fx.detours > 0);
+      assert.equal(await p.evaluate(() => document.documentElement.scrollWidth), 360);
+    } finally { await context.close(); }
   });
 
   await step('intro: plays once per session, never blocks, any key skips it, and only in full motion', async () => {

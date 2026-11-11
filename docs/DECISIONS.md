@@ -243,6 +243,8 @@ Decay uses integer division from the last update time, so a transfer resets the 
 - **Feed.** Strip aktivitas opsional dilewati. Polling ladder yang sudah ada tetap menjadi sumber data live tanpa menambah permintaan log berkala ke relay.
 - **Pengujian.** Layout mengambil hasil axe dengan motion aktif, lalu membuat tangkapan layar terpisah dengan `?motion=off` dan jam browser tetap. Server e2e mengirim dokumen 404 hasil export dan respons geo lokal. Scanner mengabaikan URL template dokumentasi yang persis memakai `{API_KEY}`, serta memeriksa nama merek pada direktori aset.
 
+- **Persimpangan Home.** Hero memakai satu canvas di dalam panel dengan ruang khusus untuk antrean, lampu, dan cone. Rute lain memakai peta lalu lintas redup. Full mengaktifkan simulasi, Reduced membekukan gambar, dan Off memakai ilustrasi SVG statis. Tombol Drop cone memberi aksi setara lewat keyboard. Tap ditempatkan pada lajur masuk terdekat supaya mobil dapat bereaksi sebelum persimpangan.
+
 ## 13. Panggung (hero, bab, scroll, suara)
 
 - **Seni hero.** Dinding poster dibuat `web/scripts/make-hero.mjs` (seed tetap, warna dibaca dari token, tanpa teks dan bitmap). Halftone memakai `<pattern>` dan lapisan belakang tidak memakai opacity grup, karena opacity grup memaksa buffer terpisah dan menurunkan fps di compositor software dari 60 ke 35. SVG disisipkan inline saat build (`HeroArt`) agar bukan kandidat LCP. Sebagai gambar latar, estimasi LCP Lighthouse mobile naik ke 6,5 sampai 8,7 s.
@@ -255,4 +257,6 @@ Decay uses integer division from the last update time, so a transfer resets the 
 - **Tombol magnetik.** Hanya mouse, hanya Motion Full, maksimal 7 px, tombol primer saja.
 - **Suara.** Sintesis WebAudio tanpa berkas audio. Default mati, tombol "Sound" di header (layar kecil: footer), pilihan disimpan di `gridlock.sound`. `AudioContext` tidak dibuat sebelum pengguna menyalakan suara. Jika pilihan On tersimpan, konteks dibuat pada gestur pertama. Volume master 0,18 dan tiap bunyi di bawah 0,5 detik.
 - **Penyimpanan.** Footer dan dokumen mencantumkan pengaturan suara dan penanda intro sesi, selain dompet dan motion.
+- **Persimpangan di hero.** Persimpangan hidup (bagian 12) ditempatkan di kolom kanan hero poster. Di layar sempit ia tampil di atas papan judul supaya mesinnya berjalan di layar pertama, karena mesin hanya menggambar saat terlihat. Home tidak lagi memakai kanvas lalu lintas layar penuh, jadi tidak ada dua mesin sekaligus.
+- **Intro menunggu Motion.** Pengaturan Motion dipasang oleh komponen yang pertama dipasang. Intro menunggu event `gridlock:motion` bila belum ada, jadi urutan efek tidak menentukan hasilnya.
 - **Pengukuran.** Lihat `docs/VISUAL-LIVE.md` bagian Panggung.

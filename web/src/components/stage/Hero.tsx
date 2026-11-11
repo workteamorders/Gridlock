@@ -5,7 +5,7 @@ import { useEffect, useRef, type ReactNode } from 'react';
 import { HeroGL } from './HeroGL';
 
 /** Home hero: a wall of pinned posters that drifts with the pointer, and one plate holding the headline. */
-export function Hero({ art }: { art: ReactNode }) {
+export function Hero({ art, children }: { art: ReactNode; children?: ReactNode }) {
   const root = useRef<HTMLElement>(null);
   useEffect(() => {
     const node = root.current;
@@ -51,6 +51,7 @@ export function Hero({ art }: { art: ReactNode }) {
             <Link className="btn btn--secondary btn--lg" href="/gallery/">Browse the cards</Link>
           </div>
         </div>
+        {children ? <div className="hero-aside">{children}</div> : null}
       </div>
     </section>
   );

@@ -10,7 +10,9 @@ html[data-motion=full] .hero[data-live] .hero-layer--front { translate: calc(var
 @keyframes hero-drift { from { transform: translate3d(-1.5%, 0, 0); } to { transform: translate3d(1.5%, -1%, 0); } }
 @keyframes hero-drift-front { from { transform: translate3d(1.5%, 1%, 0); } to { transform: translate3d(-1.5%, -1%, 0); } }
 
-.hero-wrap { padding-block: var(--s-8); }
+.hero-wrap { padding-block: var(--s-8); display: grid; gap: var(--s-6); align-items: center; }
+.hero-aside { min-width: 0; order: -1; }
+@media (width >= 1000px) { .hero-wrap { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); } .hero-aside { order: 0; } }
 .hero-plate { max-width: 44rem; background: var(--surface); border: var(--line-w-strong) solid var(--line); box-shadow: var(--plate-shadow); padding: var(--s-6); transform: rotate(var(--tilt)); }
 .hero-plate h1 { font-size: var(--fs-hero); line-height: 0.95; }
 .hero-plate h1 span { display: inline-block; }

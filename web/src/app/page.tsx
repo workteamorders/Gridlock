@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Shell } from '@/components/Shell';
 import { HomeLadder } from '@/components/HomeLadder';
+import { LiveJunction } from '@/components/fx/LiveJunction';
 import { SupplyChart } from '@/components/SupplyChart';
 import { Hero } from '@/components/stage/Hero';
 import { HeroArt } from '@/components/stage/HeroArt';
@@ -14,8 +15,8 @@ export const metadata: Metadata = { title: 'Gridlock: 2,475 wanted-poster cars, 
 export default function HomePage() {
   return (
     <Shell current="/">
-      <Hero art={<HeroArt />} />
-      <section className="wrap section" aria-labelledby="ladder-title"><HomeLadder /></section>
+      <Hero art={<HeroArt />}><LiveJunction /></Hero>
+      <section className="wrap section home-ladder-section" aria-labelledby="ladder-title"><HomeLadder /></section>
 
       <ChainRibbon />
       <LadderClimb />

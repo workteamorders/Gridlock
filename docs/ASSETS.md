@@ -7,6 +7,7 @@
 | `src/art/cars.ts` dan `public/art/cars.svg` | Enam siluet fiktif dalam delapan warna token dan empat livery. Modul dipakai untuk lalu lintas canvas, kartu EXAMPLE, dan fixture penjualan ladder. SVG menampilkan 192 kombinasi. |
 | `public/art/{open,sold-out,caught,claimed,wanted}.svg` | Lima segel flat dengan warna dari token. |
 | `public/art/{cone,signal,light-bar,hazard,halftone}.svg` | Geometri rambu, lampu, garis hazard dan tekstur titik buatan generator. |
+| `public/art/junction.svg` | Persimpangan statis di hero Home. Memakai token dan siluet yang sama dengan canvas. |
 | `public/art/{empty,offline,error}.svg` | Ilustrasi dekoratif untuk garasi kosong, bantuan offline dan jalan buntu. |
 | `public/icon.svg`, `public/apple-touch-icon.png`, `public/og.png` | Siluet dan halftone yang sama. `make-images.mjs` merasterisasi SVG lokal untuk Apple dan OG/Twitter. |
 
