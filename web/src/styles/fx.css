@@ -217,6 +217,33 @@ html:not([data-motion=full]) .finish-wipe { display: none; }
 .junction-cone { align-self: center; }
 .junction:not([data-running]) .junction-cone { visibility: hidden; }
 html[data-motion=off] .junction-canvas { visibility: hidden; }
+/* Wanted level of the street chase: five stars that fill as the racer gets away, and a tag while a pursuit runs. */
+.chase-heat {
+  position: absolute;
+  z-index: 1;
+  right: var(--s-3);
+  bottom: var(--s-3);
+  display: none;
+  align-items: center;
+  gap: 3px;
+  padding: var(--s-1) var(--s-2);
+  background: var(--surface);
+  border: var(--line-w) solid var(--line);
+  box-shadow: 3px 3px 0 var(--brush);
+  font: 400 var(--fs-12)/1 var(--font-display);
+  text-transform: uppercase;
+  pointer-events: none;
+}
+.junction[data-running] .chase-heat { display: flex; }
+.chase-label { margin-inline-end: var(--s-1); }
+.chase-star { width: 14px; height: 14px; fill: var(--surface-3); stroke: var(--line-dim); stroke-width: 1.5; }
+.junction[data-heat="1"] .chase-star:nth-of-type(-n+1),
+.junction[data-heat="2"] .chase-star:nth-of-type(-n+2),
+.junction[data-heat="3"] .chase-star:nth-of-type(-n+3),
+.junction[data-heat="4"] .chase-star:nth-of-type(-n+4),
+.junction[data-heat="5"] .chase-star:nth-of-type(-n+5) { fill: var(--action); stroke: var(--surface); }
+.chase-state { display: none; margin-inline-start: var(--s-1); padding: 2px var(--s-1); color: var(--text-on-brush); background: var(--brush); }
+.junction[data-chase="run"] .chase-state--run, .junction[data-chase="busted"] .chase-state--busted { display: inline; }
 @media (width >= 820px) {
   .home-masthead { grid-template-columns: minmax(0, 4fr) minmax(0, 6fr); gap: var(--s-6); }
 }

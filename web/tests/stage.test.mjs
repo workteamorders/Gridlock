@@ -60,7 +60,7 @@ test('magnetic pull is zero outside the radius and never above the maximum', () 
 
 test('sound recipes are short, bounded and finite, and loud enough to hear', () => {
   assert.ok(MASTER_GAIN >= 0.4 && MASTER_GAIN <= 0.7);
-  assert.deepEqual([...SOUND_KINDS].sort(), ['click', 'flip', 'hover', 'open', 'rev', 'stamp', 'step', 'summit', 'whoosh']);
+  assert.deepEqual([...SOUND_KINDS].sort(), ['click', 'flip', 'hover', 'open', 'rev', 'siren', 'stamp', 'step', 'summit', 'whoosh']);
   assert.deepEqual(Object.keys(MIN_GAP).sort(), [...SOUND_KINDS].sort());
   for (const kind of SOUND_KINDS) {
     const plan = soundPlan(kind);

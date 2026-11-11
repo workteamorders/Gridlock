@@ -277,6 +277,41 @@ try {
     await p.context().close();
   });
 
+  await step('a patrol chase starts with a siren and a cone on its road busts the racer', async () => {
+    const p = await newPage(browser);
+    await p.goto(`${SITE}/?motion=debug`);
+    await p.waitForFunction(() => window.__fx?.frames > 5);
+    await p.evaluate(() => {
+      window.__chaseEvents = [];
+      window.addEventListener('gridlock:chase', (event) => window.__chaseEvents.push(event.detail));
+    });
+    await p.waitForFunction(() => window.__fx.chases === 1, null, { timeout: 15000 });
+    const figure = p.locator('figure.junction');
+    assert.equal(await figure.getAttribute('data-chase'), 'run');
+    assert.equal(await figure.locator('.chase-heat').getAttribute('aria-hidden'), 'true');
+    await p.getByRole('button', { name: 'Drop cone' }).click();
+    await p.waitForFunction(() => window.__fx.busted === 1, null, { timeout: 7000 });
+    assert.equal(await figure.getAttribute('data-chase'), 'busted');
+    assert.equal(await figure.getAttribute('data-heat'), '0');
+    await p.waitForFunction(() => !document.querySelector('figure.junction').hasAttribute('data-chase'), null, { timeout: 7000 });
+    const events = await p.evaluate(() => window.__chaseEvents);
+    assert.ok(events.includes('siren') && events.at(-1) === 'busted', `chase events ${events}`);
+    assert.deepEqual(p.errors, []);
+    await p.context().close();
+  });
+
+  await step('a chase nobody stops gets away and raises the heat', async () => {
+    const p = await newPage(browser);
+    await p.goto(`${SITE}/?motion=debug`);
+    await p.waitForFunction(() => window.__fx?.frames > 5);
+    await p.waitForFunction(() => window.__fx.escaped === 1, null, { timeout: 20000 });
+    const figure = p.locator('figure.junction');
+    assert.equal(await figure.getAttribute('data-heat'), '1');
+    assert.equal(await p.evaluate(() => window.__fx.busted), 0);
+    assert.deepEqual(p.errors, []);
+    await p.context().close();
+  });
+
   await step('a phone-width tap places a cone inside the junction', async () => {
     const context = await browser.newContext({ viewport: { width: 360, height: 800 }, hasTouch: true });
     await context.addInitScript(() => { try { sessionStorage.setItem('gridlock.intro', '1'); } catch {} });
