@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { RungData } from '@/lib/mock';
 import { Icon, type IconName } from './Icon';
+import { RankMark } from './PanelMark';
 import { play } from '@/lib/sound';
 
 const STATUS: Record<RungData['status'], { icon: IconName; word: string }> = {
@@ -34,8 +35,8 @@ export function Rung({ r, cta, live = false }: { r: RungData; cta?: ReactNode; l
     bar.style.setProperty('--fill', ratio);
   }, [r.sold, r.cap, live]);
   return (
-    <li className={`rung rung--${r.status}`} data-just-opened={live && opened || undefined} onAnimationEnd={() => setOpened(false)}>
-      <div className="rung-rank"><small>Rank</small>{r.rank}</div>
+    <li className={`rung rung--${r.status}`} data-rank={r.rank} data-just-opened={live && opened || undefined} onAnimationEnd={() => setOpened(false)}>
+      <div className="rung-rank"><small>Rank</small>{r.rank}<RankMark rank={r.rank} /></div>
       <div className="rung-main">
         <span className={`rung-status${live && (r.status === 'sold' || r.status === 'open') ? ' rung-stamp' : ''}`}><Icon name={st.icon} />{st.word}{r.status === 'timed' && r.openAt ? ` ${r.openAt}` : ''}</span>
         <span className="rung-meta">

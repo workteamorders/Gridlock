@@ -8,7 +8,7 @@ export function SupplyChart() {
   const bw = (W - PL) / ranks.length;
   const summary = `Supply shrinks from 400 cards at rank 15 to 10 cards at rank 1. Total ladder supply is 2,475.`;
   return (
-    <figure className="chart">
+    <figure className="chart chart--supply">
       <figcaption>
         <h3 className="chart-title">{summary}</h3>
       </figcaption>

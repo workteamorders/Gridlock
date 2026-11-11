@@ -98,6 +98,9 @@ try {
   await step('hunt: two-step claim with the wait enforced; claimed car appears', async () => {
     const p = await newPage(browser, { wallet: true });
     await p.goto(`${SITE}/hunt/`); await p.waitForSelector('text=0 of 12 claimed');
+    const marks = await p.locator('.hunt-file .hunt-mark').evaluateAll((icons) => icons.map((icon) => icon.innerHTML));
+    assert.equal(marks.length, 12);
+    assert.equal(new Set(marks).size, 12);
     await p.click('button:has-text("Connect wallet")'); await p.click('button:has-text("Mock Wallet")');
     await p.waitForSelector('#hunt-secret');
     await p.fill('#hunt-index', '3'); await p.fill('#hunt-secret', testSecret(5));

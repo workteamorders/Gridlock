@@ -20,7 +20,7 @@ export function LadderView() {
   return (
     <div className="stack">
       {example ? (
-        <div className="panel stack-tight">
+        <div className="panel panel--sample stack-tight">
           <span className="badge badge--example">Example</span>
           <p>Gridlock is not deployed yet. These rungs show the real caps with example prices and sales.</p>
         </div>

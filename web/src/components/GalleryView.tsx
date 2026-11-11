@@ -40,7 +40,7 @@ function Detail({ id }: { id: number }) {
         <FlipCard
           front={<CardImage src={src} size={340} alt={`${car.hidden ? 'Hidden car' : `Rank ${car.rank} car`}, number ${car.id}, serial ${car.serial}`} />}
           back={(
-            <div className="panel panel--raised flip-sheet stack-tight">
+            <div className="panel panel--raised panel--record flip-sheet stack-tight">
               <p className="label">Rap sheet</p>
               <p className="flip-sheet-title">Car #{car.id}</p>
               <p>{car.hidden ? 'Hidden car' : `Rank ${car.rank}`}, serial {car.serial}</p>

@@ -1,5 +1,6 @@
 'use client';
 
+import { HuntMark } from './PanelMark';
 import { CardImage } from './CardImage';
 import { ResultStamp } from './fx/ResultStamp';
 import { readTokenImage } from '@/lib/chain';
@@ -122,8 +123,8 @@ export function HuntView() {
             {Array.from({ length: 12 }, (_, i) => {
               const a = claimers[i]; const done = !!a && !/^0x0+$/.test(a);
               return (
-                <li key={i} className="panel stack-tight">
-                  <span className="label">Hidden car {i}</span>
+                <li key={i} className="panel hunt-file stack-tight" data-file={i + 1}>
+                  <span className="hunt-file-head"><span className="label">Hidden car {i}</span><HuntMark index={i} /></span>
                   <span className="row"><Icon name={done ? 'check' : 'lock'} />{done ? `Claimed by ${shortAddress(a!)}` : 'Not claimed'}</span>
                   {done && ids[i] ? <Link href={`/gallery/?id=${ids[i]}`}>See car #{ids[i]}</Link> : null}
                 </li>
@@ -137,7 +138,7 @@ export function HuntView() {
           {!account ? <div className="stack-tight"><p>Connect a wallet to claim.</p><ConnectButton /></div> : (
             <>
               {hasCommit && waiting && commit ? (
-                <div className="panel stack-tight"><p>Step 1 is saved. You can do step 2 in:</p><Countdown target={commit.revealableAt} nowFn={c.now} label="Time until you can claim" /><p className="dim">Earliest {formatUtc(commit.revealableAt)}.</p></div>
+                <div className="panel panel--timer stack-tight"><p>Step 1 is saved. You can do step 2 in:</p><Countdown target={commit.revealableAt} nowFn={c.now} label="Time until you can claim" /><p className="dim">Earliest {formatUtc(commit.revealableAt)}.</p></div>
               ) : hasCommit ? <div className="alert alert--ok" role="status"><Icon name="check" /><p>Step 1 is saved and the wait is over. Do step 2 now.</p></div> : null}
               <Field id="hunt-index" label="Hidden car number (0 to 11)" inputMode="numeric" value={index} onChange={(e) => { setIndex(e.target.value); setErrs((p) => ({ ...p, index: undefined })); }} error={errs.index} autoComplete="off" />
               <Field id="hunt-secret" label="Your hunt code" type="password" value={secret} onChange={(e) => { setSecret(e.target.value); setErrs((p) => ({ ...p, secret: undefined })); }} error={errs.secret} help="0x followed by 64 characters. This site never stores it and it never leaves your device until step 2 is sent." autoComplete="off" spellCheck={false} />

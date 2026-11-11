@@ -42,13 +42,13 @@ export function HomeLadder() {
   return (
     <div className="hero-ladder">
       <div className="stack">
-        <div className="panel stack-tight">
+        <div className="panel panel--chapter stack-tight">
           <ChapterHead n={1} id="ladder-title" kicker="the ladder">Climb the ladder</ChapterHead>
           <p>Lit rungs are open. A locked rung opens when the one before it sells out or times out.</p>
         </div>
 
         {live ? (
-          <div key="live" className="panel stack-tight hero-panel">
+          <div key="live" className="panel panel--meter stack-tight hero-panel">
             <span className="label">Minted so far</span>
             <p className="big-number num"><RollNumber value={ladderTotal} /> <small className="dim">of 2,475</small></p>
             {allSold ? (
@@ -76,12 +76,12 @@ export function HomeLadder() {
             )}
           </div>
         ) : c.phase === 'undeployed' ? (
-          <div key="undeployed" className="panel stack-tight">
+          <div key="undeployed" className="panel panel--sample stack-tight">
             <span className="badge badge--example">Example</span>
             <p>Gridlock is not deployed yet. The ladder on this page shows the real caps with example prices and sales so you can see how it will work.</p>
           </div>
         ) : c.phase === 'error' ? (
-          <div className="panel hero-panel"><p>The network is not answering, so live numbers are not shown. Nothing is affected. Try again in a moment.</p></div>
+          <div className="panel panel--failure hero-panel"><p>The network is not answering, so live numbers are not shown. Nothing is affected. Try again in a moment.</p></div>
         ) : (
           <div key="sk" className="panel skeleton hero-panel-sk" role="status" aria-busy="true" aria-label="Loading ladder" />
         )}
@@ -90,14 +90,14 @@ export function HomeLadder() {
         {live ? <Ladder live rungs={toRungData(rungs)} /> : c.phase === 'undeployed' ? <Ladder rungs={exampleLadder()} /> : <LoadingLadder rungs={exampleLadder()} />}
       </div>
         {c.phase === 'undeployed' ? (
-          <div className="panel stack-tight home-preview">
+          <div className="panel panel--proof stack-tight home-preview">
             <p className="label">Example card</p>
             <CardImage src="/art/example-card.svg" example size={220} alt="Example wanted-poster card with an invented comic car. Not a real card." />
             <p className="dim">Real cards are drawn by the contract itself, each with its own car, paint and livery.</p>
           </div>
         ) : null}
         {preview && preview.rank === rank && preview.sold === sold ? (
-          <div className="panel stack-tight home-preview"><p className="label">Next card at rank {rank}</p><CardImage src={preview.src} size={220} alt={`Next card at rank ${rank}, drawn by the contract`} /></div>
+          <div className="panel panel--next stack-tight home-preview"><p className="label">Next card at rank {rank}</p><CardImage src={preview.src} size={220} alt={`Next card at rank ${rank}, drawn by the contract`} /></div>
         ) : null}
     </div>
   );
