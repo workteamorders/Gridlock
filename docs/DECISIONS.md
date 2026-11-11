@@ -234,3 +234,11 @@ Decay uses integer division from the last update time, so a transfer resets the 
 **D-11.10 Local test chain.** `contracts/harness/rpc-server.mjs` serves the harness EVM over JSON-RPC (anvil substitute). It accepts `eth_sendTransaction` from any address and a `/__warp` control. It is for local tests only and must never be exposed.
 
 **D-11.11 First-mint notice.** Shown once per browser (localStorage `gridlock.riskAck`), then every mint still shows the permanent-action dialog.
+
+## 12. Visual live
+
+- **Motion.** Full memakai simulasi dan animasi UI. Reduced menampilkan kota statis. Off menyembunyikan kota. Override URL mengunci kontrol pada Off untuk halaman tersebut. Preferensi sistem, saveData dan tab tersembunyi tetap menjeda animasi saat pengguna memilih Full. Timer chain tetap berjalan sebagai informasi, tanpa pengumuman tiap detik.
+- **Canvas dan anggaran.** Engine diimpor saat idle sesudah event load dan kandidat LCP awal. Observer menunggu kandidat yang baru dilukis, dengan fallback waktu saat observasi tidak tersedia. Governor menurunkan jumlah mobil setiap jendela lambat 2 detik dan berhenti setelah dua jendela berturut-turut di bawah 30 fps. Opacity canvas dibatasi agar teks dim tetap memenuhi AA di atas piksel paling terang.
+- **Preview dan konfirmasi.** Home membaca kartu berikutnya melalui `previewNext`. Perubahan progres dan segel ladder mengikuti snapshot chain. Efek CAUGHT dan CLAIMED menunggu receipt sukses, begitu juga animasi pengiriman. Kartu mint hasil konfirmasi memakai token ID dari log receipt. Jika RPC tidak menyediakan log, cocokkan rank dan serial pembelian dengan kepemilikan di chain. Segel di styleguide diberi label EXAMPLE.
+- **Feed.** Strip aktivitas opsional dilewati. Polling ladder yang sudah ada tetap menjadi sumber data live tanpa menambah permintaan log berkala ke relay.
+- **Pengujian.** Layout mengambil hasil axe dengan motion aktif, lalu membuat tangkapan layar terpisah dengan `?motion=off` dan jam browser tetap. Server e2e mengirim dokumen 404 hasil export dan respons geo lokal. Scanner mengabaikan URL template dokumentasi yang persis memakai `{API_KEY}`, serta memeriksa nama merek pada direktori aset.

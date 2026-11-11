@@ -1,13 +1,13 @@
 // Local end-to-end: starts the local chain and the static site, drives the main flows with an injected wallet.
 import { spawn } from 'node:child_process';
 import assert from 'node:assert/strict';
-import { pages, launch, newPage, shot, start, info, warp, rpc, writeDeployment, ACCOUNT, OTHER, testSecret, SITE } from './lib.mjs';
+import { pages, launch, newPage, shot, start, startSite, info, warp, rpc, writeDeployment, ACCOUNT, OTHER, testSecret, SITE } from './lib.mjs';
 
 const web = new URL('..', import.meta.url).pathname;
 const chainProc = await start('node', ['rpc-server.mjs', '--port', '8545'], { cwd: `${web}../contracts/harness` }, 'local test chain');
 const i = await info();
 writeDeployment(`${web}out-e2e`, i);
-const siteProc = await start('python3', ['-m', 'http.server', '4173', '--bind', '127.0.0.1'], { cwd: `${web}out-e2e` }, 'Serving HTTP');
+const siteProc = await startSite(`${web}out-e2e`);
 const browser = await launch();
 const results = [];
 const step = async (name, fn) => { try { await fn(); results.push(['ok', name]); console.log('ok  ', name); } catch (e) { results.push(['FAIL', name, e.message]); console.log('FAIL', name, '\n    ', e.message.split('\n')[0]); const pg = pages[pages.length - 1]; if (pg && !pg.isClosed()) { await shot(pg, 'fail-' + results.length).catch(() => undefined); console.log('    page text:', (await pg.locator('body').innerText().catch(() => '')).replace(/\s+/g, ' ').slice(0, 700)); console.log('    errors:', pg.errors); } } };
@@ -47,6 +47,7 @@ try {
     await p.waitForSelector('text=Cannot be undone');
     await p.click('button:has-text("Mint 2 cars for")');
     await p.waitForSelector('text=Check the receipt yourself', { timeout: 30000 });
+    await p.getByRole('img', { name: 'Caught', exact: true }).waitFor();
     const t = await text(p); assert.match(t, /Car numbers\s*\n?\s*1, 2/);
     await shot(p, 'mint-done'); assert.deepEqual(p.errors, []); await p.context().close();
   });
@@ -182,11 +183,85 @@ try {
     await p.context().close();
   });
 
-  await step('reduced motion: no animations are running on home', async () => {
+  await step('reduced motion: one canvas paint and no infinite animations', async () => {
     const p = await newPage(browser, { reducedMotion: 'reduce' });
-    await p.goto(`${SITE}/`); await p.waitForSelector('text=Minted so far');
-    const n = await p.evaluate(() => document.getAnimations().filter((a) => a.playState === 'running' && a.effect?.getTiming().iterations === Infinity).length);
-    assert.equal(n, 0); await p.context().close();
+    await p.goto(`${SITE}/?motion=debug`);
+    await p.waitForFunction(() => window.__fx?.frames === 1);
+    await p.waitForTimeout(400);
+    const state = await p.evaluate(() => ({
+      frames: window.__fx.frames,
+      infinite: document.getAnimations().filter((a) => a.playState === 'running' && a.effect?.getTiming().iterations === Infinity).length,
+    }));
+    assert.deepEqual(state, { frames: 1, infinite: 0 });
+    assert.deepEqual(p.errors, []);
+    await p.context().close();
+  });
+
+  await step('Motion works with a keyboard, syncs, persists and honors the URL override', async () => {
+    const p = await newPage(browser);
+    await p.goto(SITE);
+    const control = p.locator('header .motion-button');
+    await control.focus();
+    await p.keyboard.press('Enter');
+    await p.waitForFunction(() => document.documentElement.dataset.motion === 'reduced');
+    assert.match(await p.locator('footer .motion-button').innerText(), /Reduced/);
+    await p.reload();
+    await p.waitForFunction(() => document.documentElement.dataset.motion === 'reduced');
+    await control.focus();
+    await p.keyboard.press('Space');
+    await p.waitForFunction(() => document.documentElement.dataset.motion === 'off');
+    await p.goto(`${SITE}/?motion=off`);
+    await p.waitForFunction(() => document.querySelector('header .motion-button')?.disabled);
+    assert.deepEqual(p.errors, []);
+    await p.context().close();
+  });
+
+  await step('data saver and tab visibility stop the engine and CSS animations', async () => {
+    const p = await newPage(browser);
+    await p.addInitScript(() => {
+      const network = Object.assign(new EventTarget(), { saveData: true });
+      Object.defineProperty(navigator, 'connection', { value: network, configurable: true });
+    });
+    await p.goto(`${SITE}/?motion=debug`);
+    await p.waitForFunction(() => window.__fx?.frames === 1);
+    await p.waitForTimeout(180);
+    assert.deepEqual(await p.evaluate(() => [window.__fx.frames, document.documentElement.dataset.motion]), [1, 'reduced']);
+    await p.evaluate(() => {
+      navigator.connection.saveData = false;
+      navigator.connection.dispatchEvent(new Event('change'));
+    });
+    await p.waitForFunction(() => window.__fx.frames > 4);
+    const paused = await p.evaluate(() => {
+      Object.defineProperty(document, 'hidden', { configurable: true, value: true });
+      document.dispatchEvent(new Event('visibilitychange'));
+      return window.__fx.frames;
+    });
+    await p.waitForTimeout(180);
+    assert.deepEqual(await p.evaluate(() => [window.__fx.frames, document.getAnimations().length]), [paused, 0]);
+    assert.deepEqual(p.errors, []);
+    await p.context().close();
+  });
+
+  await step('traffic canvas is decorative and leaves pointer and keyboard actions available', async () => {
+    const p = await newPage(browser);
+    await p.goto(`${SITE}/?motion=debug`);
+    await p.waitForFunction(() => window.__fx?.frames > 5);
+    const canvas = p.locator('canvas.live-background');
+    assert.equal(await canvas.getAttribute('aria-hidden'), 'true');
+    assert.equal(await canvas.evaluate((el) => getComputedStyle(el).pointerEvents), 'none');
+    const brand = p.locator('header .brand');
+    await brand.focus();
+    await p.keyboard.press('Tab');
+    assert.match(await p.locator(':focus').innerText(), /home/i);
+    for (const [x, y] of [[38, 200], [144, 250], [260, 320], [360, 420]]) {
+      await p.mouse.move(x, y, { steps: 12 });
+      await p.waitForTimeout(70);
+    }
+    await p.waitForFunction(() => window.__fx.interactions > 0 && window.__fx.brakes > 0);
+    await p.locator('header .motion-button').click();
+    await p.waitForFunction(() => document.documentElement.dataset.motion === 'reduced');
+    assert.deepEqual(p.errors, []);
+    await p.context().close();
   });
 
   await step('RPC failure: dead end with retry, nothing crashes', async () => {

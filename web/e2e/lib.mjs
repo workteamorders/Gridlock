@@ -1,12 +1,19 @@
 // Shared helpers for the local end-to-end run (local chain + static site + injected mock wallet).
-import { chromium } from '/opt/npm-tools/node_modules/playwright/index.mjs';
+import { createRequire } from 'node:module';
+import { existsSync } from 'node:fs';
+
+const require = createRequire(import.meta.url);
+const { chromium } = process.env.GRIDLOCK_E2E_TOOLS
+  ? require(`${process.env.GRIDLOCK_E2E_TOOLS}/playwright`)
+  : existsSync('/opt/npm-tools/node_modules/playwright') ? require('/opt/npm-tools/node_modules/playwright') : require('playwright');
 import { spawn } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { keccak256, toHex } from 'viem';
 
 export const pages = [];
 export const RPC = 'http://127.0.0.1:8545';
-export const SITE = 'http://127.0.0.1:4173';
+export const SITE_PORT = process.env.GRIDLOCK_E2E_PORT ?? '4173';
+export const SITE = `http://127.0.0.1:${SITE_PORT}`;
 export const ACCOUNT = '0x70997970C51812dc3A010C7d01b50e0d17dc79C8';
 export const OTHER = '0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC';
 export const testSecret = (i) => keccak256(toHex(`GRIDLOCK-TEST-ONLY-SECRET-${i}`));
@@ -28,7 +35,7 @@ export function start(cmd, args, opts, ready) {
     const on = (d) => { buf += d; if (buf.includes(ready)) res(p); };
     p.stdout.on('data', on); p.stderr.on('data', on);
     p.on('exit', (c) => rej(new Error(`${cmd} exited ${c}: ${buf}`)));
-    setTimeout(() => rej(new Error(`timeout waiting for ${cmd}: ${buf}`)), 60000);
+    setTimeout(() => rej(new Error(`timeout waiting for ${cmd}: ${buf}`)), 60000).unref();
   });
 }
 
@@ -51,7 +58,8 @@ const MOCK_WALLET = (account) => `
 })();`;
 
 export async function launch() {
-  const browser = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--no-sandbox'] });
+  const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH ?? (process.platform === 'darwin'
+    ? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' : '/usr/bin/google-chrome'), args: ['--no-sandbox'] });
   return browser;
 }
 export async function newPage(browser, { wallet = false, width = 1280, height = 900, reducedMotion = 'no-preference', headers = {} } = {}) {
@@ -59,13 +67,14 @@ export async function newPage(browser, { wallet = false, width = 1280, height = 
   if (wallet) await ctx.addInitScript(MOCK_WALLET(ACCOUNT));
   const page = await ctx.newPage();
   const errors = [];
-  page.on('response', (r) => { if (r.status() === 404 && !r.url().endsWith('/api/geo')) errors.push('404: ' + r.url()); });
+  page.on('response', (r) => { if (r.status() === 404 && !r.url().endsWith('/api/geo') && new URL(r.url()).pathname !== '/does-not-exist/') errors.push('404: ' + r.url()); });
   page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`));
   page.on('console', (m) => { if (m.type() === 'error' && !/status of 404/.test(m.text())) errors.push(`console: ${m.text()}`); });
   page.errors = errors;
   pages.push(page);
   return page;
 }
+export const startSite = (directory) => start('python3', [new URL('./serve.py', import.meta.url).pathname, SITE_PORT], { cwd: directory }, 'Serving HTTP');
 export const shot = (page, name, opts = {}) => page.screenshot({ path: `${SHOTS}${name}.png`, fullPage: true, ...opts });
 
 export function writeDeployment(root, i) {
