@@ -291,21 +291,25 @@ export function startJunction(canvas: HTMLCanvasElement) {
     const dpr = Math.min(devicePixelRatio, canvas.clientWidth <= 768 ? 1.5 : 2);
     const width = Math.max(1, Math.round(canvas.clientWidth * dpr));
     const height = Math.max(1, Math.round(canvas.clientHeight * dpr));
-    if (map.width === width && map.height === height && sized) return;
-    canvas.width = map.width = width;
-    canvas.height = map.height = height;
+    if (canvas.width === width && canvas.height === height && sized) return;
+    const scale = Math.max(width / WIDTH, height / HEIGHT);
+    canvas.width = width;
+    canvas.height = height;
+    map.width = Math.ceil(WIDTH * scale);
+    map.height = Math.ceil(HEIGHT * scale);
     sized = true;
-    backdrop!.setTransform(width / WIDTH, 0, 0, height / HEIGHT, 0, 0);
+    backdrop!.setTransform(map.width / WIDTH, 0, 0, map.height / HEIGHT, 0, 0);
     drawMap(backdrop!);
-    ctx!.setTransform(width / WIDTH, 0, 0, height / HEIGHT, 0, 0);
+    ctx!.setTransform(scale, 0, 0, scale, (width - WIDTH * scale) / 2, (height - HEIGHT * scale) / 2);
     draw(ctx!, 0);
   }
 
   function move(event: PointerEvent) {
     if (!active || !event.isPrimary) return;
     const box = stage!.getBoundingClientRect();
-    x = (event.clientX - box.left) / box.width * WIDTH;
-    y = (event.clientY - box.top) / box.height * HEIGHT;
+    const scale = Math.max(box.width / WIDTH, box.height / HEIGHT);
+    x = (event.clientX - box.left - box.width / 2) / scale + MID_X;
+    y = (event.clientY - box.top - box.height / 2) / scale + MID_Y;
     if (debug) debug.interactions++;
   }
 

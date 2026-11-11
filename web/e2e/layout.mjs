@@ -44,8 +44,8 @@ try {
       await shot(p, slug + '-gray');
     }
     if (MODE === 'undeployed' && path === '/') {
-      const ribbon = (await p.locator('.ribbon-list').first().locator('li').allTextContents()).join(' | ');
-      if (/minted|left|opens by|open at/i.test(ribbon)) p.errors.push(`ribbon shows live numbers without a deployment: ${ribbon}`);
+      if (await p.locator('.comic-wanted .badge--example').count() !== 1) p.errors.push('The undeployed poster is missing its Example label');
+      if (await p.locator('.comic-mint').count()) p.errors.push('Home offers minting without a deployment');
     }
     const hscroll = over.sw > over.iw + 1;
     if (hscroll || axe.length || p.errors.length) bad++;

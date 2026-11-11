@@ -1,0 +1,84 @@
+.comic-page {
+  display: grid;
+  gap: var(--s-5);
+  padding-block: var(--s-5) var(--s-7);
+}
+.comic-page > section { min-width: 0; }
+.comic-junction { position: relative; }
+.comic-junction .junction {
+  position: relative;
+  box-shadow: 5px 5px 0 var(--brush);
+}
+.junction-title {
+  position: absolute;
+  z-index: 1;
+  top: var(--s-3);
+  left: var(--s-3);
+  max-width: calc(100% - 2 * var(--s-3));
+  padding: var(--s-2) var(--s-3);
+  background: var(--action);
+  border: var(--line-w) solid var(--surface);
+  box-shadow: 3px 3px 0 var(--surface);
+  color: var(--text-on-action);
+  font-size: clamp(var(--fs-20), 4vw, var(--fs-44));
+  pointer-events: none;
+}
+.comic-junction .junction-caption { padding-block: 3px; }
+.junction-hint { font: 700 var(--fs-12)/1.3 var(--font-body); }
+.junction:not([data-running]) .junction-hint { visibility: hidden; }
+.junction-actions { margin-inline-start: auto; display: flex; align-items: center; gap: var(--s-2); }
+.comic-ladder-shortcut { white-space: nowrap; }
+.comic-wanted {
+  display: grid;
+  align-content: start;
+  justify-items: center;
+  gap: var(--s-4);
+  padding: var(--s-5);
+  border: var(--line-w-strong) solid var(--line);
+  border-block-start: 7px solid var(--brush);
+  box-shadow: 5px 5px 0 var(--brush-deep);
+  background: var(--surface-2);
+}
+.comic-wanted-copy { justify-self: stretch; }
+.comic-wanted h2 {
+  color: var(--action);
+  font-size: clamp(var(--fs-44), 8vw, var(--fs-60));
+}
+.comic-wanted-copy p { color: var(--text-dim); }
+.comic-wanted .cardimg {
+  width: min(100%, 300px);
+  box-shadow: 6px 6px 0 var(--surface);
+}
+.comic-ladder {
+  align-self: start;
+  padding: var(--s-5);
+  border: var(--line-w-strong) solid var(--action);
+  border-block-start-width: 8px;
+  background: var(--surface-3);
+  box-shadow: 5px 5px 0 var(--action);
+}
+.comic-ladder-status {
+  min-height: 112px;
+  padding: var(--s-4);
+  border-inline-start: 4px solid var(--brush);
+  background: var(--surface);
+}
+.comic-ladder-status h3 { color: var(--action); }
+.comic-mint { align-self: start; }
+.comic-ladder-links { display: grid; gap: var(--s-2); }
+.comic-ladder-links .btn--secondary { background: var(--surface); }
+
+@media (width >= 760px) {
+  .comic-page { grid-template-columns: minmax(0, 5fr) minmax(0, 4fr); }
+  .comic-junction { grid-column: 1 / -1; }
+  .comic-junction .junction-scene { aspect-ratio: 2.65; }
+  .comic-wanted { grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); align-items: center; }
+  .comic-ladder { margin-block-start: var(--s-4); }
+}
+@media (width <= 420px) {
+  .junction-hint { display: none; }
+  .comic-junction .junction-cone, .comic-ladder-shortcut { font-size: var(--fs-12); }
+}
+@media (760px <= width < 1050px) {
+  .comic-wanted { grid-template-columns: minmax(0, 1fr); }
+}

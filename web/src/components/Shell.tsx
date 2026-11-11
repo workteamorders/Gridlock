@@ -4,7 +4,6 @@ import type { ReactNode } from 'react';
 import { SiteHeader } from './SiteHeader';
 import { SiteFooter } from './SiteFooter';
 import { Banners } from './Banners';
-import { IntroStamp } from './stage/IntroStamp';
 import { Magnetic } from './stage/Magnetic';
 import { SoundEffects } from './stage/SoundEffects';
 
@@ -14,7 +13,6 @@ export function Shell({ current, children }: { current?: string; children: React
     <>
       {current === '/' ? null : <LiveBackground mint={current === '/mint/'} />}
       <RouteWipe />
-      {current === '/' ? <IntroStamp /> : null}
       <Magnetic />
       <SoundEffects />
       <SiteHeader {...(current ? { current } : {})} />
