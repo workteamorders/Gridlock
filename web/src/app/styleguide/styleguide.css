@@ -1,0 +1,26 @@
+/* Page-only layout helpers for /styleguide. Colors and sizes come from tokens. */
+.sg-intro { border-top: 0; }
+.sw { background: var(--sw-color); }
+.sw-surface { --sw-color: var(--surface); } .sw-surface-2 { --sw-color: var(--surface-2); } .sw-surface-3 { --sw-color: var(--surface-3); }
+.sw-text { --sw-color: var(--text); } .sw-text-dim { --sw-color: var(--text-dim); } .sw-action { --sw-color: var(--action); }
+.sw-brush { --sw-color: var(--brush); } .sw-brush-deep { --sw-color: var(--brush-deep); } .sw-ok { --sw-color: var(--ok); }
+.sw-warn { --sw-color: var(--warn); } .sw-bad { --sw-color: var(--bad); } .sw-info { --sw-color: var(--info); }
+.sg-type { display: grid; grid-template-columns: 56px 1fr; gap: var(--s-4); align-items: baseline; }
+.sg-display { font-family: var(--font-display); text-transform: uppercase; line-height: var(--lh-tight); }
+.sg-type-fs-60 { font-size: var(--fs-60); } .sg-type-fs-44 { font-size: var(--fs-44); } .sg-type-fs-32 { font-size: var(--fs-32); }
+.sg-type-fs-24 { font-size: var(--fs-24); } .sg-type-fs-20 { font-size: var(--fs-20); } .sg-type-fs-16 { font-size: var(--fs-16); }
+.sg-type-fs-14 { font-size: var(--fs-14); } .sg-type-fs-12 { font-size: var(--fs-12); }
+.sg-float { background: var(--elev-float-bg); border: var(--line-w-strong) solid var(--elev-float-line); }
+.sg-spacing { display: flex; align-items: flex-end; gap: var(--s-2); }
+.sg-sp { display: block; background: var(--action); width: var(--s-4); }
+.sg-s-1 { height: var(--s-1); } .sg-s-2 { height: var(--s-2); } .sg-s-3 { height: var(--s-3); } .sg-s-4 { height: var(--s-4); }
+.sg-s-5 { height: var(--s-5); } .sg-s-6 { height: var(--s-6); } .sg-s-7 { height: var(--s-7); } .sg-s-8 { height: var(--s-8); }
+.sg-forms { grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); align-items: start; }
+.sg-fieldset { border: 0; padding: 0; margin: 0; }
+.sg-sk-rung { height: var(--sign-size); }
+.sg-sk-line { height: var(--s-5); margin-top: var(--s-2); width: 60%; }
+.sg-mt { margin-top: var(--s-3); }
+.sg-signs { grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); }
+.sg-cards { grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); }
+.sg-heat { grid-template-columns: repeat(auto-fill, minmax(min(100%, 170px), 1fr)); }
+.sg-heat .cardart { max-width: 200px; }

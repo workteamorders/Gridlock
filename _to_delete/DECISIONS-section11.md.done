@@ -1,0 +1,24 @@
+
+## 11. Website (step 4)
+
+**D-11.1 viem only, no wagmi.** Wallet discovery is a small EIP-6963 layer (`src/lib/wallet.tsx`). The site needs connect, switch network and sign. Fewer dependencies means a smaller bundle and less supply-chain surface. Reads go through the site's own `/api/rpc`.
+
+**D-11.2 Deployment file fetched at runtime.** `public/deployments/<chainId>.json` is read in the browser, so the same build works before and after deployment. `{ "deployed": false }` is the explicit "not deployed" state (a missing file also means not deployed). An optional `expected` block holds the published parameters; the site compares them with the chain and pauses minting on any difference. `pnpm verify:deployment` can fill and re-check it.
+
+**D-11.3 Mint has three arguments.** `mint(rank, quantity, expectedSerial)` (see D-10.2). The page previews the serial, re-reads it just before signing, and warns without sending anything if it changed.
+
+**D-11.4 Chain clock.** All countdowns use the latest block time plus the time since it was read, not the visitor's clock. Block time is the sequencer's clock.
+
+**D-11.5 Geoblock is an interface limit.** `/api/geo` (Pages Function) reads `CF-IPCountry` and `BLOCKED_COUNTRIES`. The default list is empty. A blocked visitor sees view-only mode. The contract has no permission checks, and the site says so.
+
+**D-11.6 Hunt salt is derived.** `salt = keccak256("gridlock-hunt-salt:{account}:{index}")`, so nothing is stored. At step 2 the visitor types the code again. The secret never leaves the browser before step 2. The page checks the code against the public commitment before step 1 to avoid wasted gas.
+
+**D-11.7 Images come from the contract.** Gallery and Garage load `tokenURI` images lazily and use them only as `<img src>`. Mint previews the second car of a 2-car mint from the renderer's `svg`. Cards drawn from fake data are labelled EXAMPLE.
+
+**D-11.8 CSP.** `scripts/csp-headers.mjs` hashes every inline script after the build and writes `out/_headers`. No `unsafe-inline` for scripts; `connect-src 'self'` because reads use `/api/rpc`.
+
+**D-11.9 Layout stability.** Loading placeholders have the final size (`LoadingLadder`, `.gate-sk`, `.hero-panel`) and are keyed so React replaces them. The "not deployed" notice is inside page bodies, not a top banner, because a banner that appears late pushes the whole page down (CLS 0.98 before the change, 0 after).
+
+**D-11.10 Local test chain.** `contracts/harness/rpc-server.mjs` serves the harness EVM over JSON-RPC (anvil substitute). It accepts `eth_sendTransaction` from any address and a `/__warp` control. It is for local tests only and must never be exposed.
+
+**D-11.11 First-mint notice.** Shown once per browser (localStorage `gridlock.riskAck`), then every mint still shows the permanent-action dialog.

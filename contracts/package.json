@@ -1,0 +1,14 @@
+{
+  "name": "gridlock-contracts",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "gen-hunt": "node scripts/gen-hunt.mjs",
+    "gen-hunt:test": "node scripts/gen-hunt.mjs --test --out ./hunt-test-out",
+    "harness:compile": "cd harness && node compile.mjs",
+    "harness:test": "cd harness && node --test tests/*.test.mjs"
+  },
+  "dependencies": {
+    "viem": "^2.57.17"
+  }
+}

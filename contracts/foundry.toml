@@ -1,0 +1,25 @@
+[profile.default]
+src = "src"
+test = "test"
+script = "script"
+libs = ["lib"]
+out = "out"
+cache_path = "cache"
+solc_version = "0.8.38"
+auto_detect_solc = false
+evm_version = "shanghai"   # no Cancun opcodes: Robinhood Chain EVM version support is not fully verified (see docs/DECISIONS.md)
+optimizer = true
+optimizer_runs = 200
+via_ir = false
+bytecode_hash = "none"
+remappings = ["solady/=lib/solady/src/", "forge-std/=lib/forge-std/src/"]
+fs_permissions = [{ access = "read", path = "./deploy" }, { access = "read-write", path = "./deployments" }]
+gas_limit = 1_000_000_000
+
+[fuzz]
+runs = 256
+
+[invariant]
+runs = 64
+depth = 64
+fail_on_revert = false

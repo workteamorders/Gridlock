@@ -1,0 +1,43 @@
+{
+  "_comment": "TEMPLATE. Copy to testnet.json and fill in every REPLACE value. startTime must be a real unix time. Short clocks are for testnet only. The unedited file fails on purpose.",
+  "treasury": "0x0000000000000000000000000000000000000000",
+  "startTime": 0,
+  "openTimeoutSeconds": 120,
+  "heatDecaySeconds": 60,
+  "revealMinDelaySeconds": 10,
+  "caps": [
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3
+  ],
+  "pricesWei": [
+    "REPLACE_WITH_WEI_FOR_RANK_1",
+    "REPLACE_WITH_WEI_FOR_RANK_2",
+    "REPLACE_WITH_WEI_FOR_RANK_3",
+    "REPLACE_WITH_WEI_FOR_RANK_4",
+    "REPLACE_WITH_WEI_FOR_RANK_5",
+    "REPLACE_WITH_WEI_FOR_RANK_6",
+    "REPLACE_WITH_WEI_FOR_RANK_7",
+    "REPLACE_WITH_WEI_FOR_RANK_8",
+    "REPLACE_WITH_WEI_FOR_RANK_9",
+    "REPLACE_WITH_WEI_FOR_RANK_10",
+    "REPLACE_WITH_WEI_FOR_RANK_11",
+    "REPLACE_WITH_WEI_FOR_RANK_12",
+    "REPLACE_WITH_WEI_FOR_RANK_13",
+    "REPLACE_WITH_WEI_FOR_RANK_14",
+    "REPLACE_WITH_WEI_FOR_RANK_15"
+  ],
+  "huntCommitments": []
+}

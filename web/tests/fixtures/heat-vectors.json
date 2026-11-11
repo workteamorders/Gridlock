@@ -1,0 +1,4686 @@
+{
+ "decay": 3600,
+ "mintedAt": 1000000,
+ "events": [
+  {
+   "type": "transfer",
+   "at": 1000000
+  },
+  {
+   "type": "observe",
+   "at": 1000000,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 1072000,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 1000001,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 1072000,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 1003599,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 1072000,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 1003600,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 1072000,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 1007207,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 1072000,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 1226880,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 20
+  },
+  {
+   "type": "transfer",
+   "at": 1226880
+  },
+  {
+   "type": "observe",
+   "at": 1226880,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 1298880,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 1226881,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 1298880,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 1230479,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 1298880,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 1230480,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 1298880,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 1234087,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 1298880,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 1485440,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 20
+  },
+  {
+   "type": "transfer",
+   "at": 1495392
+  },
+  {
+   "type": "observe",
+   "at": 1495392,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 1567392,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 1495393,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 1567392,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 1498991,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 1567392,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 1498992,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 1567392,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 1502599,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 1567392,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 1704992,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 20
+  },
+  {
+   "type": "transfer",
+   "at": 1775136
+  },
+  {
+   "type": "observe",
+   "at": 1775136,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 1847136,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 1775137,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 1847136,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 1778735,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 1847136,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 1778736,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 1847136,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 1782343,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 1847136,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 2451488,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 20
+  },
+  {
+   "type": "transfer",
+   "at": 2461792
+  },
+  {
+   "type": "observe",
+   "at": 2461792,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 2533792,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 2461793,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 2533792,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 2465391,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 2533792,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 2465392,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 2533792,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 2468999,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 2533792,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 2906208,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 20
+  },
+  {
+   "type": "transfer",
+   "at": 3005664
+  },
+  {
+   "type": "observe",
+   "at": 3005664,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 3077664,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 3005665,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 3077664,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 3009263,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 3077664,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 3009264,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 3077664,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 3012871,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 3077664,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 3316832,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 20
+  },
+  {
+   "type": "transfer",
+   "at": 3451744
+  },
+  {
+   "type": "observe",
+   "at": 3451744,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 3523744,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 3451745,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 3523744,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 3455343,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 3523744,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 3455344,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 3523744,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 3458951,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 3523744,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 3602336,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 20
+  },
+  {
+   "type": "transfer",
+   "at": 3602336
+  },
+  {
+   "type": "observe",
+   "at": 3602336,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 3674336,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 3602337,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 3674336,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 3605935,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 3674336,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 3605936,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 3674336,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 3609543,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 3674336,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 3966368,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 20
+  },
+  {
+   "type": "transfer",
+   "at": 3966368
+  },
+  {
+   "type": "observe",
+   "at": 3966368,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 4038368,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 3966369,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 4038368,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 3969967,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 4038368,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 3969968,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 4038368,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 3973575,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 4038368,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 4506784,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 20
+  },
+  {
+   "type": "transfer",
+   "at": 4506784
+  },
+  {
+   "type": "observe",
+   "at": 4506784,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 4578784,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 4506785,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 4578784,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 4510383,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 4578784,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 4510384,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 4578784,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 4513991,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 4578784,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 4777504,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 20
+  },
+  {
+   "type": "transfer",
+   "at": 4830240
+  },
+  {
+   "type": "observe",
+   "at": 4830240,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 4902240,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 4830241,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 4902240,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 4833839,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 4902240,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 4833840,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 4902240,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 4837447,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 4902240,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 4989088,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 20
+  },
+  {
+   "type": "transfer",
+   "at": 4989088
+  },
+  {
+   "type": "observe",
+   "at": 4989088,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 5061088,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 4989089,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 5061088,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 4992687,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 5061088,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 4992688,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 5061088,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 4996295,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 5061088,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 5429792,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 20
+  },
+  {
+   "type": "transfer",
+   "at": 5433120
+  },
+  {
+   "type": "observe",
+   "at": 5433120,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 5505120,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 5433121,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 5505120,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 5436719,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 5505120,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 5436720,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 5505120,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 5440327,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 5505120,
+   "peakHeat": 20
+  },
+  {
+   "type": "observe",
+   "at": 5461536,
+   "heat": 13,
+   "stars": 1,
+   "heatZeroAt": 5505120,
+   "peakHeat": 20
+  },
+  {
+   "type": "transfer",
+   "at": 5465792
+  },
+  {
+   "type": "observe",
+   "at": 5465792,
+   "heat": 31,
+   "stars": 2,
+   "heatZeroAt": 5577392,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 5465793,
+   "heat": 31,
+   "stars": 2,
+   "heatZeroAt": 5577392,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 5469391,
+   "heat": 31,
+   "stars": 2,
+   "heatZeroAt": 5577392,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 5469392,
+   "heat": 30,
+   "stars": 2,
+   "heatZeroAt": 5577392,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 5472999,
+   "heat": 29,
+   "stars": 2,
+   "heatZeroAt": 5577392,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 5891008,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 5936768
+  },
+  {
+   "type": "observe",
+   "at": 5936768,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 6008768,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 5936769,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 6008768,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 5940367,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 6008768,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 5940368,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 6008768,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 5943975,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 6008768,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 6547072,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 6547072
+  },
+  {
+   "type": "observe",
+   "at": 6547072,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 6619072,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 6547073,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 6619072,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 6550671,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 6619072,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 6550672,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 6619072,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 6554279,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 6619072,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 7112192,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 7112192
+  },
+  {
+   "type": "observe",
+   "at": 7112192,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 7184192,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 7112193,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 7184192,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 7115791,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 7184192,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 7115792,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 7184192,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 7119399,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 7184192,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 7130752,
+   "heat": 15,
+   "stars": 1,
+   "heatZeroAt": 7184192,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 7175040
+  },
+  {
+   "type": "observe",
+   "at": 7175040,
+   "heat": 23,
+   "stars": 2,
+   "heatZeroAt": 7257840,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 7175041,
+   "heat": 23,
+   "stars": 2,
+   "heatZeroAt": 7257840,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 7178639,
+   "heat": 23,
+   "stars": 2,
+   "heatZeroAt": 7257840,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 7178640,
+   "heat": 22,
+   "stars": 2,
+   "heatZeroAt": 7257840,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 7182247,
+   "heat": 21,
+   "stars": 2,
+   "heatZeroAt": 7257840,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 7604224,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 7679296
+  },
+  {
+   "type": "observe",
+   "at": 7679296,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 7751296,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 7679297,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 7751296,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 7682895,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 7751296,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 7682896,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 7751296,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 7686503,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 7751296,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 8088256,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 8118912
+  },
+  {
+   "type": "observe",
+   "at": 8118912,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 8190912,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 8118913,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 8190912,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 8122511,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 8190912,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 8122512,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 8190912,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 8126119,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 8190912,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 8599936,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 8653824
+  },
+  {
+   "type": "observe",
+   "at": 8653824,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 8725824,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 8653825,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 8725824,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 8657423,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 8725824,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 8657424,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 8725824,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 8661031,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 8725824,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 8811136,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 8813936
+  },
+  {
+   "type": "observe",
+   "at": 8813936,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 8885936,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 8813937,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 8885936,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 8817535,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 8885936,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 8817536,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 8885936,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 8821143,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 8885936,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 9152944,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 9156480
+  },
+  {
+   "type": "observe",
+   "at": 9156480,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 9228480,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 9156481,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 9228480,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 9160079,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 9228480,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 9160080,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 9228480,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 9163687,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 9228480,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 9819776,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 9825856
+  },
+  {
+   "type": "observe",
+   "at": 9825856,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 9897856,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 9825857,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 9897856,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 9829455,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 9897856,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 9829456,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 9897856,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 9833063,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 9897856,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 9988672,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 9998544
+  },
+  {
+   "type": "observe",
+   "at": 9998544,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 10070544,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 9998545,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 10070544,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 10002143,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 10070544,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 10002144,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 10070544,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 10005751,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 10070544,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 10621264,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 10628448
+  },
+  {
+   "type": "observe",
+   "at": 10628448,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 10700448,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 10628449,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 10700448,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 10632047,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 10700448,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 10632048,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 10700448,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 10635655,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 10700448,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 11099360,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 11147872
+  },
+  {
+   "type": "observe",
+   "at": 11147872,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 11219872,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 11147873,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 11219872,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 11151471,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 11219872,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 11151472,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 11219872,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 11155079,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 11219872,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 11623960,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 11687704
+  },
+  {
+   "type": "observe",
+   "at": 11687704,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 11759704,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 11687705,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 11759704,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 11691303,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 11759704,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 11691304,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 11759704,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 11694911,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 11759704,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 12322200,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 12437144
+  },
+  {
+   "type": "observe",
+   "at": 12437144,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 12509144,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 12437145,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 12509144,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 12440743,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 12509144,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 12440744,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 12509144,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 12444351,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 12509144,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 12680600,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 12797336
+  },
+  {
+   "type": "observe",
+   "at": 12797336,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 12869336,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 12797337,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 12869336,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 12800935,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 12869336,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 12800936,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 12869336,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 12804543,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 12869336,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 12919320,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 12919320
+  },
+  {
+   "type": "observe",
+   "at": 12919320,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 12991320,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 12919321,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 12991320,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 12922919,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 12991320,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 12922920,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 12991320,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 12926527,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 12991320,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 13049176,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 13168728
+  },
+  {
+   "type": "observe",
+   "at": 13168728,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 13240728,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 13168729,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 13240728,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 13172327,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 13240728,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 13172328,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 13240728,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 13175935,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 13240728,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 13319256,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 13319256
+  },
+  {
+   "type": "observe",
+   "at": 13319256,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 13391256,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 13319257,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 13391256,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 13322855,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 13391256,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 13322856,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 13391256,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 13326463,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 13391256,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 13449880,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 13452728
+  },
+  {
+   "type": "observe",
+   "at": 13452728,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 13524728,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 13452729,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 13524728,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 13456327,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 13524728,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 13456328,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 13524728,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 13459935,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 13524728,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 13628856,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 13702200
+  },
+  {
+   "type": "observe",
+   "at": 13702200,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 13774200,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 13702201,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 13774200,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 13705799,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 13774200,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 13705800,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 13774200,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 13709407,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 13774200,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 14131128,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 14131128
+  },
+  {
+   "type": "observe",
+   "at": 14131128,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 14203128,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 14131129,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 14203128,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 14134727,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 14203128,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 14134728,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 14203128,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 14138335,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 14203128,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 14174136,
+   "heat": 9,
+   "stars": 1,
+   "heatZeroAt": 14203128,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 14250936
+  },
+  {
+   "type": "observe",
+   "at": 14250936,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 14322936,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 14250937,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 14322936,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 14254535,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 14322936,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 14254536,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 14322936,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 14258143,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 14322936,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 14394680,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 14401048
+  },
+  {
+   "type": "observe",
+   "at": 14401048,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 14473048,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 14401049,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 14473048,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 14404647,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 14473048,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 14404648,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 14473048,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 14408255,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 14473048,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 14514584,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 14517064
+  },
+  {
+   "type": "observe",
+   "at": 14517064,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 14589064,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 14517065,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 14589064,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 14520663,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 14589064,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 14520664,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 14589064,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 14524271,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 14589064,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 14631368,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 14632456
+  },
+  {
+   "type": "observe",
+   "at": 14632456,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 14704456,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 14632457,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 14704456,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 14636055,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 14704456,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 14636056,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 14704456,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 14639663,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 14704456,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 14930696,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 14939400
+  },
+  {
+   "type": "observe",
+   "at": 14939400,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 15011400,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 14939401,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 15011400,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 14942999,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 15011400,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 14943000,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 15011400,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 14946607,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 15011400,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 15228552,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 15237144
+  },
+  {
+   "type": "observe",
+   "at": 15237144,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 15309144,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 15237145,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 15309144,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 15240743,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 15309144,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 15240744,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 15309144,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 15244351,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 15309144,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 15362840,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 15362840
+  },
+  {
+   "type": "observe",
+   "at": 15362840,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 15434840,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 15362841,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 15434840,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 15366439,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 15434840,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 15366440,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 15434840,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 15370047,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 15434840,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 16047832,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 16056504
+  },
+  {
+   "type": "observe",
+   "at": 16056504,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 16128504,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 16056505,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 16128504,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 16060103,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 16128504,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 16060104,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 16128504,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 16063711,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 16128504,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 16404216,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 16470136
+  },
+  {
+   "type": "observe",
+   "at": 16470136,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 16542136,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 16470137,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 16542136,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 16473735,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 16542136,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 16473736,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 16542136,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 16477343,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 16542136,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 16689272,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 16693768
+  },
+  {
+   "type": "observe",
+   "at": 16693768,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 16765768,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 16693769,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 16765768,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 16697367,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 16765768,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 16697368,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 16765768,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 16700975,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 16765768,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 17148936,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 17262600
+  },
+  {
+   "type": "observe",
+   "at": 17262600,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 17334600,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 17262601,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 17334600,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 17266199,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 17334600,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 17266200,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 17334600,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 17269807,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 17334600,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 17874696,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 17874696
+  },
+  {
+   "type": "observe",
+   "at": 17874696,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 17946696,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 17874697,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 17946696,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 17878295,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 17946696,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 17878296,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 17946696,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 17881903,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 17946696,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 18381064,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 18428040
+  },
+  {
+   "type": "observe",
+   "at": 18428040,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 18500040,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 18428041,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 18500040,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 18431639,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 18500040,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 18431640,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 18500040,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 18435247,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 18500040,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 19086792,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 19174984
+  },
+  {
+   "type": "observe",
+   "at": 19174984,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 19246984,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 19174985,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 19246984,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 19178583,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 19246984,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 19178584,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 19246984,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 19182191,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 19246984,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 19829896,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 19952776
+  },
+  {
+   "type": "observe",
+   "at": 19952776,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 20024776,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 19952777,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 20024776,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 19956375,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 20024776,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 19956376,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 20024776,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 19959983,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 20024776,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 20042376,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 20042376
+  },
+  {
+   "type": "observe",
+   "at": 20042376,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 20114376,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 20042377,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 20114376,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 20045975,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 20114376,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 20045976,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 20114376,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 20049583,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 20114376,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 20233736,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 20233736
+  },
+  {
+   "type": "observe",
+   "at": 20233736,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 20305736,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 20233737,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 20305736,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 20237335,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 20305736,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 20237336,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 20305736,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 20240943,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 20305736,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 20774408,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 20866888
+  },
+  {
+   "type": "observe",
+   "at": 20866888,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 20938888,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 20866889,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 20938888,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 20870487,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 20938888,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 20870488,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 20938888,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 20874095,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 20938888,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 21049800,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 21049800
+  },
+  {
+   "type": "observe",
+   "at": 21049800,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 21121800,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 21049801,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 21121800,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 21053399,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 21121800,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 21053400,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 21121800,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 21057007,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 21121800,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 21328072,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 21392712
+  },
+  {
+   "type": "observe",
+   "at": 21392712,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 21464712,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 21392713,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 21464712,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 21396311,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 21464712,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 21396312,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 21464712,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 21399919,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 21464712,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 21883144,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 21883144
+  },
+  {
+   "type": "observe",
+   "at": 21883144,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 21955144,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 21883145,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 21955144,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 21886743,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 21955144,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 21886744,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 21955144,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 21890351,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 21955144,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 22153992,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 22153992
+  },
+  {
+   "type": "observe",
+   "at": 22153992,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 22225992,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 22153993,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 22225992,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 22157591,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 22225992,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 22157592,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 22225992,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 22161199,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 22225992,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 22346120,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 22346968
+  },
+  {
+   "type": "observe",
+   "at": 22346968,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 22418968,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 22346969,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 22418968,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 22350567,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 22418968,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 22350568,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 22418968,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 22354175,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 22418968,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 22809048,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 22810712
+  },
+  {
+   "type": "observe",
+   "at": 22810712,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 22882712,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 22810713,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 22882712,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 22814311,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 22882712,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 22814312,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 22882712,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 22817919,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 22882712,
+   "peakHeat": 31
+  },
+  {
+   "type": "observe",
+   "at": 22816792,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 22882712,
+   "peakHeat": 31
+  },
+  {
+   "type": "transfer",
+   "at": 22816792
+  },
+  {
+   "type": "observe",
+   "at": 22816792,
+   "heat": 39,
+   "stars": 2,
+   "heatZeroAt": 22957192,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 22816793,
+   "heat": 39,
+   "stars": 2,
+   "heatZeroAt": 22957192,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 22820391,
+   "heat": 39,
+   "stars": 2,
+   "heatZeroAt": 22957192,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 22820392,
+   "heat": 38,
+   "stars": 2,
+   "heatZeroAt": 22957192,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 22823999,
+   "heat": 37,
+   "stars": 2,
+   "heatZeroAt": 22957192,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 23284184,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 39
+  },
+  {
+   "type": "transfer",
+   "at": 23291704
+  },
+  {
+   "type": "observe",
+   "at": 23291704,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 23363704,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 23291705,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 23363704,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 23295303,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 23363704,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 23295304,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 23363704,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 23298911,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 23363704,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 23581624,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 39
+  },
+  {
+   "type": "transfer",
+   "at": 23591256
+  },
+  {
+   "type": "observe",
+   "at": 23591256,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 23663256,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 23591257,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 23663256,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 23594855,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 23663256,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 23594856,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 23663256,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 23598463,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 23663256,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 24251480,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 39
+  },
+  {
+   "type": "transfer",
+   "at": 24390744
+  },
+  {
+   "type": "observe",
+   "at": 24390744,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 24462744,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 24390745,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 24462744,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 24394343,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 24462744,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 24394344,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 24462744,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 24397951,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 24462744,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 24782296,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 39
+  },
+  {
+   "type": "transfer",
+   "at": 24782296
+  },
+  {
+   "type": "observe",
+   "at": 24782296,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 24854296,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 24782297,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 24854296,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 24785895,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 24854296,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 24785896,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 24854296,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 24789503,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 24854296,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 25262040,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 39
+  },
+  {
+   "type": "transfer",
+   "at": 25271976
+  },
+  {
+   "type": "observe",
+   "at": 25271976,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 25343976,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 25271977,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 25343976,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 25275575,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 25343976,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 25275576,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 25343976,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 25279183,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 25343976,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 25434920,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 39
+  },
+  {
+   "type": "transfer",
+   "at": 25438504
+  },
+  {
+   "type": "observe",
+   "at": 25438504,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 25510504,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 25438505,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 25510504,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 25442103,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 25510504,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 25442104,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 25510504,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 25445711,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 25510504,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 25669352,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 39
+  },
+  {
+   "type": "transfer",
+   "at": 25669352
+  },
+  {
+   "type": "observe",
+   "at": 25669352,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 25741352,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 25669353,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 25741352,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 25672951,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 25741352,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 25672952,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 25741352,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 25676559,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 25741352,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 25720680,
+   "heat": 6,
+   "stars": 1,
+   "heatZeroAt": 25741352,
+   "peakHeat": 39
+  },
+  {
+   "type": "transfer",
+   "at": 25745000
+  },
+  {
+   "type": "observe",
+   "at": 25745000,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 25817000,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 25745001,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 25817000,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 25748599,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 25817000,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 25748600,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 25817000,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 25752207,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 25817000,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 26139432,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 39
+  },
+  {
+   "type": "transfer",
+   "at": 26147832
+  },
+  {
+   "type": "observe",
+   "at": 26147832,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 26219832,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 26147833,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 26219832,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 26151431,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 26219832,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 26151432,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 26219832,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 26155039,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 26219832,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 26597560,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 39
+  },
+  {
+   "type": "transfer",
+   "at": 26597560
+  },
+  {
+   "type": "observe",
+   "at": 26597560,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 26669560,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 26597561,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 26669560,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 26601159,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 26669560,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 26601160,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 26669560,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 26604767,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 26669560,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 27307064,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 39
+  },
+  {
+   "type": "transfer",
+   "at": 27307480
+  },
+  {
+   "type": "observe",
+   "at": 27307480,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 27379480,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 27307481,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 27379480,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 27311079,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 27379480,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 27311080,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 27379480,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 27314687,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 27379480,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 27927896,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 39
+  },
+  {
+   "type": "transfer",
+   "at": 27927896
+  },
+  {
+   "type": "observe",
+   "at": 27927896,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 27999896,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 27927897,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 27999896,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 27931495,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 27999896,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 27931496,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 27999896,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 27935103,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 27999896,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 28261848,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 39
+  },
+  {
+   "type": "transfer",
+   "at": 28298328
+  },
+  {
+   "type": "observe",
+   "at": 28298328,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 28370328,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 28298329,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 28370328,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 28301927,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 28370328,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 28301928,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 28370328,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 28305535,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 28370328,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 28710232,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 39
+  },
+  {
+   "type": "transfer",
+   "at": 28712328
+  },
+  {
+   "type": "observe",
+   "at": 28712328,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 28784328,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 28712329,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 28784328,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 28715927,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 28784328,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 28715928,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 28784328,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 28719535,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 28784328,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 28755080,
+   "heat": 9,
+   "stars": 1,
+   "heatZeroAt": 28784328,
+   "peakHeat": 39
+  },
+  {
+   "type": "transfer",
+   "at": 28759432
+  },
+  {
+   "type": "observe",
+   "at": 28759432,
+   "heat": 27,
+   "stars": 2,
+   "heatZeroAt": 28856632,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 28759433,
+   "heat": 27,
+   "stars": 2,
+   "heatZeroAt": 28856632,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 28763031,
+   "heat": 27,
+   "stars": 2,
+   "heatZeroAt": 28856632,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 28763032,
+   "heat": 26,
+   "stars": 2,
+   "heatZeroAt": 28856632,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 28766639,
+   "heat": 25,
+   "stars": 2,
+   "heatZeroAt": 28856632,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 29311880,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 39
+  },
+  {
+   "type": "transfer",
+   "at": 29333704
+  },
+  {
+   "type": "observe",
+   "at": 29333704,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 29405704,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 29333705,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 29405704,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 29337303,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 29405704,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 29337304,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 29405704,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 29340911,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 29405704,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 29938504,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 39
+  },
+  {
+   "type": "transfer",
+   "at": 29938504
+  },
+  {
+   "type": "observe",
+   "at": 29938504,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 30010504,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 29938505,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 30010504,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 29942103,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 30010504,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 29942104,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 30010504,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 29945711,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 30010504,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 30512968,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 39
+  },
+  {
+   "type": "transfer",
+   "at": 30512968
+  },
+  {
+   "type": "observe",
+   "at": 30512968,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 30584968,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 30512969,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 30584968,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 30516567,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 30584968,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 30516568,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 30584968,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 30520175,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 30584968,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 30757704,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 39
+  },
+  {
+   "type": "transfer",
+   "at": 30763656
+  },
+  {
+   "type": "observe",
+   "at": 30763656,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 30835656,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 30763657,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 30835656,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 30767255,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 30835656,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 30767256,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 30835656,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 30770863,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 30835656,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 30900616,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 39
+  },
+  {
+   "type": "transfer",
+   "at": 31011848
+  },
+  {
+   "type": "observe",
+   "at": 31011848,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 31083848,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 31011849,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 31083848,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 31015447,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 31083848,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 31015448,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 31083848,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 31019055,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 31083848,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 31352968,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 39
+  },
+  {
+   "type": "transfer",
+   "at": 31352968
+  },
+  {
+   "type": "observe",
+   "at": 31352968,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 31424968,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 31352969,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 31424968,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 31356567,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 31424968,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 31356568,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 31424968,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 31360175,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 31424968,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 31402184,
+   "heat": 7,
+   "stars": 1,
+   "heatZeroAt": 31424968,
+   "peakHeat": 39
+  },
+  {
+   "type": "transfer",
+   "at": 31505160
+  },
+  {
+   "type": "observe",
+   "at": 31505160,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 31577160,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 31505161,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 31577160,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 31508759,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 31577160,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 31508760,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 31577160,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 31512367,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 31577160,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 31767816,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 39
+  },
+  {
+   "type": "transfer",
+   "at": 31804744
+  },
+  {
+   "type": "observe",
+   "at": 31804744,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 31876744,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 31804745,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 31876744,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 31808343,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 31876744,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 31808344,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 31876744,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 31811951,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 31876744,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 31840712,
+   "heat": 11,
+   "stars": 1,
+   "heatZeroAt": 31876744,
+   "peakHeat": 39
+  },
+  {
+   "type": "transfer",
+   "at": 31840712
+  },
+  {
+   "type": "observe",
+   "at": 31840712,
+   "heat": 31,
+   "stars": 2,
+   "heatZeroAt": 31952312,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 31840713,
+   "heat": 31,
+   "stars": 2,
+   "heatZeroAt": 31952312,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 31844311,
+   "heat": 31,
+   "stars": 2,
+   "heatZeroAt": 31952312,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 31844312,
+   "heat": 30,
+   "stars": 2,
+   "heatZeroAt": 31952312,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 31847919,
+   "heat": 29,
+   "stars": 2,
+   "heatZeroAt": 31952312,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 32501192,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 39
+  },
+  {
+   "type": "transfer",
+   "at": 32511560
+  },
+  {
+   "type": "observe",
+   "at": 32511560,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 32583560,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 32511561,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 32583560,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 32515159,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 32583560,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 32515160,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 32583560,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 32518767,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 32583560,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 32748360,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 39
+  },
+  {
+   "type": "transfer",
+   "at": 32885320
+  },
+  {
+   "type": "observe",
+   "at": 32885320,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 32957320,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 32885321,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 32957320,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 32888919,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 32957320,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 32888920,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 32957320,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 32892527,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 32957320,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 33603720,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 39
+  },
+  {
+   "type": "transfer",
+   "at": 33607944
+  },
+  {
+   "type": "observe",
+   "at": 33607944,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 33679944,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 33607945,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 33679944,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 33611543,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 33679944,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 33611544,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 33679944,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 33615151,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 33679944,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 33721160,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 39
+  },
+  {
+   "type": "transfer",
+   "at": 33721160
+  },
+  {
+   "type": "observe",
+   "at": 33721160,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 33793160,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 33721161,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 33793160,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 33724759,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 33793160,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 33724760,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 33793160,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 33728367,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 33793160,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 34315848,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 39
+  },
+  {
+   "type": "transfer",
+   "at": 34316920
+  },
+  {
+   "type": "observe",
+   "at": 34316920,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 34388920,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 34316921,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 34388920,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 34320519,
+   "heat": 20,
+   "stars": 2,
+   "heatZeroAt": 34388920,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 34320520,
+   "heat": 19,
+   "stars": 1,
+   "heatZeroAt": 34388920,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 34324127,
+   "heat": 18,
+   "stars": 1,
+   "heatZeroAt": 34388920,
+   "peakHeat": 39
+  },
+  {
+   "type": "observe",
+   "at": 34788728,
+   "heat": 0,
+   "stars": 0,
+   "heatZeroAt": 0,
+   "peakHeat": 39
+  }
+ ]
+}

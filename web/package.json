@@ -1,0 +1,35 @@
+{
+  "name": "gridlock-web",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build && node scripts/csp-headers.mjs",
+    "typecheck": "tsc --noEmit",
+    "start": "npx serve out",
+    "lint:tokens": "node scripts/token-lint.mjs",
+    "contrast": "node scripts/contrast.mjs",
+    "sync:abi": "node scripts/sync-abi.mjs",
+    "copy:check": "node scripts/copy-check.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "verify:deployment": "node scripts/verify-deployment.mjs",
+    "check": "npm run typecheck && npm run lint:tokens && npm run copy:check && npm test && npm run secret:scan",
+    "secret:scan": "node scripts/secret-scan.mjs",
+    "e2e": "node e2e/run.mjs"
+  },
+  "dependencies": {
+    "next": "^16.4.6",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "viem": "^2.57.17"
+  },
+  "devDependencies": {
+    "@fontsource/anton": "^5.3.0",
+    "@fontsource/barlow": "^5.3.0",
+    "@fontsource/space-mono": "^5.3.0",
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "typescript": "^7.0.2"
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "_comment": "TEMPLATE. Do not use before an external audit. Production clocks: 7 days, 3600 s, 60 s. Values are permanent. The unedited file fails on purpose.",
+  "treasury": "0x0000000000000000000000000000000000000000",
+  "startTime": 0,
+  "openTimeoutSeconds": 604800,
+  "heatDecaySeconds": 3600,
+  "revealMinDelaySeconds": 60,
+  "caps": [
+    10,
+    20,
+    30,
+    45,
+    65,
+    85,
+    110,
+    140,
+    170,
+    200,
+    240,
+    280,
+    320,
+    360,
+    400
+  ],
+  "pricesWei": [
+    "REPLACE_WITH_WEI_FOR_RANK_1",
+    "REPLACE_WITH_WEI_FOR_RANK_2",
+    "REPLACE_WITH_WEI_FOR_RANK_3",
+    "REPLACE_WITH_WEI_FOR_RANK_4",
+    "REPLACE_WITH_WEI_FOR_RANK_5",
+    "REPLACE_WITH_WEI_FOR_RANK_6",
+    "REPLACE_WITH_WEI_FOR_RANK_7",
+    "REPLACE_WITH_WEI_FOR_RANK_8",
+    "REPLACE_WITH_WEI_FOR_RANK_9",
+    "REPLACE_WITH_WEI_FOR_RANK_10",
+    "REPLACE_WITH_WEI_FOR_RANK_11",
+    "REPLACE_WITH_WEI_FOR_RANK_12",
+    "REPLACE_WITH_WEI_FOR_RANK_13",
+    "REPLACE_WITH_WEI_FOR_RANK_14",
+    "REPLACE_WITH_WEI_FOR_RANK_15"
+  ],
+  "huntCommitments": []
+}

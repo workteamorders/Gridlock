@@ -1,0 +1,118 @@
+/* Gridlock design tokens, direction A (poster wall).
+   Every visual value in the app comes from this file. Names follow role, not hue. */
+:root {
+  color-scheme: dark;
+
+  /* surfaces */
+  --surface: #0b0b0c;
+  --surface-2: #1a1917;
+  --surface-3: #262420;
+  --overlay: rgb(0 0 0 / 0.72);
+
+  /* text */
+  --text: #f2eee3;
+  --text-dim: #a39e92;
+  --text-on-action: #0b0b0c;
+  --text-on-brush: #ffffff;
+
+  /* accents */
+  --action: #ffc61a;
+  --action-hover: #ffd54d;
+  --action-press: #e6b000;
+  --brush: #e4262b;
+  --brush-deep: #b81a1f;
+
+  /* status (always paired with an icon and a word) */
+  --ok: #5bd38a;
+  --warn: #ffc61a;
+  --bad: #ff6b5e;
+  --info: #7cc4ff;
+
+  /* lines */
+  --line: #f2eee3;
+  --line-dim: #6b675f;
+  --line-w: 2px;
+  --line-w-strong: 3px;
+  --focus: #7cc4ff;
+  --focus-w: 3px;
+
+  /* spacing, multiples of 4 */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 48px;
+  --s-8: 64px;
+  --s-9: 96px;
+  --gutter: 16px;
+  --content-max: 1200px;
+
+  /* vertical rhythm, three steps only */
+  --gap-tight: var(--s-2);
+  --gap-mid: var(--s-5);
+  --gap-wide: var(--s-8);
+
+  /* type */
+  --font-display: var(--font-anton), 'Arial Narrow', Impact, sans-serif;
+  --font-body: var(--font-barlow), 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: var(--font-space-mono), ui-monospace, Menlo, monospace;
+  --fs-12: 0.75rem;
+  --fs-14: 0.875rem;
+  --fs-16: 1rem;
+  --fs-20: 1.25rem;
+  --fs-24: 1.5rem;
+  --fs-32: 2rem;
+  --fs-44: 2.75rem;
+  --fs-60: 3.75rem;
+  --h1: clamp(var(--fs-32), 9vw, var(--fs-60));
+  --h2: clamp(var(--fs-24), 6vw, var(--fs-44));
+  --h3: clamp(var(--fs-20), 4vw, var(--fs-32));
+  --lh-tight: 1.1;
+  --lh-body: 1.55;
+  --tracking-label: 0.08em;
+
+  /* shape: square corners, ink outlines, no shadows */
+  --radius: 0;
+  --target: 44px;
+
+  /* elevation, three levels, separated by outline and surface only */
+  --elev-flat-bg: var(--surface-2);
+  --elev-flat-line: var(--line-dim);
+  --elev-raised-bg: var(--surface-2);
+  --elev-raised-line: var(--line);
+  --elev-float-bg: var(--surface-3);
+  --elev-float-line: var(--action);
+
+  /* motion: one character, "slap": fast, firm ease-out, no bounce */
+  --dur-micro: 100ms;
+  --dur-element: 200ms;
+  --dur-panel: 320ms;
+  --ease-out: cubic-bezier(0.2, 0.9, 0.2, 1);
+  --ease-in: cubic-bezier(0.6, 0, 0.9, 0.5);
+
+  /* the one motif: the brush slash (angle used by slash, tilt and hazard) */
+  --tilt: -1.5deg;
+  --slash-angle: -12deg;
+}
+
+@media (min-width: 768px) {
+  :root { --gutter: 24px; }
+}
+@media (min-width: 1200px) {
+  :root { --gutter: 32px; }
+}
+
+/* sizes that components share (kept here so components hold no loose numbers) */
+:root {
+  --target-lg: 56px;
+  --sign-size: 72px;
+  --rung-rank-col: 72px;
+  --rung-rank-col-wide: 96px;
+  --speed-size: 88px;
+  --speed-ring: 8px;
+  --header-h: 64px;
+  --brush-press: #8f1418;
+  --chip-h: 24px;
+}
