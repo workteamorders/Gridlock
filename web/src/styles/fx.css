@@ -6,7 +6,7 @@ body { isolation: isolate; }
   height: calc(100% + 40px);
   pointer-events: none;
   z-index: -1;
-  opacity: 0.32;
+  opacity: var(--fx-backdrop-opacity);
 }
 .motion-button {
   min-height: var(--target);
@@ -43,7 +43,7 @@ html:is([data-motion=off], [data-motion=reduced]) *::after {
 }
 html[data-motion=off] .live-background { visibility: hidden; }
 
-.card-tilt { display: grid; perspective: 700px; }
+.card-tilt { display: grid; perspective: 700px; touch-action: pan-y; }
 .card-tilt-face { position: relative; min-width: 0; }
 .card-glint { display: none; pointer-events: none; position: absolute; inset: 0; overflow: hidden; }
 .card-glint::after {
@@ -90,9 +90,9 @@ html[data-motion=full] .countdown-digit { animation: digit-flip 200ms var(--ease
 .heat-bar i { display: block; width: 8px; height: 5px; background: var(--brush); animation: heat-breathe 500ms ease-in-out infinite alternate; }
 .heat-bar i + i { background: var(--action); animation-delay: -500ms; }
 @keyframes heat-breathe { to { opacity: 0.66; } }
-.status-art { width: min(100%, 160px); height: auto; border: var(--line-w) solid var(--line-dim); }
-.empty .status-art { width: 100px; flex: none; }
-@media (width <= 420px) { .empty .status-art { width: 72px; } }
+.status-art { width: 160px; height: 90px; align-self: start; border: var(--line-w) solid var(--line-dim); }
+.empty .status-art { width: 100px; height: 56.25px; flex: none; }
+@media (width <= 420px) { .empty .status-art { width: 72px; height: 40.5px; } }
 
 .result-stamp { position: relative; display: grid; justify-items: start; align-items: center; overflow: clip; }
 .result-stamp-mark { transform: rotate(-9deg); }
@@ -175,4 +175,6 @@ html:not([data-motion=full]) .finish-wipe { display: none; }
 }
 
 .home-preview .cardimg { max-width: 220px; }
-.result-stamp .cardimg { max-width: 180px; }
+.result-stamp .cardimg { width: 180px; max-width: 100%; }
+
+.hero-example-art { width: 128px; height: 128px; border: var(--line-w) solid var(--line-dim); align-self: start; }

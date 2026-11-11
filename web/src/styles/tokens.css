@@ -119,5 +119,6 @@
 
 :root {
   --fx-road: var(--action);
+  --fx-backdrop-opacity: 0.17;
   --fx-shadow: var(--surface);
 }

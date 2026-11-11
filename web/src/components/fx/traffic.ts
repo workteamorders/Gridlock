@@ -70,7 +70,7 @@ export function startTraffic(canvas: HTMLCanvasElement) {
     if (x >= 0) {
       g.save();
       g.beginPath(); g.arc(x, y, RADIUS, 0, Math.PI * 2); g.clip();
-      grid(g, 0.55, 9, x - RADIUS, y - RADIUS, x + RADIUS, y + RADIUS);
+      grid(g, 0.94, 9, x - RADIUS, y - RADIUS, x + RADIUS, y + RADIUS);
       g.restore();
     }
 
@@ -111,7 +111,7 @@ export function startTraffic(canvas: HTMLCanvasElement) {
       g.translate(cx, cy);
       g.rotate(vertical ? direction * Math.PI / 2 : direction < 0 ? Math.PI : 0);
       g.scale(0.33, 0.33);
-      g.globalAlpha = 0.72;
+      g.globalAlpha = 0.95;
       g.fillStyle = colors[i % colors.length]!;
       g.fill(bodies[i % bodies.length]!);
       g.fillStyle = ink;
@@ -188,7 +188,7 @@ export function startTraffic(canvas: HTMLCanvasElement) {
     backdrop.width = Math.ceil(width * dpr); backdrop.height = Math.ceil(height * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     roads.setTransform(dpr, 0, 0, dpr, 0, 0);
-    grid(roads, 0.19, 18);
+    grid(roads, 0.33, 18);
     count = compact ? 14 : 36;
     if (staticCount !== count) {
       governor = frameGovernor(count);

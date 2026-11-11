@@ -3,9 +3,11 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { parseEventLogs, zeroAddress } from 'viem';
+import { carsAbi } from '@/lib/gridlock-abi';
 import { useChain } from '@/lib/chain-context';
 import { useWallet } from '@/lib/wallet';
-import { readOwned, readPreview, readSvg, readWalletMinted, svgToDataUri } from '@/lib/chain';
+import { readCar, readOwned, readPreview, readSvg, readTokenImage, readTotalMinted, readWalletMinted, svgToDataUri } from '@/lib/chain';
 import { sendTx, TxError, explainError } from '@/lib/tx';
 import { CHAIN, explorerAddress, explorerTx, walletRankCap } from '@/lib/config';
 import { formatEth, shortAddress } from '@/lib/format';
@@ -39,7 +41,7 @@ export function MintView() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [phase, setPhase] = useState<Phase>('idle');
   const [message, setMessage] = useState<{ kind: 'bad' | 'warn'; text: string } | null>(null);
-  const [result, setResult] = useState<{ hash: `0x${string}`; ids: number[]; previews: string[] } | null>(null);
+  const [result, setResult] = useState<{ hash: `0x${string}`; cards: { id: number; image: string | null }[] } | null>(null);
 
   const cars = chain.deployment?.cars;
   const openRungs = useMemo(() => chain.rungs.filter((r) => r.isOpen && r.sold < r.cap).sort((a, b) => b.rank - a.rank), [chain.rungs]);
@@ -114,10 +116,24 @@ export function MintView() {
       }
       setPhase('signing');
       const r = await sendTx({ cars, functionName: 'mint', args: [BigInt(rung.rank), BigInt(qty), BigInt(serial)], value: total }, account, wallet.walletClient, wallet.walletPublic, () => setPhase('waiting'));
-      await chain.refresh();
-      const owned = await readOwned(cars, account, chain.totalMinted + qty + 50);
-      setResult({ hash: r.hash, ids: owned.slice(-qty), previews: images });
+      const receipt = await wallet.walletPublic.getTransactionReceipt({ hash: r.hash }).catch(() => null);
+      const events = parseEventLogs({ abi: carsAbi, eventName: 'Transfer', logs: receipt?.logs ?? [] });
+      const loggedIds = events.filter((event) => event.address.toLowerCase() === cars.toLowerCase()
+        && event.args.from === zeroAddress && event.args.to.toLowerCase() === account.toLowerCase())
+        .map((event) => Number(event.args.id));
+      // Some RPCs omit receipt logs. Confirm the exact rank and serial range against owned tokens.
+      const ids = loggedIds.length === qty ? loggedIds : await (async () => {
+        const owned = await readOwned(cars, account, await readTotalMinted(cars));
+        const details = await Promise.all(owned.slice(-32).map((id) => readCar(cars, id)));
+        return details.filter((car) => car.rank === rung.rank && car.serial >= serial && car.serial < serial + qty)
+          .sort((a, b) => a.serial - b.serial).map((car) => car.id);
+      })().catch(() => loggedIds);
+      setResult({ hash: r.hash, cards: ids.map((id) => ({ id, image: null })) });
       setPhase('done');
+      void Promise.all(ids.map(async (id) => ({ id, image: await readTokenImage(cars, id).catch(() => null) }))).then((cards) => {
+        setResult((current) => current?.hash === r.hash ? { hash: r.hash, cards } : current);
+      });
+      void chain.refresh();
       toast.push({ kind: 'ok', title: 'Minted', text: `${qty} car${qty > 1 ? 's' : ''} minted.` });
     } catch (e) {
       const err = e instanceof TxError ? e : explainError(e);
@@ -125,7 +141,7 @@ export function MintView() {
       if (err.kind === 'serial') { await chain.refresh(); setMessage({ kind: 'warn', text: err.message }); }
       else setMessage({ kind: err.kind === 'rejected' ? 'warn' : 'bad', text: err.message });
     }
-  }, [cars, rung, account, wallet.walletClient, wallet.walletPublic, serial, qty, total, chain, toast, images]);
+  }, [cars, rung, account, wallet.walletClient, wallet.walletPublic, serial, qty, total, chain, toast]);
 
   const busy = phase === 'checking' || phase === 'signing' || phase === 'waiting';
   const label = phase === 'checking' ? 'Checking the transaction' : phase === 'signing' ? 'Confirm in your wallet' : phase === 'waiting' ? 'Waiting for the network' : `Review ${qty} car${qty > 1 ? 's' : ''}`;
@@ -139,9 +155,11 @@ export function MintView() {
       {result ? (
         <div className="stack">
           <div className="alert alert--ok" role="status"><Icon name="check" /><div><h2>Minted</h2><p>Your cars are minted. Check the receipt yourself.</p>
-            <dl className="kv"><dt>Receipt</dt><dd>{explorerTx(result.hash) ? <a href={explorerTx(result.hash)} rel="noopener noreferrer">{shortAddress(result.hash)}</a> : <span className="num">{result.hash}</span>}</dd><dt>Car numbers</dt><dd className="num">{result.ids.join(', ')}</dd></dl></div></div>
+            <dl className="kv"><dt>Receipt</dt><dd>{explorerTx(result.hash) ? <a href={explorerTx(result.hash)} rel="noopener noreferrer">{shortAddress(result.hash)}</a> : <span className="num">{result.hash}</span>}</dd><dt>Car numbers</dt><dd className="num">{result.cards.length ? result.cards.map((card) => card.id).join(', ') : 'See the receipt'}</dd></dl></div></div>
           <ResultStamp kind="caught" key={result.hash}>
-            <div className="row">{result.previews.map((src, i) => <CardImage key={src} src={src} size={180} alt={`Confirmed mint, car ${i + 1}`} />)}</div>
+            <div className="row">{result.cards.map(({ id, image }) => image
+              ? <CardImage key={id} src={image} size={180} alt={`Confirmed mint, car ${id}`} />
+              : <CardImage key={id} src={null} size={180} alt={`Car ${id}`} />)}</div>
           </ResultStamp>
           <div className="row"><Link className="btn btn--primary" href="/garage/">Open your Garage</Link><Button variant="secondary" onClick={() => { setResult(null); setPhase('idle'); }}>Mint another</Button></div>
         </div>

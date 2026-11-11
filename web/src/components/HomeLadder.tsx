@@ -75,6 +75,7 @@ export function HomeLadder() {
           <div key="undeployed" className="panel stack-tight hero-panel">
             <span className="badge badge--example">Example</span>
             <p>Gridlock is not deployed yet. The ladder on this page shows the real caps with example prices and sales so you can see how it will work.</p>
+            <img className="hero-example-art" src="/icon.svg" alt="" width={128} height={128} />
           </div>
         ) : c.phase === 'error' ? (
           <div className="panel hero-panel"><p>The network is not answering, so live numbers are not shown. Nothing is affected. Try again in a moment.</p></div>
