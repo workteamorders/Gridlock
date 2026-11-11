@@ -65,7 +65,7 @@ html:not([data-motion=full]) .ribbon-dup { display: none; }
 .climb-step:nth-child(13) { height: calc(var(--climb-rise) * 13); }
 .climb-step:nth-child(14) { height: calc(var(--climb-rise) * 14); }
 .climb-step:nth-child(15) { height: calc(var(--climb-rise) * 15); }
-.climb-car { position: absolute; left: 0; bottom: 0; width: var(--climb-car-w); aspect-ratio: 68 / 32; background: url('/art/climb-car.svg') no-repeat center / contain; translate: calc(var(--p, 0) * (100cqw - var(--climb-car-w))) calc(var(--p, 0) * var(--climb-rise) * -14 - var(--climb-rise) - 4px); }
+.climb-car { position: absolute; left: 0; bottom: 0; width: var(--climb-car-w); aspect-ratio: 290 / 106; background: url('/art/climb-car.svg') no-repeat center / contain; translate: calc(var(--p, 0) * (100cqw - var(--climb-car-w))) calc(var(--p, 0) * var(--climb-rise) * -14 - var(--climb-rise) - 4px); }
 .climb-stage { container-type: inline-size; }
 .climb-readout { display: none; font-family: var(--font-display); font-size: var(--h3); text-transform: uppercase; }
 .climb-readout b { color: var(--action); font-weight: 400; }
@@ -113,3 +113,10 @@ html[data-motion=full] .sound-button:active { transform: translateY(2px); box-sh
 @media (width < 480px) { .header-actions > :is(.motion-button, .sound-button) { display: none; } }
 .chart-title { font-size: var(--fs-20); }
 .flip-wrap { align-items: flex-start; }
+
+@media (width >= 1000px) {
+  .home-preview { position: sticky; top: calc(var(--header-h) + var(--s-4)); align-self: start; }
+}
+@media (width >= 1000px) {
+  .hero-ladder { row-gap: var(--s-5); }
+}

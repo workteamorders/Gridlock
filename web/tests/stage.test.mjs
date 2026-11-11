@@ -87,7 +87,7 @@ test('hero art generation is deterministic and checked-in files match', () => {
     makeHero(target);
     makeHero(target);
     const hash = (root, name) => createHash('sha256').update(readFileSync(new URL(name, root))).digest('hex');
-    for (const name of ['public/art/hero-back.svg', 'public/art/hero-front.svg', 'public/art/climb-car.svg']) {
+    for (const name of ['public/art/hero-back.svg', 'public/art/hero-front.svg', 'public/art/climb-car.svg', 'public/art/example-card.svg']) {
       assert.equal(hash(target, name), hash(source, name), `${name} equals the checked-in file`);
       assert.doesNotMatch(readFileSync(new URL(name, source), 'utf8'), /<text|<image|href=/, 'hero art has no text or bitmaps');
     }

@@ -2,7 +2,7 @@
 // Two layers (back, front) so the page can move them at different speeds. No text, no bitmaps, no outside assets.
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
-import { car } from './make-art.mjs';
+import { comicCar, COMIC_VIEW } from './comic-car.mjs';
 
 const css = readFileSync(new URL('../src/styles/tokens.css', import.meta.url), 'utf8');
 const token = (name) => {
@@ -32,7 +32,7 @@ function poster(rot, tone, shape, paint, livery, stars, misreg) {
     rect(-PW / 2 - 4, -PH / 2 - 4, PW + 8, PH + 8, '--text'),
     rect(-PW / 2, -PH / 2, PW, PH, field),
     `<g transform="translate(${-PW / 2} ${-PH / 2 + 4})" opacity="0.28">${dots(ink === '--surface' ? 'dot-surface' : 'dot-text', PW, 150)}</g>`,
-    `<g transform="translate(0 -22) scale(2.7)">${car(shape, paint, livery)}</g>`,
+    `<g transform="translate(-76.3 -104.5) scale(0.62)">${comicCar({ shape, body: paint, stripe: livery, stripeColor: shape % 4 })}</g>`,
     rect(-PW / 2 + 14, 58, PW - 28, 8, ink),
     rect(-PW / 2 + 14, 74, bars[0], 8, ink, ' opacity="0.75"'),
     rect(-PW / 2 + 14, 96, bars[1], 8, ink, ' opacity="0.45"'),
@@ -50,20 +50,33 @@ function layer(count, scale) {
     const c = i % cols, r = Math.floor(i / cols);
     const x = (c + 0.5) * (W / cols) + (rnd() - 0.5) * 70;
     const y = (r + 0.5) * (H / rows) + (rnd() - 0.5) * 60;
-    out.push(`<g transform="translate(${r2(x)} ${r2(y)}) scale(${scale})">${poster(r2((rnd() - 0.5) * 14), pick(4), pick(6), pick(8), pick(4), pick(6), rnd() > 0.55)}</g>`);
+    out.push(`<g transform="translate(${r2(x)} ${r2(y)}) scale(${scale})">${poster(r2((rnd() - 0.5) * 14), pick(4), pick(6), pick(8), pick(8), pick(6), rnd() > 0.55)}</g>`);
   }
   return out.join('');
 }
 
 const svg = (content) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}">${content}</svg>\n`;
 
+// An invented wanted-poster card, drawn like the on-chain ones. The page labels it EXAMPLE in text.
+function exampleCard() {
+  const stars = Array.from({ length: 5 }, (_, i) => rect(24 + i * 26, 372, 18, 18, i < 2 ? '--brush' : '--text-dim')).join('');
+  const bars = rect(24, 322, 150, 10, '--text') + rect(24, 342, 100, 10, '--text-dim');
+  const slash = `<polygon points="6,214 294,152 294,258 6,320" fill="${token('--brush')}"/>`;
+  const head = rect(6, 6, 288, 62, '--action') + rect(24, 24, 160, 12, '--surface') + rect(24, 44, 96, 8, '--surface');
+  const field = `<defs><pattern id="ex-dots" width="12" height="12" patternUnits="userSpaceOnUse"><circle cx="6" cy="6" r="1.8" fill="${token('--text-dim')}"/></pattern></defs><rect x="6" y="68" width="288" height="346" fill="url(#ex-dots)" opacity="0.4"/>`;
+  const car = `<g transform="translate(${150 - 123 * 0.95} ${196 - 133 * 0.95}) scale(0.95)">${comicCar({ shape: 2, body: 2, stripe: 1, stripeColor: 0, speed: true })}</g>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 420" width="300" height="420">${rect(0, 0, 300, 420, '--text')}${rect(6, 6, 288, 408, '--surface-2')}${field}${slash}${head}${car}${bars}${stars}</svg>\n`;
+}
+
 export function makeHero(root = new URL('../', import.meta.url)) {
   mkdirSync(new URL('public/art/', root), { recursive: true });
   seed = 20261111;
   writeFileSync(new URL('public/art/hero-back.svg', root),
     (prefix = 'back', svg(defs(prefix) + rect(0, 0, W, H, '--surface-2') + dots('dot-grid', W, H) + layer(18, 0.62) + rect(0, 0, W, H, '--surface-2', ' opacity="0.45"'))));
+  const { x, y, w, h } = COMIC_VIEW;
   writeFileSync(new URL('public/art/climb-car.svg', root),
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-34 -16 68 32" width="68" height="32">${car(0, 0, 1)}</svg>\n`);
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${x} ${y} ${w} ${h}" width="${w}" height="${h}">${comicCar({ shape: 2, body: 2, stripe: 1, stripeColor: 0, speed: true })}</svg>\n`);
+  writeFileSync(new URL('public/art/example-card.svg', root), exampleCard());
   seed = 777;
   writeFileSync(new URL('public/art/hero-front.svg', root), (prefix = 'front', svg(defs(prefix) + layer(7, 1.12))));
 }

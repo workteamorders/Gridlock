@@ -123,6 +123,12 @@
   --fx-shadow: var(--surface);
 }
 
+/* comic car paints that are not status colors (same values as the on-chain renderer) */
+:root {
+  --car-orange: #ff7a1a;
+  --car-teal: #2fb5a8;
+}
+
 /* stage: hero, case-file chapters, ribbon */
 :root {
   --fs-hero: clamp(var(--fs-44), 9vw, 5.5rem);
@@ -137,7 +143,7 @@
 /* stage: ladder climb */
 :root {
   --climb-rise: clamp(10px, 2.1vw, 20px);
-  --climb-car-w: clamp(56px, 9vw, 96px);
+  --climb-car-w: clamp(84px, 13vw, 140px);
   --climb-scroll: 300vh;
 }
 
