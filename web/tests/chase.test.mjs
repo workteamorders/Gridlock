@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { ROUTES, MISHAPS, mulberry32, planChase, forcePlan, signature, buildPath } from '../src/components/fx/chase-plan.ts';
 
-const geometry = { mid: { x: 280, y: 180 }, box: 49, reach: (d) => (Math.abs(d.x) > 0 ? 312 : 212) };
+const geometry = { mid: { x: 280, y: 180 }, box: 49, reach: (d) => (Math.abs(d.x) > 0 ? 312 : 212), spacing: (d) => (Math.abs(d.x) > 0 ? 560 : 360) };
 const DIRECTIONS = [{ x: 1, y: 0 }, { x: 0, y: 1 }, { x: -1, y: 0 }, { x: 0, y: -1 }];
 
 test('the same seed gives the same chases and different seeds give different ones', () => {
@@ -38,11 +38,14 @@ test('plans stay inside sane bounds', () => {
     assert.ok(plan.speed >= 150 && plan.speed <= 195);
     assert.ok([1, -1].includes(plan.side));
     assert.ok(plan.mishaps.length <= 2);
+    assert.ok(plan.then.length <= 2);
+    for (const leg of plan.then) assert.ok(ROUTES.includes(leg.route) && [1, -1].includes(leg.side));
     assert.equal(new Set(plan.mishaps.map((m) => m.kind)).size, plan.mishaps.length, 'no mishap twice');
     assert.ok(plan.mishaps.filter((m) => m.kind === 'wipeout' || m.kind === 'pit').length <= 1, 'at most one thing stops the racer');
     for (const m of plan.mishaps) {
       assert.ok(m.offset >= -20 && m.offset <= 40);
       assert.ok(m.slot >= 0 && m.slot <= plan.cops);
+      assert.ok(Number.isInteger(m.leg) && m.leg >= 0 && m.leg <= plan.then.length, 'mishap on a real junction');
       if (m.kind === 'pileup') assert.ok(plan.cops >= 2);
       if (m.kind === 'copSpin') assert.ok(m.slot >= 1);
     }
@@ -65,7 +68,7 @@ test('every route is a continuous line from beyond the screen, through the junct
   for (const route of ROUTES) {
     for (const side of [1, -1]) {
       for (const d of DIRECTIONS) {
-        const plan = { route, side, cops: 2, speed: 170, nitro: null, pitWins: true, mishaps: [] };
+        const plan = { route, side, then: [], cops: 2, speed: 170, nitro: null, pitWins: true, mishaps: [] };
         const path = buildPath(plan, d, geometry, 130);
         assert.ok(path.length > 500 && path.length < 1400, `${route} length ${path.length}`);
         assert.ok(path.boxIn > 0 && path.boxIn < path.apex && path.apex < path.boxOut && path.boxOut < path.length, `${route} marks ${path.boxIn} ${path.apex} ${path.boxOut} ${path.length}`);
@@ -88,7 +91,7 @@ test('every route is a continuous line from beyond the screen, through the junct
 
 test('turns are sharp and a U-turn comes back the way it came', () => {
   const d = { x: 1, y: 0 };
-  const turn = (route, side = 1) => buildPath({ route, side, cops: 1, speed: 170, nitro: null, pitWins: true, mishaps: [] }, d, geometry, 130);
+  const turn = (route, side = 1) => buildPath({ route, side, then: [], cops: 1, speed: 170, nitro: null, pitWins: true, mishaps: [] }, d, geometry, 130);
   const turned = (path) => { const a = path.at(path.apex - 60).h, b = path.at(path.apex + 60).h; return Math.atan2(Math.sin(b - a), Math.cos(b - a)); };
   assert.ok(Math.abs(turned(turn('straight'))) < 0.01);
   // Heading turns clockwise (positive) for a right turn on a screen where y points down.
@@ -104,4 +107,39 @@ test('turns are sharp and a U-turn comes back the way it came', () => {
   const donut = turn('donut', 1);
   const around = [...Array(80)].map((_, i) => donut.at(donut.apex - 100 + i * 2.5));
   assert.ok(around.every((p) => Math.hypot(p.x - 280, p.y - 180) < 45), 'donut circles the junction');
+});
+
+test('a chase goes on through the next junctions and every bend is a real one', () => {
+  const d = { x: 1, y: 0 };
+  const plan = { route: 'right', side: 1, then: [{ route: 'left', side: 1 }, { route: 'uturn', side: -1 }], cops: 2, speed: 170, nitro: null, pitWins: true, mishaps: [] };
+  const path = buildPath(plan, d, geometry, 150);
+  assert.equal(path.legs.length, 3);
+  // The right turn at home sends the chase down the screen, to the next junction 360 units below; the left turn there sends it east, 560 further.
+  assert.deepEqual(path.legs[0].center, { x: 280, y: 180 });
+  assert.deepEqual(path.legs[1].center, { x: 280, y: 540 });
+  assert.deepEqual(path.legs[2].center, { x: 840, y: 540 });
+  for (const leg of path.legs) {
+    const apex = path.at(leg.apex);
+    assert.ok(Math.hypot(apex.x - leg.center.x, apex.y - leg.center.y) < 60, 'apex is at its junction');
+    assert.ok(leg.boxIn < leg.apex && leg.apex < leg.boxOut);
+  }
+  assert.ok(path.legs[1].boxIn > path.legs[0].boxOut + 150, 'real road between junctions');
+  assert.ok(path.length > 1500 && path.length < 4000, `three junctions long ${path.length}`);
+  const headings = path.legs.map((leg) => path.at(leg.apex + 60).h);
+  assert.ok(headings[0] > 1.2 && headings[0] < 1.9, 'now heading down the screen');
+  assert.ok(Math.abs(headings[1]) < 0.4, 'then east');
+  assert.ok(Math.abs(Math.abs(headings[2]) - Math.PI) < 0.4, 'then back west after the U-turn');
+  for (let s = 0; s < path.length - 2; s += 2) {
+    const a = path.at(s), b = path.at(s + 2);
+    const gap = Math.hypot(b.x - a.x, b.y - a.y);
+    assert.ok(gap > 1.5 && gap < 2.5, `even spacing ${gap} at ${s}`);
+  }
+});
+
+test('forced plans can name several junctions and the junction a mishap happens at', () => {
+  const plan = forcePlan('right,left,copSpin,leg1', mulberry32(9));
+  assert.equal(plan.route, 'right');
+  assert.deepEqual(plan.then.map((leg) => leg.route), ['left']);
+  assert.deepEqual(plan.mishaps.map((m) => [m.kind, m.leg]), [['copSpin', 1]]);
+  assert.equal(forcePlan('uturn,wipeout', mulberry32(9)).then.length, 0);
 });

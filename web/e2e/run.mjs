@@ -331,6 +331,36 @@ try {
     await p.context().close();
   });
 
+  await step('the camera never lets go of the racer: it follows him through three junctions, far from home', async () => {
+    const p = await chasePage('seed=7&plan=right,straight,left,clean');
+    await p.evaluate(() => {
+      window.__follow = [];
+      window.__followTimer = setInterval(() => { const f = window.__fx; if (f.chasing) window.__follow.push([f.camX, f.camY, f.racerX, f.racerY]); }, 100);
+    });
+    await ended(p);
+    assert.deepEqual(await p.evaluate(() => window.__fx.outcomes), ['escaped']);
+    const samples = await p.evaluate(() => window.__follow);
+    const far = samples.filter(([, , rx, ry]) => Math.hypot(rx - 280, ry - 180) > 450);
+    assert.ok(far.length > 30, `the racer spent ${far.length} samples far from home`);
+    const gaps = far.map(([cx, cy, rx, ry]) => Math.hypot(cx - rx, cy - ry));
+    const mean = gaps.reduce((a, b) => a + b, 0) / gaps.length;
+    assert.ok(mean < 110 && Math.max(...gaps) < 260, `camera stays on him: mean ${mean.toFixed(0)}, worst ${Math.max(...gaps).toFixed(0)}`);
+    assert.ok(Math.max(...samples.map(([cx, cy]) => Math.hypot(cx - 280, cy - 180))) > 600, 'the camera went far from home with him');
+    assert.deepEqual(p.errors, []);
+    await p.context().close();
+  });
+
+  await step('a roadblock can be set far from the home junction', async () => {
+    const p = await chasePage('seed=8&plan=straight,straight,clean');
+    await p.waitForFunction(() => window.__fx.chasing && Math.hypot(window.__fx.racerX - 280, window.__fx.racerY - 180) > 500, null, { timeout: 30000 });
+    await p.getByRole('button', { name: 'Drop cone' }).click();
+    await p.waitForFunction(() => window.__fx.blocks === 1);
+    await ended(p);
+    assert.deepEqual(await p.evaluate(() => [window.__fx.outcomes, window.__fx.busted]), [['cone'], 1]);
+    assert.deepEqual(p.errors, []);
+    await p.context().close();
+  });
+
   await step('a U-turn that goes wrong ends in a wipeout: the racer rolls, the cops stop, the heat resets', async () => {
     const p = await chasePage('seed=5&plan=uturn,wipeout');
     await ended(p);

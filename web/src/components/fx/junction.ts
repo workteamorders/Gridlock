@@ -239,7 +239,7 @@ export function startJunction(canvas: HTMLCanvasElement) {
   let lastGreen = -1;
   const cones = approaches.map(() => ({ pos: 0, until: 0 }));
   const debug = /^(debug|off)$/.test(new URLSearchParams(location.search).get('motion') ?? '')
-    ? { frames: 0, times: [] as number[], interactions: 0, brakes: 0, cones: 0, detours: 0, axis: 0, chases: 0, busted: 0, escaped: 0, heat: 0, plans: [] as string[], outcomes: [] as string[], crashes: 0, drifts: 0, zoom: 1, camX: 280, camY: 180, roll: 0 }
+    ? { frames: 0, times: [] as number[], interactions: 0, brakes: 0, cones: 0, detours: 0, axis: 0, chases: 0, busted: 0, escaped: 0, heat: 0, plans: [] as string[], outcomes: [] as string[], crashes: 0, drifts: 0, blocks: 0, chasing: 0, racerX: 0, racerY: 0, zoom: 1, camX: 280, camY: 180, roll: 0 }
     : undefined;
   const host = window as Window & { __fx?: typeof debug };
   if (debug) host.__fx = debug;
@@ -271,6 +271,17 @@ export function startJunction(canvas: HTMLCanvasElement) {
   const skids: { x1: number; y1: number; x2: number; y2: number; born: number }[] = [];
   const governor = frameGovernor(cars.length);
 
+  /** Roadblocks put on the racer's route by the pointer or the Drop cone button, anywhere along it. */
+  const blocks: { x: number; y: number; s: number; heading: number; until: number }[] = [];
+  /** Ordinary traffic on the roads around the home junction, so the town does not go quiet when the camera follows a chase away. */
+  const ambient = Array.from({ length: 18 }, (_, i) => ({
+    horizontal: i % 2 === 0,
+    dir: (i >> 1) % 2 ? 1 : -1,
+    u: (i * 331) % 1680,
+    speed: 62 + ((i * 13) % 40),
+    offset: (i % 3) - 1,
+    sprite: (i * 5) % (approaches.length * CARS_PER_APPROACH),
+  }));
   type Outcome = 'escaped' | 'cone' | 'wipeout' | 'pit';
   interface Actor {
     slot: number; s: number; lane: number; speed: number; spin: number; spinDir: number;
@@ -288,7 +299,7 @@ export function startJunction(canvas: HTMLCanvasElement) {
   const seedText = debug ? params.get('seed') : null;
   const rng = mulberry32(seedText ? Number(seedText) : (globalThis.crypto?.getRandomValues(new Uint32Array(1))[0] ?? Date.now()));
   const forced = debug ? (params.get('plan') ?? '').split(';').filter(Boolean) : [];
-  const geometry = { mid: { x: MID_X, y: MID_Y }, box: 49, reach: (d: Vec) => (d.x !== 0 ? MID_X + 32 : MID_Y + 32) };
+  const geometry = { mid: { x: MID_X, y: MID_Y }, box: 49, reach: (d: Vec) => (d.x !== 0 ? MID_X + 32 : MID_Y + 32), spacing: (d: Vec) => (d.x !== 0 ? WIDTH : HEIGHT) };
   let chase: Chase | undefined;
   let lastPlan: Plan | undefined;
   let chaseCount = 0;
@@ -354,6 +365,8 @@ export function startJunction(canvas: HTMLCanvasElement) {
 
   function endChase(outcome: Outcome) {
     chase = undefined;
+    blocks.length = 0;
+    if (debug) debug.chasing = 0;
     mark('data-chase', '');
     nextChase = time + (outcome === 'escaped' ? 4500 + rng() * 4500 : 6000 + rng() * 5000);
     if (debug) debug.outcomes.push(outcome);
@@ -442,10 +455,11 @@ export function startJunction(canvas: HTMLCanvasElement) {
       else if (x >= 0 && time > c.nitroUntil + 600 && Math.hypot(x - racer.x, y - racer.y) < 46) fireNitro();
       racer.speed += ((time < c.nitroUntil ? cruise * 1.4 : cruise) - racer.speed) * Math.min(1, delta / 200);
       // Through a bend the nose points further into the turn than the car travels: a drift. On a straight the tail swings both ways instead.
-      const inBox = racer.s > path.boxIn && racer.s < path.boxOut;
-      const u = (racer.s - path.boxIn) / (path.boxOut - path.boxIn);
-      const side = c.approach % 2 ? -1 : 1;
-      const fishtail = plan.route === 'straight' && inBox;
+      const legIndex = path.legs.findIndex((leg) => racer.s > leg.boxIn && racer.s < leg.boxOut);
+      const inLeg = path.legs[legIndex];
+      const u = inLeg ? (racer.s - inLeg.boxIn) / (inLeg.boxOut - inLeg.boxIn) : 0;
+      const side = (c.approach + Math.max(0, legIndex)) % 2 ? -1 : 1;
+      const fishtail = legIndex >= 0 && (legIndex === 0 ? plan.route : plan.then[legIndex - 1]!.route) === 'straight';
       racer.spin += (clamp(here.k * 24, -0.8, 0.8) + (fishtail ? side * 0.55 * Math.sin(u * 2 * Math.PI) : 0) - racer.spin) * Math.min(1, delta / 90);
       let want = fishtail ? side * 9 * Math.sin(u * Math.PI) : 0;
       // A cone on the arm the racer is driving along is a roadblock.
@@ -461,6 +475,9 @@ export function startJunction(canvas: HTMLCanvasElement) {
         const outward = Math.cos(here.h) * arm.x + Math.sin(here.h) * arm.y < 0;
         want = (outward ? -1 : 1) * (LANE - 5);
         if (Math.abs(along - cone.pos) < 22) { arrest(c, 'cone'); break; }
+      }
+      for (const block of blocks) {
+        if (block.until > time && racer.s > block.s - 14 && racer.s < block.s + 40) { arrest(c, 'cone'); break; }
       }
       racer.lane += (want - racer.lane) * Math.min(1, delta / 130);
       if (Math.abs(racer.spin) > 0.2 || fishtail) {
@@ -488,10 +505,11 @@ export function startJunction(canvas: HTMLCanvasElement) {
       const stopsRacer = mishap.kind === 'wipeout' || mishap.kind === 'pit';
       if (c.fired[index] || (stopsRacer && c.state !== 'run')) return;
       const owner = stopsRacer ? racer : mishap.kind === 'pileup' ? c.actors[1] : c.actors[mishap.slot];
-      if (owner && owner.s >= path.apex + mishap.offset) { c.fired[index] = true; fire(c, mishap); }
+      if (owner && owner.s >= (path.legs[mishap.leg] ?? path.legs[0]!).apex + mishap.offset) { c.fired[index] = true; fire(c, mishap); }
     });
     racer.s += racer.speed * seconds;
     settle(racer, path);
+    if (debug) { debug.chasing = 1; debug.racerX = racer.x; debug.racerY = racer.y; }
     for (const cop of c.actors) {
       if (cop.slot === 0) continue;
       if (cop.crashed) {
@@ -596,7 +614,7 @@ export function startJunction(canvas: HTMLCanvasElement) {
     g.globalAlpha = 1;
   }
 
-  /** Where the operator wants the camera: a slow sweep over the town, or the racer, or a car that just crashed. */
+  /** Where the operator wants the camera: a slow sweep over the town, or the racer wherever he goes, or a car that just crashed. */
   function aim() {
     const c = chase;
     if (!c) return { x: MID_X + Math.sin(time / 7300) * 46, y: MID_Y + Math.sin(time / 5100 + 1) * 24, zoom: PATROL_ZOOM + 0.08 * Math.sin(time / 6100) };
@@ -604,17 +622,30 @@ export function startJunction(canvas: HTMLCanvasElement) {
     const racer = c.actors[0]!;
     const heading = c.path.at(racer.s).h;
     const lead = racer.speed * 0.28;
-    const inBox = Math.max(0, 1 - Math.hypot(racer.x - MID_X, racer.y - MID_Y) / 140);
-    const zoom = c.state === 'busted' ? (time - c.bustedAt < 1800 ? 1.85 : 1.6) : c.zoomBase + 0.3 * inBox;
-    return { x: racer.x + Math.cos(heading) * lead, y: racer.y + Math.sin(heading) * lead, zoom };
+    let tx = racer.x + Math.cos(heading) * lead;
+    let ty = racer.y + Math.sin(heading) * lead;
+    // Until the racer reaches the home junction the camera waits near it, so his arrival is seen; after that it never lets go of him.
+    if (racer.s < c.path.boxIn) {
+      const dx = tx - MID_X;
+      const dy = ty - MID_Y;
+      const dist = Math.hypot(dx, dy);
+      if (dist > 260) { tx = MID_X + (dx / dist) * 260; ty = MID_Y + (dy / dist) * 260; }
+    }
+    let inBox = 0;
+    for (const leg of c.path.legs) {
+      const p = c.path.at(leg.apex);
+      inBox = Math.max(inBox, 1 - Math.hypot(racer.x - p.x, racer.y - p.y) / 140);
+    }
+    const zoom = c.state === 'busted' ? (time - c.bustedAt < 1800 ? 1.85 : 1.6) : c.zoomBase + 0.3 * Math.max(0, inBox);
+    return { x: tx, y: ty, zoom };
   }
 
   /** The camera follows with a spring, so it lags behind a fast car, overshoots a little and settles, like a person at the controls. */
   function moveCamera(delta: number) {
     const dt = Math.min(delta, 50) / 1000;
     const goal = aim();
-    const tx = clamp(goal.x, MID_X - 210, MID_X + 210);
-    const ty = clamp(goal.y, MID_Y - 130, MID_Y + 130);
+    const tx = goal.x;
+    const ty = goal.y;
     const follow = chase ? 16 : 5;
     const damp = chase ? 5.2 : 3.2;
     cam.vx += ((tx - cam.x) * follow - cam.vx * damp) * dt;
@@ -626,15 +657,6 @@ export function startJunction(canvas: HTMLCanvasElement) {
     const bank = -clamp(cam.vx / 260, -1, 1) * 0.03 + 0.012 * Math.sin(time / 2300);
     cam.vroll += ((bank - cam.roll) * 10 - cam.vroll * 4) * dt;
     cam.roll = clamp(cam.roll + cam.vroll * dt, -ROLL_MAX + 0.005, ROLL_MAX - 0.005);
-    // Never show past the edge of the map.
-    const visibleW = canvas.width / base.scale;
-    const visibleH = canvas.height / base.scale;
-    const halfW = visibleW / (2 * cam.zoom);
-    const halfH = visibleH / (2 * cam.zoom);
-    const marginX = halfW + halfH * ROLL_MAX + 8;
-    const marginY = halfH + halfW * ROLL_MAX + 8;
-    cam.x = marginX * 2 >= WIDTH ? MID_X : clamp(cam.x, marginX, WIDTH - marginX);
-    cam.y = marginY * 2 >= HEIGHT ? MID_Y : clamp(cam.y, marginY, HEIGHT - marginY);
   }
 
   /** The steady camera plus hand-held shake: a constant tremor, a gust now and then, and a jolt after every hit. */
@@ -788,6 +810,66 @@ export function startJunction(canvas: HTMLCanvasElement) {
         g.moveTo(STOP - 34, lane); g.lineTo(STOP - 6, lane + 0.6);
         g.stroke();
       }
+      g.restore();
+    }
+    g.globalAlpha = 1;
+  }
+
+  /** Roadblocks on the racer's route: a cone between two striped barriers, across the road. */
+  function drawBlocks(g: CanvasRenderingContext2D) {
+    for (let k = blocks.length - 1; k >= 0; k--) {
+      const block = blocks[k]!;
+      if (block.until <= time) { blocks.splice(k, 1); continue; }
+      g.save();
+      g.translate(block.x, block.y);
+      g.rotate(block.heading);
+      g.globalAlpha = Math.min(1, (block.until - time) / 350);
+      for (const sy of [-1, 1]) {
+        g.fillStyle = ink;
+        g.fillRect(-3, sy * 17 - 5, 6, 10);
+        g.fillStyle = sy > 0 ? red : yellow;
+        g.fillRect(-2, sy * 17 - 4, 4, 8);
+      }
+      g.fillStyle = yellow;
+      g.fillRect(-2, -12, 4, 24);
+      g.fillStyle = red;
+      for (let n = -2; n <= 2; n += 2) g.fillRect(-2, n * 5 - 2.5, 4, 5);
+      g.fillStyle = red;
+      g.beginPath();
+      g.moveTo(-9, -7);
+      g.lineTo(7, 0);
+      g.lineTo(-9, 7);
+      g.fill();
+      g.restore();
+    }
+    g.globalAlpha = 1;
+  }
+
+  /** Quiet traffic on the roads around the home junction, drawn wherever the camera is. */
+  function drawAmbient(g: CanvasRenderingContext2D) {
+    const halfW = canvas.width / base.scale / (2 * shot.zoom) + 70;
+    const halfH = canvas.height / base.scale / (2 * shot.zoom) + 70;
+    for (const car of ambient) {
+      let px: number;
+      let py: number;
+      if (car.horizontal) {
+        py = MID_Y + (Math.round((shot.y - MID_Y) / HEIGHT) + car.offset) * HEIGHT + car.dir * LANE;
+        const span = WIDTH * 3;
+        px = shot.x + ((((car.u + car.dir * car.speed * time / 1000 - shot.x + span / 2) % span) + span) % span) - span / 2;
+      } else {
+        px = MID_X + (Math.round((shot.x - MID_X) / WIDTH) + car.offset) * WIDTH - car.dir * LANE;
+        const span = HEIGHT * 3;
+        py = shot.y + ((((car.u + car.dir * car.speed * time / 1000 - shot.y + span / 2) % span) + span) % span) - span / 2;
+      }
+      if (Math.abs(px - shot.x) > halfW || Math.abs(py - shot.y) > halfH) continue;
+      // The home junction has its own traffic and lights.
+      if (Math.abs(px - MID_X) < 340 && Math.abs(py - MID_Y) < 220) continue;
+      g.save();
+      g.translate(px, py);
+      g.rotate(car.horizontal ? (car.dir > 0 ? 0 : Math.PI) : car.dir > 0 ? Math.PI / 2 : -Math.PI / 2);
+      g.scale(0.49, 0.49);
+      g.globalAlpha = 0.92;
+      g.drawImage(sprites[car.sprite]!, -36, -21, 72, 42);
       g.restore();
     }
     g.globalAlpha = 1;
@@ -970,15 +1052,23 @@ export function startJunction(canvas: HTMLCanvasElement) {
     }
     framing();
     applyCamera(g);
-    g.drawImage(map, 0, 0, WIDTH, HEIGHT);
+    // The town is the one junction repeated in every direction, so the camera can follow a car as far as it goes.
+    const halfW = canvas.width / base.scale / (2 * shot.zoom);
+    const halfH = canvas.height / base.scale / (2 * shot.zoom);
+    const slack = (halfW + halfH) * 0.06 + 14;
+    for (let tj = Math.floor((shot.y - halfH - slack) / HEIGHT); tj <= Math.floor((shot.y + halfH + slack) / HEIGHT); tj++) {
+      for (let ti = Math.floor((shot.x - halfW - slack) / WIDTH); ti <= Math.floor((shot.x + halfW + slack) / WIDTH); ti++) g.drawImage(map, ti * WIDTH - 0.3, tj * HEIGHT - 0.3, WIDTH + 0.6, HEIGHT + 0.6);
+    }
     drawSkids(g);
+    drawBlocks(g);
+    drawAmbient(g);
 
     if (x >= 0 && effects >= 8) {
       g.save();
       g.beginPath();
       g.arc(x, y, 87, 0, Math.PI * 2);
       g.clip();
-      g.drawImage(spotlight, 0, 0);
+      g.drawImage(spotlight, Math.floor(x / WIDTH) * WIDTH, Math.floor(y / HEIGHT) * HEIGHT);
       g.globalAlpha = 0.62;
       g.lineWidth = 1.5;
       g.strokeStyle = yellow;
@@ -1227,17 +1317,48 @@ export function startJunction(canvas: HTMLCanvasElement) {
     move(event);
     if (pressX >= 0 && Math.hypot(x - pressX, y - pressY) < 18) {
       const dx = x - MID_X, dy = y - MID_Y;
-      const horizontal = Math.abs(dx) > Math.abs(dy);
-      const index = horizontal ? (dx < 0 ? 0 : 2) : (dy < 0 ? 1 : 3);
-      place(index, -Math.abs(horizontal ? dx : dy));
+      // At home the press puts a cone on the nearest road, as before; with a chase on, it also blocks the racer's route if it lands near it.
+      if (Math.abs(dx) < 300 && Math.abs(dy) < 210) {
+        const horizontal = Math.abs(dx) > Math.abs(dy);
+        const index = horizontal ? (dx < 0 ? 0 : 2) : (dy < 0 ? 1 : 3);
+        place(index, -Math.abs(horizontal ? dx : dy));
+      }
+      blockRoute(x, y);
     }
     pressX = -1;
     if (event.pointerType === 'touch') clear();
   }
 
+  /** Puts a roadblock on the racer's route, ahead of him, at the point nearest to (px, py) if that is within reach. */
+  function blockRoute(px: number, py: number, ahead = 0) {
+    const c = chase;
+    if (!c || c.state !== 'run' || !active) return;
+    const racer = c.actors[0]!;
+    const from = racer.s + 70;
+    const to = Math.min(c.path.length - 30, racer.s + 760);
+    let best = -1;
+    let bestDistance = ahead ? 0 : 70;
+    if (ahead) best = Math.min(to, racer.s + ahead);
+    else {
+      for (let s = from; s <= to; s += 6) {
+        const p = c.path.at(s);
+        const distance = Math.hypot(p.x - px, p.y - py);
+        if (distance < bestDistance) { bestDistance = distance; best = s; }
+      }
+    }
+    if (best < 0 || best < from - 1) return;
+    const p = c.path.at(best);
+    blocks.push({ x: p.x, y: p.y, s: best, heading: p.h, until: time + CONE_LIFE });
+    if (debug) debug.blocks++;
+  }
+
   function drop() {
-    // With a chase under way, the cone goes on its road, so the keyboard can stop it too.
-    if (chase && chase.state === 'run') { place(chase.approach, -137); return; }
+    // With a chase under way, the cone goes on its road, so the keyboard can stop it too: at the entry arm while he is still coming, then on his route ahead of him wherever he is.
+    if (chase && chase.state === 'run') {
+      if (chase.actors[0]!.s < chase.path.boxIn - 100) place(chase.approach, -137);
+      else blockRoute(0, 0, 160);
+      return;
+    }
     // Otherwise pick a currently green approach so the effect is also visible from the keyboard.
     const phase = (time - held) % (SIGNAL_PHASE * 2);
     const axis = phase < SIGNAL_PHASE ? 0 : 1;
