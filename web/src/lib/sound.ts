@@ -1,4 +1,4 @@
-import { MASTER_GAIN, soundPlan, type SoundKind } from './sound-plan';
+import { MASTER_GAIN, MIN_GAP, soundPlan, type SoundKind } from './sound-plan';
 
 const key = 'gridlock.sound';
 let enabled = false;
@@ -47,13 +47,18 @@ export function armOnGesture() {
 /** Pending resumes older than this are dropped, so a sound never plays late at some unrelated gesture. */
 const STALE_MS = 400;
 
-export function play(kind: SoundKind) {
+const lastAt: Partial<Record<SoundKind, number>> = {};
+
+/** `level` only matters for sounds that vary, such as the climb step (0 is the bottom rung). */
+export function play(kind: SoundKind, level = 0) {
   load();
   if (!enabled || !ctx) return;
-  if (ctx.state === 'running') { schedule(ctx, kind); return; }
   const asked = performance.now();
+  if (asked - (lastAt[kind] ?? -1e9) < MIN_GAP[kind]) return;
+  lastAt[kind] = asked;
   const c = ctx;
-  void c.resume().then(() => { if (c.state === 'running' && performance.now() - asked < STALE_MS) schedule(c, kind); }).catch(() => undefined);
+  if (c.state === 'running') { schedule(c, kind, level); return; }
+  void c.resume().then(() => { if (c.state === 'running' && performance.now() - asked < STALE_MS) schedule(c, kind, level); }).catch(() => undefined);
 }
 
 let bus: { ctx: AudioContext; input: GainNode } | undefined;
@@ -69,10 +74,10 @@ function output(c: AudioContext): GainNode {
   return input;
 }
 
-function schedule(c: AudioContext, kind: SoundKind) {
+function schedule(c: AudioContext, kind: SoundKind, level: number) {
   const now = c.currentTime;
   const master = output(c);
-  for (const t of soundPlan(kind)) {
+  for (const t of soundPlan(kind, level)) {
     const gain = c.createGain();
     gain.gain.setValueAtTime(t.gain, now + t.at);
     gain.gain.exponentialRampToValueAtTime(0.001, now + t.at + t.length);

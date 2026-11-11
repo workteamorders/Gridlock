@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { SPEC } from '@/lib/config';
+import { play } from '@/lib/sound';
 import { CLIMB_STEPS, capOfRank, climbProgress, climbStep, rankAtStep } from '@/lib/stage';
 import { ChapterHead } from './ChapterHead';
 
@@ -11,17 +12,22 @@ const steps = Array.from({ length: CLIMB_STEPS }, (_, i) => i);
 export function LadderClimb() {
   const root = useRef<HTMLElement>(null);
   const [step, setStep] = useState(0);
+  const heard = useRef<number | null>(null);
   useEffect(() => {
     const node = root.current;
     if (!node) return;
     let frame = 0;
     const read = () => {
       frame = 0;
-      if (document.documentElement.dataset.motion !== 'full') { node.style.removeProperty('--p'); setStep(0); return; }
+      if (document.documentElement.dataset.motion !== 'full') { node.style.removeProperty('--p'); setStep(0); heard.current = null; return; }
       const box = node.getBoundingClientRect();
       const p = climbProgress(box.top, box.height, window.innerHeight);
       node.style.setProperty('--p', p.toFixed(4));
-      setStep(climbStep(p));
+      const next = climbStep(p);
+      setStep(next);
+      // The first reading only sets the baseline, so opening the page halfway down is silent. After that every rung makes a note, rising with the climb.
+      if (heard.current !== null && next !== heard.current) play(next === CLIMB_STEPS - 1 ? 'summit' : 'step', next);
+      heard.current = next;
     };
     const queue = () => { if (!frame) frame = requestAnimationFrame(read); };
     window.addEventListener('scroll', queue, { passive: true });

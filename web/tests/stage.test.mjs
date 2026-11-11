@@ -7,7 +7,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { CLIMB_STEPS, capOfRank, climbProgress, climbStep, magnetOffset, rankAtStep, rollValue } from '../src/lib/stage.ts';
-import { planLength, soundPlan, MASTER_GAIN, SOUND_KINDS } from '../src/lib/sound-plan.ts';
+import { planLength, soundPlan, stepFrequency, MIN_GAP, MASTER_GAIN, SOUND_KINDS } from '../src/lib/sound-plan.ts';
 import { ribbonFacts } from '../src/components/stage/ribbon.ts';
 import { makeHero } from '../scripts/make-hero.mjs';
 
@@ -59,7 +59,8 @@ test('magnetic pull is zero outside the radius and never above the maximum', () 
 
 test('sound recipes are short, bounded and finite, and loud enough to hear', () => {
   assert.ok(MASTER_GAIN >= 0.4 && MASTER_GAIN <= 0.7);
-  assert.deepEqual([...SOUND_KINDS].sort(), ['click', 'flip', 'open', 'rev', 'stamp']);
+  assert.deepEqual([...SOUND_KINDS].sort(), ['click', 'flip', 'hover', 'open', 'rev', 'stamp', 'step', 'summit', 'whoosh']);
+  assert.deepEqual(Object.keys(MIN_GAP).sort(), [...SOUND_KINDS].sort());
   for (const kind of SOUND_KINDS) {
     const plan = soundPlan(kind);
     assert.ok(plan.length >= 1);
@@ -67,6 +68,17 @@ test('sound recipes are short, bounded and finite, and loud enough to hear', () 
     for (const t of plan) { assert.ok(t.gain > 0 && t.gain <= 1); assert.ok(t.length > 0 && t.at >= 0); if (t.wave !== 'noise') assert.ok(t.from >= 40 && t.to >= 40 && t.from <= 4000 && t.to <= 4000); }
     // Small speakers do not reproduce much below 150 Hz, so every recipe needs a tone above it.
     assert.ok(plan.some((t) => t.wave === 'noise' || Math.max(t.from, t.to) >= 300), `${kind} has audible content on small speakers`);
+  }
+});
+
+test('climb notes rise with every step, stay in range and are not all the same', () => {
+  const notes = Array.from({ length: 15 }, (_, i) => stepFrequency(i));
+  for (let i = 1; i < notes.length; i++) assert.ok(notes[i] > notes[i - 1], `step ${i} is higher than step ${i - 1}`);
+  assert.ok(notes[0] >= 190 && notes[14] <= 1500);
+  for (let i = 0; i < 15; i++) {
+    const plan = soundPlan('step', i);
+    assert.ok(plan.every((t) => t.from <= 4000 && t.to <= 4000), 'the octave above the top note stays in range');
+    assert.ok(planLength('step', i) <= 0.2);
   }
 });
 

@@ -1,6 +1,7 @@
 // Local end-to-end: starts the local chain and the static site, drives the main flows with an injected wallet.
 import { spawn } from 'node:child_process';
 import assert from 'node:assert/strict';
+import { stepFrequency } from '../src/lib/sound-plan.ts';
 import { pages, launch, newPage, shot, start, startSite, info, warp, rpc, writeDeployment, ACCOUNT, OTHER, testSecret, SITE } from './lib.mjs';
 
 const web = new URL('..', import.meta.url).pathname;
@@ -402,6 +403,49 @@ try {
     await p.locator('footer .sound-button').click();
     assert.match(await p.locator('header .sound-button').innerText(), /Off/);
     assert.equal(await p.evaluate(() => localStorage.getItem('gridlock.sound')), 'off');
+    assert.deepEqual(p.errors, []);
+    await p.context().close();
+  });
+
+  await step('sound: the climb plays a rising note per rung, hover and click tick, and a quiet page stays quiet', async () => {
+    const p = await newPage(browser);
+    await p.addInitScript(() => {
+      window.__freqs = [];
+      const set = AudioParam.prototype.setValueAtTime;
+      AudioParam.prototype.setValueAtTime = function (v, t) { if (v >= 100) window.__freqs.push(Math.round(v * 10) / 10); return set.call(this, v, t); };
+    });
+    await p.goto(SITE); await p.waitForSelector('.climb'); await p.waitForSelector('text=Minted so far'); await p.waitForTimeout(500);
+    const count = () => p.evaluate(() => window.__freqs.length);
+    assert.equal(await count(), 0, 'nothing plays before sound is turned on');
+    await p.locator('header .sound-button').click(); await p.waitForTimeout(400);
+    await p.evaluate(() => { window.__freqs.length = 0; });
+    const goto = async (f) => { await p.evaluate((f) => { const r = document.querySelector('.climb').getBoundingClientRect(); scrollTo(0, r.top + scrollY + (r.height - innerHeight) * f); }, f); await p.waitForTimeout(160); };
+    await goto(0.001); await p.waitForTimeout(200);
+    const before = await count();
+    for (let i = 1; i <= 60; i++) await goto(i / 60);
+    await p.waitForTimeout(300);
+    const freqs = await p.evaluate(() => window.__freqs.slice());
+    const notes = new Set(Array.from({ length: 15 }, (_, i) => Math.round(stepFrequency(i) * 10) / 10));
+    // Each rung plays its note and the octave above it; keep only the first of every pair, and stop before the summit arpeggio.
+    const fundamentals = (list) => list.filter((f) => notes.has(f)).filter((f, i, a) => !(i > 0 && Math.abs(f - a[i - 1] * 2) < 0.3));
+    const heard = fundamentals(freqs.slice(0, freqs.includes(523) ? freqs.indexOf(523) : freqs.length));
+    assert.ok(heard.length >= 10, `the climb played ${heard.length} step notes`);
+    for (let i = 1; i < heard.length; i++) assert.ok(heard[i] >= heard[i - 1], 'notes only rise while scrolling down');
+    assert.ok(freqs.includes(1047), 'reaching rank 1 plays the summit arpeggio');
+    assert.ok(before <= 2, 'resting on the first rung is silent apart from the scroll itself');
+    // Scrolling back up plays notes again, going down in pitch.
+    await p.evaluate(() => { window.__freqs.length = 0; });
+    for (let i = 59; i >= 0; i -= 2) await goto(i / 60);
+    const down = fundamentals(await p.evaluate(() => window.__freqs.slice()));
+    assert.ok(down.length >= 6); for (let i = 1; i < down.length; i++) assert.ok(down[i] <= down[i - 1], 'notes fall while scrolling up');
+    // Hover and click.
+    await p.evaluate(() => { scrollTo(0, 0); window.__freqs.length = 0; }); await p.waitForTimeout(300);
+    await p.locator('header .nav-links a').nth(1).hover(); await p.waitForTimeout(150);
+    assert.ok(await count() >= 1, 'hovering a link ticks');
+    const afterHover = await count();
+    await p.locator('header .nav-links a').nth(1).evaluate((el) => el.addEventListener('click', (e) => e.preventDefault(), { once: true }));
+    await p.locator('header .nav-links a').nth(1).click(); await p.waitForTimeout(150);
+    assert.ok(await count() > afterHover, 'clicking a link ticks');
     assert.deepEqual(p.errors, []);
     await p.context().close();
   });
