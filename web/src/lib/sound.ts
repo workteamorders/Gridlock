@@ -44,37 +44,64 @@ export function armOnGesture() {
   return () => { window.removeEventListener('pointerdown', start); window.removeEventListener('keydown', start); };
 }
 
+/** Pending resumes older than this are dropped, so a sound never plays late at some unrelated gesture. */
+const STALE_MS = 400;
+
 export function play(kind: SoundKind) {
   load();
-  if (!enabled || !ctx || ctx.state !== 'running') return;
-  const now = ctx.currentTime;
-  const master = ctx.createGain();
-  master.gain.value = MASTER_GAIN;
-  master.connect(ctx.destination);
+  if (!enabled || !ctx) return;
+  if (ctx.state === 'running') { schedule(ctx, kind); return; }
+  const asked = performance.now();
+  const c = ctx;
+  void c.resume().then(() => { if (c.state === 'running' && performance.now() - asked < STALE_MS) schedule(c, kind); }).catch(() => undefined);
+}
+
+let bus: { ctx: AudioContext; input: GainNode } | undefined;
+/** One master gain into a compressor, so the louder sounds cannot clip. */
+function output(c: AudioContext): GainNode {
+  if (bus && bus.ctx === c) return bus.input;
+  const input = c.createGain();
+  input.gain.value = MASTER_GAIN;
+  const comp = c.createDynamicsCompressor();
+  comp.threshold.value = -14; comp.ratio.value = 6; comp.attack.value = 0.003; comp.release.value = 0.12;
+  input.connect(comp); comp.connect(c.destination);
+  bus = { ctx: c, input };
+  return input;
+}
+
+function schedule(c: AudioContext, kind: SoundKind) {
+  const now = c.currentTime;
+  const master = output(c);
   for (const t of soundPlan(kind)) {
-    const gain = ctx.createGain();
+    const gain = c.createGain();
     gain.gain.setValueAtTime(t.gain, now + t.at);
     gain.gain.exponentialRampToValueAtTime(0.001, now + t.at + t.length);
+    let head: AudioNode = gain;
+    if (t.filter) {
+      const f = c.createBiquadFilter();
+      f.type = t.filter.type; f.frequency.value = t.filter.freq; f.Q.value = t.filter.q ?? 1;
+      f.connect(gain); head = f;
+    }
     gain.connect(master);
     if (t.wave === 'noise') {
       noise ??= (() => {
-        const b = ctx!.createBuffer(1, ctx!.sampleRate * 0.1, ctx!.sampleRate);
+        const b = c.createBuffer(1, Math.ceil(c.sampleRate * 0.5), c.sampleRate);
         const d = b.getChannelData(0);
         let s = 1;
         for (let i = 0; i < d.length; i++) { s = (s * 16807) % 2147483647; d[i] = s / 1073741823 - 1; }
         return b;
       })();
-      const src = ctx.createBufferSource();
+      const src = c.createBufferSource();
       src.buffer = noise;
-      src.connect(gain);
+      src.connect(head);
       src.start(now + t.at);
       src.stop(now + t.at + t.length);
     } else {
-      const osc = ctx.createOscillator();
+      const osc = c.createOscillator();
       osc.type = t.wave;
       osc.frequency.setValueAtTime(t.from, now + t.at);
       if (t.to !== t.from) osc.frequency.exponentialRampToValueAtTime(t.to, now + t.at + t.length);
-      osc.connect(gain);
+      osc.connect(head);
       osc.start(now + t.at);
       osc.stop(now + t.at + t.length);
     }

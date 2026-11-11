@@ -7,7 +7,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { CLIMB_STEPS, capOfRank, climbProgress, climbStep, magnetOffset, rankAtStep, rollValue } from '../src/lib/stage.ts';
-import { planLength, soundPlan, MASTER_GAIN } from '../src/lib/sound-plan.ts';
+import { planLength, soundPlan, MASTER_GAIN, SOUND_KINDS } from '../src/lib/sound-plan.ts';
 import { ribbonFacts } from '../src/components/stage/ribbon.ts';
 import { makeHero } from '../scripts/make-hero.mjs';
 
@@ -57,13 +57,16 @@ test('magnetic pull is zero outside the radius and never above the maximum', () 
   }
 });
 
-test('sound recipes are short, quiet and finite', () => {
-  assert.ok(MASTER_GAIN <= 0.25);
-  for (const kind of ['stamp', 'open', 'rev']) {
+test('sound recipes are short, bounded and finite, and loud enough to hear', () => {
+  assert.ok(MASTER_GAIN >= 0.4 && MASTER_GAIN <= 0.7);
+  assert.deepEqual([...SOUND_KINDS].sort(), ['click', 'flip', 'open', 'rev', 'stamp']);
+  for (const kind of SOUND_KINDS) {
     const plan = soundPlan(kind);
     assert.ok(plan.length >= 1);
     assert.ok(planLength(kind) <= 0.5, `${kind} is under half a second`);
-    for (const t of plan) { assert.ok(t.gain > 0 && t.gain <= 1); assert.ok(t.length > 0 && t.at >= 0); }
+    for (const t of plan) { assert.ok(t.gain > 0 && t.gain <= 1); assert.ok(t.length > 0 && t.at >= 0); if (t.wave !== 'noise') assert.ok(t.from >= 40 && t.to >= 40 && t.from <= 4000 && t.to <= 4000); }
+    // Small speakers do not reproduce much below 150 Hz, so every recipe needs a tone above it.
+    assert.ok(plan.some((t) => t.wave === 'noise' || Math.max(t.from, t.to) >= 300), `${kind} has audible content on small speakers`);
   }
 });
 

@@ -377,7 +377,8 @@ try {
     await p.addInitScript(() => {
       window.__audio = 0;
       const Native = window.AudioContext;
-      window.AudioContext = class extends Native { constructor(...a) { super(...a); window.__audio += 1; } };
+      window.__tones = 0;
+      window.AudioContext = class extends Native { constructor(...a) { super(...a); window.__audio += 1; } createOscillator() { window.__tones += 1; return super.createOscillator(); } };
     });
     await p.goto(SITE); await p.waitForSelector('header .sound-button');
     const sound = p.locator('header .sound-button');
@@ -388,6 +389,11 @@ try {
     await sound.click();
     assert.match(await sound.innerText(), /On/);
     assert.equal(await p.evaluate(() => [localStorage.getItem('gridlock.sound'), window.__audio]).then((v) => v.join()), 'on,1');
+    await p.waitForFunction(() => window.__tones > 0, null, { timeout: 3000 }).catch(() => undefined);
+    assert.ok(await p.evaluate(() => window.__tones) > 0, 'turning sound on plays a confirmation sound');
+    const afterToggle = await p.evaluate(() => window.__tones);
+    await p.locator('main .btn').first().evaluate((el) => el.addEventListener('click', (e) => e.preventDefault(), { once: true })); await p.locator('main .btn').first().click();
+    assert.ok(await p.evaluate(() => window.__tones) > afterToggle, 'a button press makes a sound while sound is on');
     await p.reload(); await p.waitForSelector('header .sound-button');
     assert.match(await p.locator('header .sound-button').innerText(), /On/);
     assert.equal(await p.evaluate(() => window.__audio), 0, 'a remembered On still waits for a gesture');
