@@ -1,5 +1,6 @@
 import { carBodies, carWindows, liveries } from '@/art/cars';
 import { frameGovernor } from './governor';
+import { buildPath, forcePlan, mulberry32, planChase, signature, type Mishap, type Path, type Plan, type Vec } from './chase-plan';
 
 const WIDTH = 560;
 const HEIGHT = 360;
@@ -19,13 +20,10 @@ const CONE_LIFE = 4600;
 const RETRY_AFTER = 6000;
 const RETRIES = 4;
 /** The street chase: a racer in front, two patrol cars behind, all in the middle of the road. */
-const CHASE_SPEED = 165;
+const CRUISE_REFERENCE = 165;
 const CHASE_GAP = 46;
-const CHASE_FIRST = 600;
-/** A chase may only start in the first stretch of a green, so it is across the junction before the lights turn. */
-const CHASE_WINDOW = 1200;
-const CHASE_AGAIN = 6500;
-const CHASE_AFTER_BUST = 9000;
+/** How far ahead of the racer's start the path begins, so the patrol cars have road under them too. */
+const CHASE_LEAD = 150;
 const BUST_SHOW = 2600;
 const FLASH_MS = 200;
 /** The drone camera: how far in it may zoom, how much it may roll, and how sharp the backdrop is kept for zooming. */
@@ -241,7 +239,7 @@ export function startJunction(canvas: HTMLCanvasElement) {
   let lastGreen = -1;
   const cones = approaches.map(() => ({ pos: 0, until: 0 }));
   const debug = /^(debug|off)$/.test(new URLSearchParams(location.search).get('motion') ?? '')
-    ? { frames: 0, times: [] as number[], interactions: 0, brakes: 0, cones: 0, detours: 0, axis: 0, chases: 0, busted: 0, escaped: 0, heat: 0, crashes: 0, drifts: 0, zoom: 1, camX: 280, camY: 180, roll: 0 }
+    ? { frames: 0, times: [] as number[], interactions: 0, brakes: 0, cones: 0, detours: 0, axis: 0, chases: 0, busted: 0, escaped: 0, heat: 0, plans: [] as string[], outcomes: [] as string[], crashes: 0, drifts: 0, zoom: 1, camX: 280, camY: 180, roll: 0 }
     : undefined;
   const host = window as Window & { __fx?: typeof debug };
   if (debug) host.__fx = debug;
@@ -273,26 +271,61 @@ export function startJunction(canvas: HTMLCanvasElement) {
   const skids: { x1: number; y1: number; x2: number; y2: number; born: number }[] = [];
   const governor = frameGovernor(cars.length);
 
-  interface Actor { slot: number; pos: number; lane: number; speed: number; spin: number; crashed: boolean }
-  interface Chase { approach: number; state: 'run' | 'busted'; since: number; bustedAt: number; nitroUntil: number; sirenAgain: boolean; smokeAt: number; crashPlanned: boolean; crashAt: number; drifted: boolean; lastSkid: ([number, number] | undefined)[]; actors: Actor[] }
+  type Outcome = 'escaped' | 'cone' | 'wipeout' | 'pit';
+  interface Actor {
+    slot: number; s: number; lane: number; speed: number; spin: number; spinDir: number;
+    x: number; y: number; heading: number;
+    crashed: boolean; crashAt: number; rollAt: number;
+    skid: ([number, number] | undefined)[];
+  }
+  interface Chase {
+    plan: Plan; path: Path; approach: number; state: 'run' | 'busted'; cause: Outcome;
+    since: number; bustedAt: number; nitroUntil: number; nitroDone: boolean; sirenAgain: boolean; smokeAt: number; slid: boolean;
+    fired: boolean[]; focus?: { actor: Actor; until: number }; zoomBase: number; actors: Actor[];
+  }
+  const params = new URLSearchParams(location.search);
+  // Every chase is drawn from a random generator seeded by the system, so no two sessions play alike. Debug pages may fix the seed or the plan for tests.
+  const seedText = debug ? params.get('seed') : null;
+  const rng = mulberry32(seedText ? Number(seedText) : (globalThis.crypto?.getRandomValues(new Uint32Array(1))[0] ?? Date.now()));
+  const forced = debug ? (params.get('plan') ?? '').split(';').filter(Boolean) : [];
+  const geometry = { mid: { x: MID_X, y: MID_Y }, box: 49, reach: (d: Vec) => (d.x !== 0 ? MID_X + 32 : MID_Y + 32) };
   let chase: Chase | undefined;
+  let lastPlan: Plan | undefined;
   let chaseCount = 0;
-  let nextChase = CHASE_FIRST;
+  let nextChase = 500 + rng() * 1800;
   let heat = 0;
+  /** Time spent holding the traffic lights while a chase crosses the junction, so the crossing traffic never meets it. */
+  let held = 0;
   const at = (a: (typeof approaches)[number], pos: number, lane: number): [number, number] => [MID_X + a.x * pos - a.y * lane, MID_Y + a.y * pos + a.x * lane];
   const mark = (name: string, value: string) => { if (value) figure?.setAttribute(name, value); else figure?.removeAttribute(name); };
   const announce = (phase: 'siren' | 'busted' | 'crash' | 'skid') => window.dispatchEvent(new CustomEvent('gridlock:chase', { detail: phase }));
   mark('data-heat', '0');
 
+  /** Puts a car on the path: its place along it, sideways by `lane`, nose turned by `spin` (a drift). */
+  function settle(actor: Actor, path: Path) {
+    const p = path.at(actor.s);
+    actor.x = p.x - Math.sin(p.h) * actor.lane;
+    actor.y = p.y + Math.cos(p.h) * actor.lane;
+    actor.heading = p.h + actor.spin;
+  }
+
   function startChase(approach: number) {
     const a = approaches[approach]!;
+    const forcedText = forced[chaseCount];
+    const plan = forcedText ? forcePlan(forcedText, rng) : planChase(rng, lastPlan);
+    lastPlan = plan;
+    const path = buildPath(plan, { x: a.x, y: a.y }, geometry, CHASE_LEAD);
+    const actors = Array.from({ length: plan.cops + 1 }, (_, slot): Actor => ({
+      slot, s: CHASE_LEAD - slot * CHASE_GAP, lane: [0, -5, 5, 0][slot]!, speed: plan.speed, spin: 0, spinDir: slot % 2 ? 1 : -1,
+      x: 0, y: 0, heading: 0, crashed: false, crashAt: 0, rollAt: 0, skid: [undefined, undefined],
+    }));
+    for (const actor of actors) settle(actor, path);
     chase = {
-      approach, state: 'run', since: time, bustedAt: 0, nitroUntil: 0, sirenAgain: true, smokeAt: 0,
-      crashPlanned: chaseCount % 2 === 0, crashAt: 0, drifted: false, lastSkid: [undefined, undefined],
-      actors: [0, 1, 2].map((slot) => ({ slot, pos: -a.end - 150 - slot * CHASE_GAP, lane: slot === 0 ? 0 : slot === 1 ? -5 : 5, speed: CHASE_SPEED, spin: 0, crashed: false })),
+      plan, path, approach, state: 'run', cause: 'escaped', since: time, bustedAt: 0, nitroUntil: 0, nitroDone: false, sirenAgain: true, smokeAt: 0, slid: false,
+      fired: plan.mishaps.map(() => false), zoomBase: 1.3 + rng() * 0.25, actors,
     };
     chaseCount++;
-    if (debug) debug.chases++;
+    if (debug) { debug.chases++; debug.plans.push(signature(plan)); }
     mark('data-chase', 'run');
     announce('siren');
     const [bx, by] = at(a, -64, -46);
@@ -303,142 +336,214 @@ export function startJunction(canvas: HTMLCanvasElement) {
   function bump(power: number) { kick = power; kickAt = time; }
 
   /** Rear tyre marks and smoke from a sliding car. */
-  function slide(c: Chase, actor: Actor, a: (typeof approaches)[number], smoke: boolean) {
-    const [wx, wy] = at(a, actor.pos, actor.lane);
-    const heading = a.angle + actor.spin;
-    const cos = Math.cos(heading);
-    const sin = Math.sin(heading);
+  function slide(actor: Actor, smoke: boolean) {
+    const cos = Math.cos(actor.heading);
+    const sin = Math.sin(actor.heading);
     [-1, 1].forEach((side, index) => {
-      const px = wx - 13 * cos - sin * side * 6.5;
-      const py = wy - 13 * sin + cos * side * 6.5;
-      const last = c.lastSkid[index];
+      const px = actor.x - 13 * cos - sin * side * 6.5;
+      const py = actor.y - 13 * sin + cos * side * 6.5;
+      const last = actor.skid[index];
       if (last && Math.hypot(px - last[0], py - last[1]) > 2) {
         skids.push({ x1: last[0], y1: last[1], x2: px, y2: py, born: time });
         if (skids.length > 160) skids.shift();
-        c.lastSkid[index] = [px, py];
-      } else if (!last) c.lastSkid[index] = [px, py];
+        actor.skid[index] = [px, py];
+      } else if (!last) actor.skid[index] = [px, py];
       if (smoke && effects >= 8 && index === 0 && puffs.length < 24) puffs.push({ x: px, y: py, vx: -cos * 8, vy: -sin * 8 - 8, born: time });
     });
   }
 
-  function endChase(escaped: boolean) {
+  function endChase(outcome: Outcome) {
     chase = undefined;
     mark('data-chase', '');
-    nextChase = time + (escaped ? CHASE_AGAIN : CHASE_AFTER_BUST);
+    nextChase = time + (outcome === 'escaped' ? 4500 + rng() * 4500 : 6000 + rng() * 5000);
+    if (debug) debug.outcomes.push(outcome);
   }
 
-  /** Moves the racer and the patrol cars. A cone on the road is a roadblock: the racer swerves into it and the chase ends in a bust. */
-  function moveChase(c: Chase, delta: number) {
-    const a = approaches[c.approach]!;
-    const seconds = delta / 1000;
+  /** The racer is stopped: by a roadblock, by losing it in a bend or by a PIT manoeuvre. */
+  function arrest(c: Chase, cause: Outcome) {
     const racer = c.actors[0]!;
-    const cone = cones[c.approach]!;
-    const age = time - c.since;
-    if (c.sirenAgain && age > 650) { c.sirenAgain = false; announce('siren'); }
-    if (c.state === 'run') {
-      const cruise = CHASE_SPEED * (1 + heat * 0.05);
-      const [rx, ry] = at(a, racer.pos, racer.lane);
-      if (x >= 0 && time > c.nitroUntil + 600 && Math.hypot(x - rx, y - ry) < 46) {
-        c.nitroUntil = time + 900;
-        say('NITRO!', rx, ry - 26, true);
-      }
-      racer.speed += ((time < c.nitroUntil ? cruise * 1.4 : cruise) - racer.speed) * Math.min(1, delta / 200);
-      const blocked = cone.until > time;
-      // Through the junction the racer drifts: the tail swings out one way, then the other, trailing smoke and tyre marks.
-      const u = (racer.pos + 70) / 140;
-      const drifting = u > 0 && u < 1 && !(blocked && racer.pos > cone.pos - 20);
-      const side = c.approach % 2 ? -1 : 1;
-      if (drifting) {
-        if (!c.drifted) {
-          c.drifted = true;
-          if (debug) debug.drifts++;
-          announce('skid');
-          say('SKRRT!', rx, ry - 30, true);
-        }
-        racer.spin = side * 0.55 * Math.sin(u * 2 * Math.PI);
-        if (time - c.smokeAt > 55) { c.smokeAt = time; slide(c, racer, a, true); }
-        else slide(c, racer, a, false);
-      } else if (racer.spin !== 0 && !blocked) racer.spin *= Math.exp(-delta / 90);
-      const toward = blocked && racer.pos > cone.pos - 90 && racer.pos < cone.pos + 40 ? LANE - 5 : drifting ? side * 9 * Math.sin(u * Math.PI) : 0;
-      racer.lane += (toward - racer.lane) * Math.min(1, delta / 130);
-      if (blocked && racer.pos > cone.pos - 16 && racer.pos < cone.pos + 30) {
-        c.state = 'busted';
-        c.bustedAt = time;
-        heat = 0;
-        mark('data-heat', '0');
-        mark('data-chase', 'busted');
-        if (debug) { debug.busted++; debug.heat = 0; }
-        announce('busted');
-        bump(1);
-        say('BUSTED!', rx, ry - 28, true);
-      }
+    c.state = 'busted';
+    c.bustedAt = time;
+    c.cause = cause;
+    c.focus = { actor: racer, until: time + 1800 };
+    heat = 0;
+    mark('data-heat', '0');
+    mark('data-chase', 'busted');
+    if (debug) { debug.busted++; debug.heat = 0; }
+    bump(1);
+    if (cause === 'wipeout') {
+      racer.rollAt = time;
+      announce('crash');
+      say('WIPEOUT!', racer.x, racer.y - 28, true);
+    } else if (cause === 'pit') {
+      announce('crash');
+      say('P.I.T.!', racer.x, racer.y - 28, true);
     } else {
-      racer.speed *= Math.exp(-delta / 220);
-      racer.spin += 11 * Math.exp(-(time - c.bustedAt) / 650) * seconds;
-      racer.lane += (LANE - 2 - racer.lane) * Math.min(1, delta / 300);
-      if (effects >= 8 && time - c.smokeAt > 70 && time - c.bustedAt < 1300 && puffs.length < 24) {
-        c.smokeAt = time;
-        const [px, py] = at(a, racer.pos, racer.lane);
-        puffs.push({ x: px, y: py, vx: Math.cos(time / 90) * 12, vy: -9 - Math.abs(Math.sin(time / 70)) * 6, born: time });
+      announce('busted');
+      say('BUSTED!', racer.x, racer.y - 28, true);
+    }
+  }
+
+  /** A patrol car loses control: it spins, slides to the kerb, smokes and fades. */
+  function wreck(c: Chase, cop: Actor, word: string) {
+    if (cop.crashed) return;
+    cop.crashed = true;
+    cop.crashAt = time;
+    c.focus = { actor: cop, until: time + 1500 };
+    if (debug) debug.crashes++;
+    announce('crash');
+    bump(0.9);
+    say(word, cop.x, cop.y - 30, true);
+  }
+
+  function fire(c: Chase, mishap: Mishap) {
+    const racer = c.actors[0]!;
+    if (mishap.kind === 'copSpin') {
+      const cop = c.actors[mishap.slot];
+      if (cop) wreck(c, cop, 'CRASH!');
+    } else if (mishap.kind === 'pileup') {
+      const first = c.actors[1];
+      const second = c.actors[2];
+      if (first) wreck(c, first, 'PILE-UP!');
+      if (second) { second.spinDir = -(first?.spinDir ?? 1); wreck(c, second, 'PILE-UP!'); }
+    } else if (mishap.kind === 'wipeout') arrest(c, 'wipeout');
+    else if (mishap.kind === 'pit') {
+      const cop = c.actors[1];
+      if (c.plan.pitWins) arrest(c, 'pit');
+      else {
+        // The racer shrugs it off, wobbles and goes on; the patrol car that tried it is the one that spins out.
+        racer.spin += 1.2 * (cop?.spinDir ?? 1);
+        bump(0.7);
+        say('P.I.T.!', racer.x, racer.y - 28, true);
+        if (cop) wreck(c, cop, 'CRASH!');
       }
     }
-    racer.pos += racer.speed * seconds;
+  }
+
+  /** Does anything in the chase still need the junction clear? Then the lights hold. */
+  function holding(c: Chase) {
+    if (c.cause === 'cone') return false;
+    return c.actors.some((actor) => (actor.crashed ? time - actor.crashAt < 2600 && actor.s < c.path.boxOut : actor.s < c.path.boxOut + 20));
+  }
+
+  /** Moves the racer and the patrol cars along their path. A cone on the road is a roadblock the racer swerves into. */
+  function moveChase(c: Chase, delta: number) {
+    const { plan, path } = c;
+    const seconds = delta / 1000;
+    const racer = c.actors[0]!;
+    if (holding(c)) held += delta;
+    if (c.sirenAgain && time - c.since > 650) { c.sirenAgain = false; announce('siren'); }
+    if (c.state === 'run') {
+      const here = path.at(racer.s);
+      const bendiness = Math.min(1, Math.abs(here.k) * 28);
+      const cruise = plan.speed * (1 + heat * 0.05) * (1 - 0.38 * bendiness);
+      const fireNitro = () => { c.nitroDone = true; c.nitroUntil = time + 900; say('NITRO!', racer.x, racer.y - 26, true); };
+      if (!c.nitroDone && plan.nitro !== null && racer.s >= path.apex + plan.nitro) fireNitro();
+      else if (x >= 0 && time > c.nitroUntil + 600 && Math.hypot(x - racer.x, y - racer.y) < 46) fireNitro();
+      racer.speed += ((time < c.nitroUntil ? cruise * 1.4 : cruise) - racer.speed) * Math.min(1, delta / 200);
+      // Through a bend the nose points further into the turn than the car travels: a drift. On a straight the tail swings both ways instead.
+      const inBox = racer.s > path.boxIn && racer.s < path.boxOut;
+      const u = (racer.s - path.boxIn) / (path.boxOut - path.boxIn);
+      const side = c.approach % 2 ? -1 : 1;
+      const fishtail = plan.route === 'straight' && inBox;
+      racer.spin += (clamp(here.k * 24, -0.8, 0.8) + (fishtail ? side * 0.55 * Math.sin(u * 2 * Math.PI) : 0) - racer.spin) * Math.min(1, delta / 90);
+      let want = fishtail ? side * 9 * Math.sin(u * Math.PI) : 0;
+      // A cone on the arm the racer is driving along is a roadblock.
+      for (let i = 0; i < approaches.length; i++) {
+        const cone = cones[i]!;
+        const arm = approaches[i]!;
+        if (cone.until <= time) continue;
+        const dx = racer.x - MID_X;
+        const dy = racer.y - MID_Y;
+        const along = dx * arm.x + dy * arm.y;
+        const across = -dx * arm.y + dy * arm.x;
+        if (Math.abs(along - cone.pos) >= 90 || along > -geometry.box || Math.abs(across - LANE) >= 30) continue;
+        const outward = Math.cos(here.h) * arm.x + Math.sin(here.h) * arm.y < 0;
+        want = (outward ? -1 : 1) * (LANE - 5);
+        if (Math.abs(along - cone.pos) < 22) { arrest(c, 'cone'); break; }
+      }
+      racer.lane += (want - racer.lane) * Math.min(1, delta / 130);
+      if (Math.abs(racer.spin) > 0.2 || fishtail) {
+        if (!c.slid) {
+          c.slid = true;
+          if (debug) debug.drifts++;
+          announce('skid');
+          say('SKRRT!', racer.x, racer.y - 30, true);
+        }
+        const puff = time - c.smokeAt > 55;
+        if (puff) c.smokeAt = time;
+        slide(racer, puff);
+      } else racer.skid = [undefined, undefined];
+    }
+    if (c.state === 'busted') {
+      racer.speed *= Math.exp(-delta / 220);
+      racer.spin += 11 * Math.exp(-(time - c.bustedAt) / 650) * seconds * (c.cause === 'wipeout' ? 1.4 : 1);
+      racer.lane += ((c.cause === 'cone' ? LANE - 2 : racer.lane) - racer.lane) * Math.min(1, delta / 300);
+      if (effects >= 8 && time - c.smokeAt > 70 && time - c.bustedAt < 1300 && puffs.length < 24) {
+        c.smokeAt = time;
+        puffs.push({ x: racer.x, y: racer.y, vx: Math.cos(time / 90) * 12, vy: -9 - Math.abs(Math.sin(time / 70)) * 6, born: time });
+      }
+    }
+    plan.mishaps.forEach((mishap, index) => {
+      const stopsRacer = mishap.kind === 'wipeout' || mishap.kind === 'pit';
+      if (c.fired[index] || (stopsRacer && c.state !== 'run')) return;
+      const owner = stopsRacer ? racer : mishap.kind === 'pileup' ? c.actors[1] : c.actors[mishap.slot];
+      if (owner && owner.s >= path.apex + mishap.offset) { c.fired[index] = true; fire(c, mishap); }
+    });
+    racer.s += racer.speed * seconds;
+    settle(racer, path);
     for (const cop of c.actors) {
       if (cop.slot === 0) continue;
       if (cop.crashed) {
-        // A patrol car that lost it in the junction: spins, slides to the kerb and stops, smoking.
-        const wreckAge = time - c.crashAt;
+        const wreckAge = time - cop.crashAt;
         cop.speed *= Math.exp(-delta / 330);
-        cop.spin += 9 * Math.exp(-wreckAge / 620) * seconds;
-        cop.lane += ((cop.slot === 1 ? -1 : 1) * 24 - cop.lane) * Math.min(1, delta / 420);
-        cop.pos += cop.speed * seconds;
+        cop.spin += 9 * Math.exp(-wreckAge / 620) * seconds * cop.spinDir;
+        cop.lane += (cop.spinDir * 24 - cop.lane) * Math.min(1, delta / 420);
+        cop.s += cop.speed * seconds;
         if (effects >= 8 && time - c.smokeAt > 90 && wreckAge < 1800 && puffs.length < 24) {
           c.smokeAt = time;
-          const [px, py] = at(a, cop.pos, cop.lane);
-          puffs.push({ x: px, y: py, vx: Math.cos(time / 80) * 10, vy: -10, born: time });
+          puffs.push({ x: cop.x, y: cop.y, vx: Math.cos(time / 80) * 10, vy: -10, born: time });
         }
-        continue;
-      }
-      if (c.crashPlanned && c.state === 'run' && cop.slot === 2 && cop.pos > -30) {
-        cop.crashed = true;
-        c.crashAt = time;
-        if (debug) debug.crashes++;
-        announce('crash');
-        bump(0.9);
-        const [px, py] = at(a, cop.pos, cop.lane);
-        say('CRASH!', px, py - 30, true);
+        settle(cop, path);
         continue;
       }
       const gap = c.state === 'busted' ? 40 : CHASE_GAP;
-      const target = racer.pos - gap * cop.slot;
-      cop.speed = Math.max(0, Math.min(330, racer.speed + (target - cop.pos) * 2.4));
-      cop.pos += cop.speed * seconds;
-      const side = cop.slot === 1 ? -1 : 1;
-      const want = c.state === 'busted' ? side * 9 : side * 5 + Math.sin(time / 260 + cop.slot * 2) * 2.5;
-      cop.lane += (want - cop.lane) * Math.min(1, delta / 140);
+      cop.speed = clamp(racer.speed + (racer.s - gap * cop.slot - cop.s) * 2.4, 0, 330);
+      cop.s += cop.speed * seconds;
+      cop.spin += (clamp(path.at(cop.s).k * 20, -0.7, 0.7) - cop.spin) * Math.min(1, delta / 110);
+      const sideways = cop.slot % 2 ? -1 : 1;
+      const wantLane = c.state === 'busted' ? sideways * 9 : [0, -5, 5, 0][cop.slot]! + Math.sin(time / 260 + cop.slot * 2) * 2.5;
+      cop.lane += (wantLane - cop.lane) * Math.min(1, delta / 140);
+      settle(cop, path);
     }
-    if (c.state === 'run' && c.actors.every((actor) => (actor.crashed ? time - c.crashAt > 2600 : actor.pos > a.end + 70))) {
+    const gone = (actor: Actor) => (actor.crashed ? time - actor.crashAt > 2600 : actor.s > path.length - 10);
+    if (c.state === 'run' && c.actors.every(gone)) {
       heat = Math.min(5, heat + 1);
       mark('data-heat', String(heat));
       if (debug) { debug.escaped++; debug.heat = heat; }
-      endChase(true);
-    } else if (c.state === 'busted' && time - c.bustedAt > BUST_SHOW) endChase(false);
+      endChase('escaped');
+    } else if (c.state === 'busted' && time - c.bustedAt > BUST_SHOW) endChase(c.cause);
   }
 
-  /** Draws the chase in the road's own frame (already translated and rotated for its approach). */
+  /** Draws the chase in map coordinates. */
   function drawChase(g: CanvasRenderingContext2D, c: Chase) {
-    const racer = c.actors[0]!;
     const busted = c.state === 'busted';
     const age = time - c.bustedAt;
-    g.globalAlpha = busted && age > BUST_SHOW - 700 ? Math.max(0, (BUST_SHOW - age) / 700) : 1;
+    const fade = busted && age > BUST_SHOW - 700 ? Math.max(0, (BUST_SHOW - age) / 700) : 1;
     const flash = Math.floor(time / FLASH_MS) % 2;
     const flicker = 0.5 + 0.5 * Math.sin(time / 35);
-    for (const actor of [c.actors[2]!, c.actors[1]!, racer]) {
+    for (const actor of [...c.actors].reverse()) {
       g.save();
-      g.translate(actor.pos, actor.lane);
-      g.rotate(actor.spin);
+      g.globalAlpha = fade;
+      g.translate(actor.x, actor.y);
+      g.rotate(actor.heading);
+      if (actor.rollAt) {
+        // Rolled over: the car squashes flat and wide again twice as it tumbles, then lies still.
+        const roll = (time - actor.rollAt) / 900;
+        if (roll < 1) g.scale(1, 0.25 + 0.75 * Math.abs(Math.cos(roll * Math.PI * 4)));
+      }
       g.scale(0.49, 0.49);
-      if (actor.crashed) g.globalAlpha *= clamp(1 - (time - c.crashAt - 2000) / 600, 0, 1);
+      if (actor.crashed) g.globalAlpha *= clamp(1 - (time - actor.crashAt - 2000) / 600, 0, 1);
       const cop = actor.slot > 0;
       if (!cop) {
         if (effects >= 8) {
@@ -446,7 +551,7 @@ export function startJunction(canvas: HTMLCanvasElement) {
           g.globalAlpha *= 0.9;
           g.drawImage(glows.teal, -64, -44, 128, 88);
           g.globalAlpha /= 0.9;
-          const power = Math.min(1.4, actor.speed / CHASE_SPEED);
+          const power = Math.min(1.4, actor.speed / CRUISE_REFERENCE);
           const len = (10 + 9 * flicker) * power + (time < c.nitroUntil ? 26 : 0);
           if (len > 4) {
             for (const [tint, scale, spread] of [[red, 1, 7], [orange, 0.78, 5], [yellow, 0.55, 3.2], [cream, 0.3, 1.6]] as const) {
@@ -491,22 +596,17 @@ export function startJunction(canvas: HTMLCanvasElement) {
     g.globalAlpha = 1;
   }
 
-  /** Where the operator wants the camera: a slow sweep over the town, or the racer, or a wreck, or a bust. */
+  /** Where the operator wants the camera: a slow sweep over the town, or the racer, or a car that just crashed. */
   function aim() {
     const c = chase;
     if (!c) return { x: MID_X + Math.sin(time / 7300) * 46, y: MID_Y + Math.sin(time / 5100 + 1) * 24, zoom: PATROL_ZOOM + 0.08 * Math.sin(time / 6100) };
-    const a = approaches[c.approach]!;
-    const wreck = c.actors.find((actor) => actor.crashed);
-    if (wreck && time - c.crashAt < 1500) {
-      const [wx, wy] = at(a, wreck.pos, wreck.lane);
-      return { x: wx, y: wy, zoom: 1.85 };
-    }
+    if (c.focus && time < c.focus.until) return { x: c.focus.actor.x, y: c.focus.actor.y, zoom: 1.85 };
     const racer = c.actors[0]!;
-    const [rx, ry] = at(a, racer.pos, racer.lane);
+    const heading = c.path.at(racer.s).h;
     const lead = racer.speed * 0.28;
-    const inBox = Math.max(0, 1 - Math.abs(racer.pos) / 140);
-    const zoom = c.state === 'busted' ? (time - c.bustedAt < 1800 ? 1.85 : 1.6) : 1.4 + 0.3 * inBox;
-    return { x: rx + a.x * lead, y: ry + a.y * lead, zoom };
+    const inBox = Math.max(0, 1 - Math.hypot(racer.x - MID_X, racer.y - MID_Y) / 140);
+    const zoom = c.state === 'busted' ? (time - c.bustedAt < 1800 ? 1.85 : 1.6) : c.zoomBase + 0.3 * inBox;
+    return { x: racer.x + Math.cos(heading) * lead, y: racer.y + Math.sin(heading) * lead, zoom };
   }
 
   /** The camera follows with a spring, so it lags behind a fast car, overshoots a little and settles, like a person at the controls. */
@@ -769,9 +869,9 @@ export function startJunction(canvas: HTMLCanvasElement) {
   function drawLock(g: CanvasRenderingContext2D) {
     const c = chase;
     if (!c) return;
-    const a = approaches[c.approach]!;
     const racer = c.actors[0]!;
-    const [rx, ry] = at(a, racer.pos, racer.lane);
+    const rx = racer.x;
+    const ry = racer.y;
     const r = 24 + 2 * Math.sin(time / 110);
     g.strokeStyle = c.state === 'busted' ? green : red;
     g.lineWidth = 1.8;
@@ -854,7 +954,7 @@ export function startJunction(canvas: HTMLCanvasElement) {
   }
 
   function draw(g: CanvasRenderingContext2D, delta: number) {
-    const phase = time % (SIGNAL_PHASE * 2);
+    const phase = (time - held) % (SIGNAL_PHASE * 2);
     const axis = phase < SIGNAL_PHASE ? 0 : 1;
     const greenNow = phase % SIGNAL_PHASE < GREEN_TIME;
     if (debug) debug.axis = greenNow ? axis : -1;
@@ -865,7 +965,7 @@ export function startJunction(canvas: HTMLCanvasElement) {
     }
     if (delta) {
       if (chase) moveChase(chase, delta);
-      else if (greenNow && time >= nextChase && phase % SIGNAL_PHASE < CHASE_WINDOW) startChase(axis + 2 * (chaseCount % 2));
+      else if (greenNow && time >= nextChase) startChase(axis + 2 * Math.floor(rng() * 2));
       moveCamera(delta);
     }
     framing();
@@ -886,6 +986,18 @@ export function startJunction(canvas: HTMLCanvasElement) {
       g.restore();
     }
 
+    // Where the chase is on its entry road, so ordinary drivers ahead of it can pull over.
+    let yieldFront = -Infinity;
+    let yieldRear = Infinity;
+    if (chase && chase.state === 'run') {
+      const entry = approaches[chase.approach]!;
+      for (const actor of chase.actors) {
+        if (actor.crashed || actor.s > chase.path.boxIn + 20) continue;
+        const along = (actor.x - MID_X) * entry.x + (actor.y - MID_Y) * entry.y;
+        yieldFront = Math.max(yieldFront, along);
+        yieldRear = Math.min(yieldRear, along);
+      }
+    }
     for (let i = 0; i < approaches.length; i++) {
       const approach = approaches[i]!;
       const cone = cones[i]!;
@@ -921,8 +1033,7 @@ export function startJunction(canvas: HTMLCanvasElement) {
           y - (MID_Y + approach.y * car.pos + approach.x * car.lane),
         ) < 32;
         // Ordinary drivers pull over towards the kerb as a chase comes up behind them.
-        const yielding = chase !== undefined && chase.approach === i && chase.state === 'run'
-          && car.pos > chase.actors[2]!.pos - 12 && car.pos < chase.actors[0]!.pos + 120;
+        const yielding = chase !== undefined && chase.approach === i && yieldFront > -Infinity && car.pos > yieldRear - 12 && car.pos < yieldFront + 120;
         const targetLane = detour || nearPointer ? DETOUR : yielding ? LANE + 9 : LANE;
         car.lane += (targetLane - car.lane) * Math.min(1, delta / 155);
         const braking = nearPointer || (detour && Math.abs(targetLane - car.lane) > 5);
@@ -986,8 +1097,6 @@ export function startJunction(canvas: HTMLCanvasElement) {
         g.restore();
       }
 
-      if (chase && chase.approach === i) drawChase(g, chase);
-
       if (cone.until > time) {
         g.globalAlpha = Math.min(1, (cone.until - time) / 350);
         g.fillStyle = red;
@@ -1002,6 +1111,7 @@ export function startJunction(canvas: HTMLCanvasElement) {
       }
       g.restore();
     }
+    if (chase) drawChase(g, chase);
     if (effects >= 8) { drawLock(g); drawEffects(g); }
     drawHud(g);
     if (debug) debug.frames++;
@@ -1129,7 +1239,7 @@ export function startJunction(canvas: HTMLCanvasElement) {
     // With a chase under way, the cone goes on its road, so the keyboard can stop it too.
     if (chase && chase.state === 'run') { place(chase.approach, -137); return; }
     // Otherwise pick a currently green approach so the effect is also visible from the keyboard.
-    const phase = time % (SIGNAL_PHASE * 2);
+    const phase = (time - held) % (SIGNAL_PHASE * 2);
     const axis = phase < SIGNAL_PHASE ? 0 : 1;
     place(axis + nextApproach * 2, -137);
     nextApproach = 1 - nextApproach;

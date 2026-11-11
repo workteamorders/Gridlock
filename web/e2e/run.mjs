@@ -277,14 +277,23 @@ try {
     await p.context().close();
   });
 
-  await step('a patrol chase starts with a siren and a cone on its road busts the racer', async () => {
+  /** Opens Home with a fixed seed and a forced plan, collecting the chase's sounds and the camera's moves. */
+  const chasePage = async (query) => {
     const p = await newPage(browser);
-    await p.goto(`${SITE}/?motion=debug`);
+    await p.goto(`${SITE}/?motion=debug&${query}`);
     await p.waitForFunction(() => window.__fx?.frames > 5);
     await p.evaluate(() => {
       window.__chaseEvents = [];
       window.addEventListener('gridlock:chase', (event) => window.__chaseEvents.push(event.detail));
+      window.__cams = [];
+      window.__camTimer = setInterval(() => window.__cams.push([window.__fx.camX, window.__fx.camY, window.__fx.zoom, window.__fx.roll]), 100);
     });
+    return p;
+  };
+  const ended = (p, count = 1) => p.waitForFunction((n) => window.__fx.outcomes.length >= n, count, { timeout: 30000 });
+
+  await step('a patrol chase starts with a siren and a cone on its road busts the racer', async () => {
+    const p = await chasePage('seed=3&plan=straight,clean');
     await p.waitForFunction(() => window.__fx.chases === 1, null, { timeout: 15000 });
     const figure = p.locator('figure.junction');
     assert.equal(await figure.getAttribute('data-chase'), 'run');
@@ -293,6 +302,8 @@ try {
     await p.waitForFunction(() => window.__fx.busted === 1, null, { timeout: 7000 });
     assert.equal(await figure.getAttribute('data-chase'), 'busted');
     assert.equal(await figure.getAttribute('data-heat'), '0');
+    await ended(p);
+    assert.deepEqual(await p.evaluate(() => window.__fx.outcomes), ['cone']);
     await p.waitForFunction(() => !document.querySelector('figure.junction').hasAttribute('data-chase'), null, { timeout: 7000 });
     const events = await p.evaluate(() => window.__chaseEvents);
     assert.ok(events.includes('siren') && events.at(-1) === 'busted', `chase events ${events}`);
@@ -300,21 +311,16 @@ try {
     await p.context().close();
   });
 
-  await step('a chase nobody stops gets away and raises the heat', async () => {
-    const p = await newPage(browser);
-    await p.goto(`${SITE}/?motion=debug`);
-    await p.waitForFunction(() => window.__fx?.frames > 5);
-    // The drone camera is never still: sample where it points and how far it is zoomed while the chase runs.
-    await p.evaluate(() => {
-      window.__cams = [];
-      window.__camTimer = setInterval(() => window.__cams.push([window.__fx.camX, window.__fx.camY, window.__fx.zoom, window.__fx.roll]), 100);
-    });
-    await p.waitForFunction(() => window.__fx.escaped === 1, null, { timeout: 20000 });
+  await step('a sharp right turn is a drift, a patrol car spins out, the racer gets away and the heat rises; the camera is never still', async () => {
+    const p = await chasePage('seed=4&plan=right,copSpin,clean');
+    await ended(p);
     const figure = p.locator('figure.junction');
+    assert.deepEqual(await p.evaluate(() => window.__fx.outcomes), ['escaped']);
     assert.equal(await figure.getAttribute('data-heat'), '1');
     assert.equal(await p.evaluate(() => window.__fx.busted), 0);
-    // The first chase has a drift through the junction and a patrol car that spins out.
     assert.deepEqual(await p.evaluate(() => [window.__fx.drifts, window.__fx.crashes]), [1, 1]);
+    const events = await p.evaluate(() => window.__chaseEvents);
+    assert.ok(events.includes('skid') && events.includes('crash'), `chase events ${events}`);
     const cams = await p.evaluate(() => window.__cams);
     const range = (i) => Math.max(...cams.map((c) => c[i])) - Math.min(...cams.map((c) => c[i]));
     assert.ok(range(0) > 40, `camera pans ${range(0)}`);
@@ -323,6 +329,39 @@ try {
     assert.ok(Math.max(...cams.map((c) => c[2])) <= 1.8 + 1e-6 && Math.min(...cams.map((c) => c[2])) >= 1 - 1e-6, 'zoom stays in range');
     assert.deepEqual(p.errors, []);
     await p.context().close();
+  });
+
+  await step('a U-turn that goes wrong ends in a wipeout: the racer rolls, the cops stop, the heat resets', async () => {
+    const p = await chasePage('seed=5&plan=uturn,wipeout');
+    await ended(p);
+    assert.deepEqual(await p.evaluate(() => [window.__fx.outcomes, window.__fx.busted, window.__fx.heat]), [['wipeout'], 1, 0]);
+    const events = await p.evaluate(() => window.__chaseEvents);
+    assert.ok(events.includes('crash') && !events.includes('busted'), `chase events ${events}`);
+    assert.deepEqual(p.errors, []);
+    await p.context().close();
+  });
+
+  await step('a donut with a PIT manoeuvre and a pile-up: the PIT stops the racer and two patrol cars crash', async () => {
+    const p = await chasePage('seed=6&plan=donut,pit,pileup,pitwin');
+    await ended(p);
+    assert.deepEqual(await p.evaluate(() => [window.__fx.outcomes, window.__fx.busted, window.__fx.crashes >= 2]), [['pit'], 1, true]);
+    assert.deepEqual(p.errors, []);
+    await p.context().close();
+  });
+
+  await step('different seeds give different chases, and a plain page picks its own', async () => {
+    const plans = [];
+    for (const seed of [21, 22, 23]) {
+      const p = await chasePage(`seed=${seed}`);
+      await p.waitForFunction(() => window.__fx.chases >= 1, null, { timeout: 15000 });
+      plans.push((await p.evaluate(() => window.__fx.plans))[0]);
+      await p.context().close();
+    }
+    assert.ok(new Set(plans).size >= 2, `plans ${plans}`);
+    const again = await chasePage('seed=21');
+    await again.waitForFunction(() => window.__fx.chases >= 1, null, { timeout: 15000 });
+    assert.equal((await again.evaluate(() => window.__fx.plans))[0], plans[0], 'the same seed repeats');
+    await again.context().close();
   });
 
   await step('a phone-width tap places a cone inside the junction', async () => {
