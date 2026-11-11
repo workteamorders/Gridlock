@@ -116,3 +116,8 @@
   --brush-press: #8f1418;
   --chip-h: 24px;
 }
+
+:root {
+  --fx-road: var(--action);
+  --fx-shadow: var(--surface);
+}

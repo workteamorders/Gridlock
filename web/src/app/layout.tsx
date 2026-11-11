@@ -4,6 +4,7 @@ import { Providers } from '@/components/Providers';
 import '@/styles/tokens.css';
 import '@/styles/base.css';
 import '@/styles/components.css';
+import '@/styles/fx.css';
 
 const anton = localFont({ src: '../fonts/anton-latin-400-normal.woff2', weight: '400', variable: '--font-anton', display: 'swap', adjustFontFallback: 'Arial' });
 const barlow = localFont({
