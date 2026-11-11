@@ -7,6 +7,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { CLIMB_STEPS, capOfRank, climbProgress, climbStep, magnetOffset, rankAtStep, rollValue } from '../src/lib/stage.ts';
+import { nearestToMiddle, trackerPosition } from '../src/lib/stage.ts';
 import { planLength, soundPlan, stepFrequency, MIN_GAP, MASTER_GAIN, SOUND_KINDS } from '../src/lib/sound-plan.ts';
 import { ribbonFacts } from '../src/components/stage/ribbon.ts';
 import { makeHero } from '../scripts/make-hero.mjs';
@@ -107,4 +108,14 @@ test('hero art generation is deterministic and checked-in files match', () => {
       assert.doesNotMatch(readFileSync(new URL(name, source), 'utf8'), /<text|<image|href=/, 'hero art has no text or bitmaps');
     }
   } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('the tracker picks the rung nearest the middle of the screen and maps ranks onto the road', () => {
+  assert.equal(nearestToMiddle([], 400), -1);
+  assert.equal(nearestToMiddle([100, 300, 520, 800], 400), 1);
+  assert.equal(nearestToMiddle([-900, -200, 1200], 400), 1);
+  assert.equal(trackerPosition(1), 0);
+  assert.equal(trackerPosition(15), 1);
+  assert.ok(trackerPosition(8) > 0.49 && trackerPosition(8) < 0.51);
+  assert.equal(trackerPosition(99), 1);
 });

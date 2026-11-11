@@ -131,3 +131,30 @@ html[data-motion=full] .sound-button:active { transform: translateY(2px); box-sh
 @media (width >= 1000px) {
   .hero-ladder { row-gap: var(--s-5); }
 }
+
+/* Ladder tracker: a road with a comic car beside the tall ladder; hidden where the ladder fills the width */
+.ladder-tracker { display: none; }
+.tracker-road { --pos: 1; display: grid; gap: var(--s-2); }
+.tracker-lane { position: relative; height: calc(var(--tracker-car-w) * 106 / 290); }
+.tracker-car { position: absolute; top: 0; left: calc((100% - var(--tracker-car-w)) * var(--pos)); width: var(--tracker-car-w); height: auto; aspect-ratio: 290 / 106; transition: left 520ms var(--ease-out); }
+.tracker-pips { display: grid; grid-template-columns: repeat(15, 1fr); gap: var(--s-1); list-style: none; margin: 0; padding: 0; border-block-start: var(--line-w-strong) dashed var(--line); padding-block-start: var(--s-2); }
+.tracker-pips li { height: var(--s-3); background: var(--surface-3); border: var(--line-w) solid var(--line-dim); transition: background-color 200ms, translate 200ms var(--ease-out); }
+.tracker-pips li[data-state=open] { background: var(--action); border-color: var(--action); }
+.tracker-pips li[data-state=sold] { background: var(--text-dim); }
+.tracker-pips li[data-here] { translate: 0 calc(var(--s-1) * -1); border-color: var(--text); }
+.tracker-ends { display: flex; justify-content: space-between; font-size: var(--fs-12); color: var(--text-dim); text-transform: uppercase; }
+.tracker-readout { font-family: var(--font-display); font-size: var(--fs-32); text-transform: uppercase; line-height: 1; }
+.tracker-readout span { font-family: var(--font-body); font-size: var(--fs-14); color: var(--text-dim); }
+.tracker-facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-2); margin: 0; min-height: calc(var(--s-8) + var(--s-2)); }
+.tracker-facts div { border: var(--line-w) solid var(--line-dim); padding: var(--s-2); background: var(--surface-2); }
+.tracker-facts dt { font-size: var(--fs-12); color: var(--text-dim); text-transform: uppercase; }
+.tracker-facts dd { margin: 0; font-size: var(--fs-18); font-weight: 700; overflow-wrap: anywhere; }
+.tracker-legend { display: flex; gap: var(--s-4); list-style: none; margin: 0; padding: 0; font-size: var(--fs-12); color: var(--text-dim); text-transform: uppercase; }
+.tracker-legend li::before { content: ''; display: inline-block; width: var(--s-3); height: var(--s-3); margin-inline-end: var(--s-1); vertical-align: -1px; background: var(--surface-3); border: var(--line-w) solid var(--line-dim); }
+.tracker-legend li[data-state=open]::before { background: var(--action); border-color: var(--action); }
+.tracker-legend li[data-state=sold]::before { background: var(--text-dim); }
+.ladder-tracker .tracker-lane { background: url('/art/halftone.svg') center / cover; }
+@media (width >= 1000px) {
+  .hero-ladder > .ladder-aside { align-self: stretch; }
+  .ladder-tracker { display: grid; position: sticky; top: calc(var(--header-h) + var(--s-4)); }
+}

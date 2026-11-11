@@ -15,6 +15,7 @@ import { exampleLadder } from '@/lib/mock';
 import { Ladder, LoadingLadder } from './Ladder';
 import { ChapterHead } from './stage/ChapterHead';
 import { RollNumber } from './stage/RollNumber';
+import { LadderTracker } from './stage/LadderTracker';
 
 /** The wanted poster and ladder panels share one view of the current rank. */
 export function HomeLadder({ exampleArt }: { exampleArt?: ReactNode }) {
@@ -113,7 +114,7 @@ export function HomeRankDetails() {
   return (
     <section id="ladder" className="wrap section home-ladder-section" aria-labelledby="ladder-detail-title">
       <div className="hero-ladder">
-        <div className="stack">
+        <div className="stack ladder-aside">
           <div className="panel panel--chapter stack-tight">
             <ChapterHead n={1} id="ladder-detail-title" kicker="the ladder">Climb the ladder</ChapterHead>
             <p>Lit rungs are open. A locked rung opens when the one before it sells out or times out.</p>
@@ -124,6 +125,7 @@ export function HomeRankDetails() {
               <p>Gridlock is not deployed yet. The ladder on this page shows the real caps with example prices and sales so you can see how it will work.</p>
             </div>
           ) : null}
+          <LadderTracker />
         </div>
         {phase === 'ready' ? <Ladder live rungs={toRungData(rungs)} /> :
           phase === 'undeployed' ? <Ladder rungs={exampleLadder()} /> :

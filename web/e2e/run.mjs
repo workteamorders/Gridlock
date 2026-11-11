@@ -392,6 +392,36 @@ try {
     await p.context().close();
   });
 
+  await step('ladder tracker: a sticky panel beside the ladder follows the middle rung, the pointer moves it, and it is hidden on narrow screens', async () => {
+    const p = await newPage(browser);
+    await p.goto(SITE); await p.waitForSelector('.ladder-tracker');
+    const middle = () => p.evaluate(() => {
+      const rows = [...document.querySelectorAll('.ladder--up > .rung')];
+      const mid = innerHeight / 2;
+      const row = rows.reduce((a, r) => { const b = r.getBoundingClientRect(); const d = Math.abs(b.top + b.height / 2 - mid); return d < a.d ? { d, r } : a; }, { d: 1e9, r: null }).r;
+      return Number(row.dataset.rank);
+    });
+    const shown = () => p.evaluate(() => Number(document.querySelector('.tracker-readout b').textContent.replace(/\D+/g, '')));
+    const to = async (f) => { await p.evaluate((f) => { const r = document.querySelector('.ladder--up').getBoundingClientRect(); scrollTo(0, r.top + scrollY + r.height * f - innerHeight / 2); }, f); await p.waitForTimeout(500); };
+    for (const f of [0.1, 0.5, 0.9]) { await to(f); assert.equal(await shown(), await middle(), `the tracker shows the middle rung at ${f}`); }
+    const pos = await p.evaluate(() => Number(document.querySelector('.tracker-road').style.getPropertyValue('--pos')));
+    assert.ok(pos > 0.5, 'near the bottom of the ladder the car is on the rank 15 end');
+    assert.equal(await p.locator('.tracker-road').getAttribute('aria-hidden'), 'true');
+    const panel = p.locator('.ladder-tracker');
+    const top1 = (await panel.boundingBox()).y; await to(0.3); const top2 = (await panel.boundingBox()).y;
+    assert.ok(Math.abs(top1 - top2) < 2 || (top2 > 60 && top2 < 200), 'the panel stays in view while the ladder scrolls');
+    await p.locator('.ladder--up > .rung').nth(5).hover(); await p.waitForTimeout(300);
+    const hovered = await p.locator('.ladder--up > .rung').nth(5).getAttribute('data-rank');
+    assert.equal(String(await shown()), hovered, 'resting the pointer on a rung moves the car to it');
+    assert.equal(await p.locator('.ladder-tracker a[href^="/mint/?rank="]').count(), 1);
+    assert.deepEqual(p.errors, []);
+    const phone = await newPage(browser, { width: 390, height: 800 });
+    await phone.goto(SITE); await phone.waitForSelector('.ladder--up');
+    assert.equal(await phone.locator('.ladder-tracker').isVisible(), false, 'no tracker where the ladder fills the width');
+    assert.equal(await phone.evaluate(() => document.documentElement.scrollWidth), 390);
+    await p.context().close(); await phone.context().close();
+  });
+
   await step('ribbon: live numbers equal the ones read from the chain, and the track is hidden from screen readers', async () => {
     const p = await newPage(browser);
     await p.goto(SITE); await p.waitForSelector('text=Minted so far');
@@ -448,7 +478,8 @@ try {
     await p.locator('header .sound-button').click(); await p.waitForTimeout(400);
     await p.evaluate(() => { window.__freqs.length = 0; });
     const goto = async (f) => { await p.evaluate((f) => { const r = document.querySelector('.climb').getBoundingClientRect(); scrollTo(0, r.top + scrollY + (r.height - innerHeight) * f); }, f); await p.waitForTimeout(160); };
-    await goto(0.001); await p.waitForTimeout(200);
+    await goto(0.001); await p.waitForTimeout(600);
+    await p.evaluate(() => { window.__freqs.length = 0; }); await p.waitForTimeout(500);
     const before = await count();
     for (let i = 1; i <= 60; i++) await goto(i / 60);
     await p.waitForTimeout(300);
@@ -460,7 +491,7 @@ try {
     assert.ok(heard.length >= 10, `the climb played ${heard.length} step notes`);
     for (let i = 1; i < heard.length; i++) assert.ok(heard[i] >= heard[i - 1], 'notes only rise while scrolling down');
     assert.ok(freqs.includes(1047), 'reaching rank 1 plays the summit arpeggio');
-    assert.ok(before <= 2, 'resting on the first rung is silent apart from the scroll itself');
+    assert.equal(before, 0, 'resting on the first rung is silent');
     // Scrolling back up plays notes again, going down in pitch.
     await p.evaluate(() => { window.__freqs.length = 0; });
     for (let i = 59; i >= 0; i -= 2) await goto(i / 60);

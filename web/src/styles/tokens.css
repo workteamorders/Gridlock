@@ -150,6 +150,7 @@
 /* stage: intro, flip, misregistration */
 :root {
   --intro-dur: 2400ms;
+  --tracker-car-w: 190px;
   --flip-dur: 520ms;
   --misreg: 4px;
 }

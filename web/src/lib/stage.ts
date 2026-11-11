@@ -33,3 +33,14 @@ export function magnetOffset(dx: number, dy: number, radius: number, max: number
   const pull = (1 - d / radius) * max;
   return [(dx / d) * pull, (dy / d) * pull];
 }
+
+/** Index of the entry whose vertical centre is nearest the middle of the screen, or -1 for an empty list. */
+export function nearestToMiddle(centres: readonly number[], middle: number): number {
+  let best = -1;
+  let gap = Infinity;
+  centres.forEach((c, i) => { const d = Math.abs(c - middle); if (d < gap) { gap = d; best = i; } });
+  return best;
+}
+
+/** Where the tracker car sits on its road, 0 at rank 1 and 1 at rank 15. */
+export const trackerPosition = (rank: number, ranks = CLIMB_STEPS) => Math.min(1, Math.max(0, (rank - 1) / (ranks - 1)));
