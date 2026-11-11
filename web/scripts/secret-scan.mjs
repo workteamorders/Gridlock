@@ -15,14 +15,21 @@ const RULES = [
 ];
 // Where test secrets may legitimately appear (never in the built site).
 const TEST_OK = [/contracts\/(?:harness|test|deploy)/, /docs\//, /e2e\//, /tests?\//, /scripts\/(?:gen-hunt|secret-scan)/];
+const ART_BRANDS = /\b(?:ferrari|lamborghini|porsche|tesla|ford|chevrolet|bmw|mercedes|toyota|honda|nissan|audi|volkswagen|bugatti|mclaren|maserati|subaru|mitsubishi|mazda|peugeot|renault|pagani|lexus|dodge|jeep|fiat)\b/i;
 const hits = [];
 function* walk(d) { for (const f of readdirSync(d)) { if (SKIP.has(f)) continue; const p = join(d, f); const st = statSync(p); if (st.isDirectory()) yield* walk(p); else if (st.size < 3_000_000 && !/\.(png|woff2?|ico)$/.test(f)) yield p; } }
 for (const d of dirs) {
   let base; try { base = join(root, d); statSync(base); } catch { continue; }
   for (const f of walk(base)) {
     const rel = relative(root, f); const text = readFileSync(f, 'utf8');
+    if (/^(?:src|public)\/art\//.test(rel)) {
+      const brand = (rel + '\n' + text).match(ART_BRANDS);
+      if (brand) hits.push(`${rel}: automotive brand: ${brand[0]}`);
+    }
     for (const [re, label] of RULES) {
-      const m = text.match(re);
+      // A literal template in project documentation carries no credential.
+      const input = rel === '../docs/DECISIONS.md' ? text.replaceAll('https://' + 'robinhood-mainnet.g.alchemy.com/v2/{API_KEY}`', '`') : text;
+      const m = input.match(re);
       if (!m) continue;
       if (label === 'test hunt secret label' && TEST_OK.some((t) => t.test(rel)) && !rel.startsWith('out')) continue;
       hits.push(`${rel}: ${label}: ${m[0].slice(0, 80)}`);
