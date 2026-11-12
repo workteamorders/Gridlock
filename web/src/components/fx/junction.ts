@@ -305,6 +305,8 @@ export function startJunction(canvas: HTMLCanvasElement) {
   let chaseCount = 0;
   let nextChase = 500 + rng() * 1800;
   let heat = 0;
+  /** A decorative block height for the drone read-out. It counts up by one at every green light and stands for nothing on the chain. */
+  let blockNo = 21408113;
   /** Time spent holding the traffic lights while a chase crosses the junction, so the crossing traffic never meets it. */
   let held = 0;
   const at = (a: (typeof approaches)[number], pos: number, lane: number): [number, number] => [MID_X + a.x * pos - a.y * lane, MID_Y + a.y * pos + a.x * lane];
@@ -340,7 +342,7 @@ export function startJunction(canvas: HTMLCanvasElement) {
     mark('data-chase', 'run');
     announce('siren');
     const [bx, by] = at(a, -64, -46);
-    say('WEEOOO!', bx, by - 18, true);
+    say('SNIPER BOTS!', bx, by - 18, true);
   }
 
   /** A hard knock: the camera jolts and settles. */
@@ -387,13 +389,13 @@ export function startJunction(canvas: HTMLCanvasElement) {
     if (cause === 'wipeout') {
       racer.rollAt = time;
       announce('crash');
-      say('WIPEOUT!', racer.x, racer.y - 28, true);
+      say('OUT OF GAS!', racer.x, racer.y - 28, true);
     } else if (cause === 'pit') {
       announce('crash');
-      say('P.I.T.!', racer.x, racer.y - 28, true);
+      say('FRONT-RUN!', racer.x, racer.y - 28, true);
     } else {
       announce('busted');
-      say('BUSTED!', racer.x, racer.y - 28, true);
+      say('REVERTED!', racer.x, racer.y - 28, true);
     }
   }
 
@@ -413,7 +415,7 @@ export function startJunction(canvas: HTMLCanvasElement) {
     const racer = c.actors[0]!;
     if (mishap.kind === 'copSpin') {
       const cop = c.actors[mishap.slot];
-      if (cop) wreck(c, cop, 'CRASH!');
+      if (cop) wreck(c, cop, 'REORG!');
     } else if (mishap.kind === 'pileup') {
       const first = c.actors[1];
       const second = c.actors[2];
@@ -427,8 +429,8 @@ export function startJunction(canvas: HTMLCanvasElement) {
         // The racer shrugs it off, wobbles and goes on; the patrol car that tried it is the one that spins out.
         racer.spin += 1.2 * (cop?.spinDir ?? 1);
         bump(0.7);
-        say('P.I.T.!', racer.x, racer.y - 28, true);
-        if (cop) wreck(c, cop, 'CRASH!');
+        say('BOT MISS!', racer.x, racer.y - 28, true);
+        if (cop) wreck(c, cop, 'REORG!');
       }
     }
   }
@@ -450,7 +452,7 @@ export function startJunction(canvas: HTMLCanvasElement) {
       const here = path.at(racer.s);
       const bendiness = Math.min(1, Math.abs(here.k) * 28);
       const cruise = plan.speed * (1 + heat * 0.05) * (1 - 0.38 * bendiness);
-      const fireNitro = () => { c.nitroDone = true; c.nitroUntil = time + 900; say('NITRO!', racer.x, racer.y - 26, true); };
+      const fireNitro = () => { c.nitroDone = true; c.nitroUntil = time + 900; say('PRIORITY FEE!', racer.x, racer.y - 26, true); };
       if (!c.nitroDone && plan.nitro !== null && racer.s >= path.apex + plan.nitro) fireNitro();
       else if (x >= 0 && time > c.nitroUntil + 600 && Math.hypot(x - racer.x, y - racer.y) < 46) fireNitro();
       racer.speed += ((time < c.nitroUntil ? cruise * 1.4 : cruise) - racer.speed) * Math.min(1, delta / 200);
@@ -485,7 +487,7 @@ export function startJunction(canvas: HTMLCanvasElement) {
           c.slid = true;
           if (debug) debug.drifts++;
           announce('skid');
-          say('SKRRT!', racer.x, racer.y - 30, true);
+          say('SLIPPAGE!', racer.x, racer.y - 30, true);
         }
         const puff = time - c.smokeAt > 55;
         if (puff) c.smokeAt = time;
@@ -539,6 +541,7 @@ export function startJunction(canvas: HTMLCanvasElement) {
       heat = Math.min(5, heat + 1);
       mark('data-heat', String(heat));
       if (debug) { debug.escaped++; debug.heat = heat; }
+      say('CONFIRMED!', racer.x, racer.y - 28, true);
       endChase('escaped');
     } else if (c.state === 'busted' && time - c.bustedAt > BUST_SHOW) endChase(c.cause);
   }
@@ -937,14 +940,16 @@ export function startJunction(canvas: HTMLCanvasElement) {
     const seconds = Math.floor(time / 1000);
     const clock = `${String(Math.floor(seconds / 60) % 100).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}:${String(frames).padStart(2, '0')}`;
     label(clock, w - inset - 8 * px, inset + 8 * px, 'right', cream);
+    const dotX = w - inset - 8 * px - g.measureText(clock).width - 14 * px;
     if (Math.floor(time / 500) % 2 === 0) {
       g.fillStyle = red;
       g.beginPath();
-      g.arc(w - inset - 8 * px - g.measureText(clock).width - 14 * px, inset + 14 * px, 4.5 * px, 0, Math.PI * 2);
+      g.arc(dotX, inset + 14 * px, 4.5 * px, 0, Math.PI * 2);
       g.fill();
     }
-    label(`AIR 7  ALT ${Math.round(190 / cam.zoom)} M  ${cam.zoom.toFixed(1)}X`, inset + 8 * px, h - inset - 20 * px, 'left', cream);
-    if (chase) label(chase.state === 'busted' ? 'SUSPECT STOPPED' : 'TRACKING SUSPECT', inset + 8 * px, h - inset - 36 * px, 'left', chase.state === 'busted' ? green : red);
+    label('MEMPOOL CAM', dotX - 10 * px, inset + 8 * px, 'right', cream);
+    label(`NODE 7  BLOCK ${blockNo.toLocaleString('en-US')}  ${cam.zoom.toFixed(1)}X`, inset + 8 * px, h - inset - 20 * px, 'left', cream);
+    if (chase) label(chase.state === 'busted' ? 'TX REVERTED' : 'TRACING TX 0xGRID…LOCK', inset + 8 * px, h - inset - 36 * px, 'left', chase.state === 'busted' ? green : red);
   }
 
   /** Lock-on brackets around the racer, in map coordinates. */
@@ -1043,7 +1048,7 @@ export function startJunction(canvas: HTMLCanvasElement) {
     const greenAxis = greenNow ? axis : -1;
     if (delta && greenAxis !== lastGreen) {
       lastGreen = greenAxis;
-      if (greenAxis >= 0) { const lead = approaches[greenAxis]!; say('VROOM!', MID_X + lead.x * (STOP + 22), MID_Y + lead.y * (STOP + 22) + lead.x * 40); }
+      if (greenAxis >= 0) { blockNo++; const lead = approaches[greenAxis]!; say('NEW BLOCK!', MID_X + lead.x * (STOP + 22), MID_Y + lead.y * (STOP + 22) + lead.x * 40); }
     }
     if (delta) {
       if (chase) moveChase(chase, delta);
@@ -1132,7 +1137,7 @@ export function startJunction(canvas: HTMLCanvasElement) {
             car.honked = true;
             const wx = MID_X + approach.x * car.pos - approach.y * car.lane;
             const wy = MID_Y + approach.y * car.pos + approach.x * car.lane;
-            say(nearPointer ? 'BEEP!' : 'SCREECH!', wx - approach.y * 6, wy - 26);
+            say(nearPointer ? 'PENDING…' : 'REROUTED!', wx - approach.y * 6, wy - 26);
           }
         } else car.honked = false;
         const speed = braking ? 44 : car.cruise;
