@@ -1,6 +1,7 @@
 import { carBodies, carWindows, liveries } from '@/art/cars';
 import { frameGovernor } from './governor';
 import { buildPath, forcePlan, mulberry32, planChase, signature, type Mishap, type Path, type Plan, type Vec } from './chase-plan';
+import { FEED, Feed, lines, type Report, type Voice } from './dispatch';
 
 const WIDTH = 560;
 const HEIGHT = 360;
@@ -239,7 +240,7 @@ export function startJunction(canvas: HTMLCanvasElement) {
   let lastGreen = -1;
   const cones = approaches.map(() => ({ pos: 0, until: 0 }));
   const debug = /^(debug|off)$/.test(new URLSearchParams(location.search).get('motion') ?? '')
-    ? { frames: 0, times: [] as number[], interactions: 0, brakes: 0, cones: 0, detours: 0, axis: 0, chases: 0, busted: 0, escaped: 0, heat: 0, plans: [] as string[], outcomes: [] as string[], crashes: 0, drifts: 0, blocks: 0, chasing: 0, racerX: 0, racerY: 0, zoom: 1, camX: 280, camY: 180, roll: 0 }
+    ? { frames: 0, times: [] as number[], interactions: 0, brakes: 0, cones: 0, detours: 0, axis: 0, chases: 0, busted: 0, escaped: 0, heat: 0, plans: [] as string[], outcomes: [] as string[], crashes: 0, drifts: 0, blocks: 0, chasing: 0, racerX: 0, racerY: 0, zoom: 1, camX: 280, camY: 180, roll: 0, log: [] as { kind: string; at: number }[], radio: [] as string[] }
     : undefined;
   const host = window as Window & { __fx?: typeof debug };
   if (debug) host.__fx = debug;
@@ -292,7 +293,7 @@ export function startJunction(canvas: HTMLCanvasElement) {
   interface Chase {
     plan: Plan; path: Path; approach: number; state: 'run' | 'busted'; cause: Outcome;
     since: number; bustedAt: number; nitroUntil: number; nitroDone: boolean; sirenAgain: boolean; smokeAt: number; slid: boolean;
-    fired: boolean[]; focus?: { actor: Actor; until: number }; zoomBase: number; actors: Actor[];
+    fired: boolean[]; focus?: { actor: Actor; until: number }; zoomBase: number; actors: Actor[]; told: boolean[]; telemetryAt: number;
   }
   const params = new URLSearchParams(location.search);
   // Every chase is drawn from a random generator seeded by the system, so no two sessions play alike. Debug pages may fix the seed or the plan for tests.
@@ -313,6 +314,19 @@ export function startJunction(canvas: HTMLCanvasElement) {
   const mark = (name: string, value: string) => { if (value) figure?.setAttribute(name, value); else figure?.removeAttribute(name); };
   const announce = (phase: 'siren' | 'busted' | 'crash' | 'skid') => window.dispatchEvent(new CustomEvent('gridlock:chase', { detail: phase }));
   mark('data-heat', '0');
+
+  // The radio: what the drone, the patrol units and the racer say about what is happening right now. Its own random stream, so the chases do not change.
+  const GATES = ['WEST', 'NORTH', 'EAST', 'SOUTH'];
+  const talk = mulberry32(seedText ? Number(seedText) + 101 : Date.now() % 100000);
+  const feed = new Feed();
+  const tally = { escaped: 0, busted: 0 };
+  let nextTalk = 1200;
+  let talked = false;
+  function report(r: Report) {
+    const batch = lines(r, (n) => Math.floor(talk() * n));
+    if (!feed.push(r.kind, batch, time)) return;
+    if (debug) { debug.log.push({ kind: r.kind, at: Math.round(time) }); for (const l of batch) debug.radio.push(`${l.tag}: ${l.text}`); }
+  }
 
   /** Puts a car on the path: its place along it, sideways by `lane`, nose turned by `spin` (a drift). */
   function settle(actor: Actor, path: Path) {
@@ -335,7 +349,7 @@ export function startJunction(canvas: HTMLCanvasElement) {
     for (const actor of actors) settle(actor, path);
     chase = {
       plan, path, approach, state: 'run', cause: 'escaped', since: time, bustedAt: 0, nitroUntil: 0, nitroDone: false, sirenAgain: true, smokeAt: 0, slid: false,
-      fired: plan.mishaps.map(() => false), zoomBase: 1.3 + rng() * 0.25, actors,
+      fired: plan.mishaps.map(() => false), zoomBase: 1.3 + rng() * 0.25, actors, told: path.legs.map(() => false), telemetryAt: time + 2200,
     };
     chaseCount++;
     if (debug) { debug.chases++; debug.plans.push(signature(plan)); }
@@ -343,6 +357,7 @@ export function startJunction(canvas: HTMLCanvasElement) {
     announce('siren');
     const [bx, by] = at(a, -64, -46);
     say('SNIPER BOTS!', bx, by - 18, true);
+    report({ kind: 'start', cops: plan.cops, gate: GATES[approach]! });
   }
 
   /** A hard knock: the camera jolts and settles. */
@@ -385,17 +400,21 @@ export function startJunction(canvas: HTMLCanvasElement) {
     mark('data-heat', '0');
     mark('data-chase', 'busted');
     if (debug) { debug.busted++; debug.heat = 0; }
+    tally.busted++;
     bump(1);
     if (cause === 'wipeout') {
       racer.rollAt = time;
       announce('crash');
       say('OUT OF GAS!', racer.x, racer.y - 28, true);
+      report({ kind: 'wipeout' });
     } else if (cause === 'pit') {
       announce('crash');
       say('FRONT-RUN!', racer.x, racer.y - 28, true);
+      report({ kind: 'pitWin' });
     } else {
       announce('busted');
       say('REVERTED!', racer.x, racer.y - 28, true);
+      report({ kind: 'reverted' });
     }
   }
 
@@ -415,12 +434,13 @@ export function startJunction(canvas: HTMLCanvasElement) {
     const racer = c.actors[0]!;
     if (mishap.kind === 'copSpin') {
       const cop = c.actors[mishap.slot];
-      if (cop) wreck(c, cop, 'REORG!');
+      if (cop) { wreck(c, cop, 'REORG!'); report({ kind: 'copSpin', unit: cop.slot, junction: mishap.leg + 1 }); }
     } else if (mishap.kind === 'pileup') {
       const first = c.actors[1];
       const second = c.actors[2];
-      if (first) wreck(c, first, 'PILE-UP!');
-      if (second) { second.spinDir = -(first?.spinDir ?? 1); wreck(c, second, 'PILE-UP!'); }
+      if (first) wreck(c, first, 'MASS REORG!');
+      if (second) { second.spinDir = -(first?.spinDir ?? 1); wreck(c, second, 'MASS REORG!'); }
+      report({ kind: 'pileup' });
     } else if (mishap.kind === 'wipeout') arrest(c, 'wipeout');
     else if (mishap.kind === 'pit') {
       const cop = c.actors[1];
@@ -430,6 +450,7 @@ export function startJunction(canvas: HTMLCanvasElement) {
         racer.spin += 1.2 * (cop?.spinDir ?? 1);
         bump(0.7);
         say('BOT MISS!', racer.x, racer.y - 28, true);
+        report({ kind: 'pitMiss' });
         if (cop) wreck(c, cop, 'REORG!');
       }
     }
@@ -452,10 +473,21 @@ export function startJunction(canvas: HTMLCanvasElement) {
       const here = path.at(racer.s);
       const bendiness = Math.min(1, Math.abs(here.k) * 28);
       const cruise = plan.speed * (1 + heat * 0.05) * (1 - 0.38 * bendiness);
-      const fireNitro = () => { c.nitroDone = true; c.nitroUntil = time + 900; say('PRIORITY FEE!', racer.x, racer.y - 26, true); };
+      const fireNitro = () => { c.nitroDone = true; c.nitroUntil = time + 900; say('PRIORITY FEE!', racer.x, racer.y - 26, true); report({ kind: 'nitro' }); };
       if (!c.nitroDone && plan.nitro !== null && racer.s >= path.apex + plan.nitro) fireNitro();
       else if (x >= 0 && time > c.nitroUntil + 600 && Math.hypot(x - racer.x, y - racer.y) < 46) fireNitro();
       racer.speed += ((time < c.nitroUntil ? cruise * 1.4 : cruise) - racer.speed) * Math.min(1, delta / 200);
+      // The drone calls each junction a moment before the racer reaches it, and reads out the gap every few seconds.
+      path.legs.forEach((leg, i) => {
+        if (c.told[i] || racer.s < leg.boxIn - 150) return;
+        c.told[i] = true;
+        report({ kind: 'junction', index: i + 1, route: i === 0 ? plan.route : plan.then[i - 1]!.route });
+      });
+      if (time >= c.telemetryAt) {
+        c.telemetryAt = time + 3200;
+        const lead = c.actors.find((a) => a.slot > 0 && !a.crashed);
+        if (lead) report({ kind: 'telemetry', fee: Math.round(racer.speed), gap: Math.max(1, Math.round(racer.s - lead.s)) });
+      }
       // Through a bend the nose points further into the turn than the car travels: a drift. On a straight the tail swings both ways instead.
       const legIndex = path.legs.findIndex((leg) => racer.s > leg.boxIn && racer.s < leg.boxOut);
       const inLeg = path.legs[legIndex];
@@ -488,6 +520,7 @@ export function startJunction(canvas: HTMLCanvasElement) {
           if (debug) debug.drifts++;
           announce('skid');
           say('SLIPPAGE!', racer.x, racer.y - 30, true);
+          report({ kind: 'slide' });
         }
         const puff = time - c.smokeAt > 55;
         if (puff) c.smokeAt = time;
@@ -542,6 +575,8 @@ export function startJunction(canvas: HTMLCanvasElement) {
       mark('data-heat', String(heat));
       if (debug) { debug.escaped++; debug.heat = heat; }
       say('CONFIRMED!', racer.x, racer.y - 28, true);
+      tally.escaped++;
+      report({ kind: 'escape', heat });
       endChase('escaped');
     } else if (c.state === 'busted' && time - c.bustedAt > BUST_SHOW) endChase(c.cause);
   }
@@ -950,6 +985,29 @@ export function startJunction(canvas: HTMLCanvasElement) {
     label('MEMPOOL CAM', dotX - 10 * px, inset + 8 * px, 'right', cream);
     label(`NODE 7  BLOCK ${blockNo.toLocaleString('en-US')}  ${cam.zoom.toFixed(1)}X`, inset + 8 * px, h - inset - 20 * px, 'left', cream);
     if (chase) label(chase.state === 'busted' ? 'TX REVERTED' : 'TRACING TX 0xGRID…LOCK', inset + 8 * px, h - inset - 36 * px, 'left', chase.state === 'busted' ? green : red);
+    drawRadio(g, label, px, inset, h, w);
+  }
+
+  /** The radio log, bottom left above the read-out: each line is typed out, in the colour of whoever speaks, then fades. */
+  function drawRadio(g: CanvasRenderingContext2D, label: (text: string, tx: number, ty: number, align: CanvasTextAlign, tint: string) => void, px: number, inset: number, h: number, w: number) {
+    const rows = feed.visible(time).slice(-(canvas.clientWidth < 480 ? 2 : FEED.max));
+    if (!rows.length) return;
+    const tint: Record<Voice, string> = { drone: cream, police: blue, racer: orange };
+    const room = w - 2 * (inset + 8 * px);
+    const x = inset + 8 * px;
+    let y = h - inset - 58 * px;
+    g.font = `700 ${12 * px}px ${display}`;
+    for (let i = rows.length - 1; i >= 0; i--) {
+      const row = rows[i]!;
+      const head = `${row.tag}: `;
+      let body = row.text.slice(0, row.chars);
+      while (body.length > 3 && g.measureText(head + body).width > room) body = `${body.slice(0, -2)}…`;
+      g.globalAlpha = row.alpha;
+      label(head, x, y, 'left', tint[row.voice]);
+      label(body + (row.chars < row.text.length ? '_' : ''), x + g.measureText(head).width, y, 'left', cream);
+      y -= 17 * px;
+    }
+    g.globalAlpha = 1;
   }
 
   /** Lock-on brackets around the racer, in map coordinates. */
@@ -1053,6 +1111,13 @@ export function startJunction(canvas: HTMLCanvasElement) {
     if (delta) {
       if (chase) moveChase(chase, delta);
       else if (greenNow && time >= nextChase) startChase(axis + 2 * Math.floor(rng() * 2));
+      // With no chase, the drone reads the junction out every few seconds, once the last lines have faded.
+      if (!chase && time >= nextTalk && feed.quiet(time)) {
+        const waiting = cars.filter((car) => car.pos < 0 && car.speed < 8).length;
+        report({ kind: 'quiet', waiting, block: blockNo, confirmed: tally.escaped, reverted: tally.busted, gate: axis === 0 ? 'EAST-WEST' : 'NORTH-SOUTH', first: !talked });
+        talked = true;
+        nextTalk = time + 6000 + talk() * 3500;
+      }
       moveCamera(delta);
     }
     framing();
@@ -1308,6 +1373,13 @@ export function startJunction(canvas: HTMLCanvasElement) {
     cone.pos = Math.max(-approaches[i]!.end + 40, Math.min(-104, pos));
     cone.until = time + CONE_LIFE;
     if (debug) debug.cones++;
+    const c = chase;
+    if (c && c.state === 'run' && i === c.approach) {
+      const racer = c.actors[0]!;
+      const arm = approaches[i]!;
+      const along = (racer.x - MID_X) * arm.x + (racer.y - MID_Y) * arm.y;
+      if (along < cone.pos) report({ kind: 'block', ahead: Math.round(cone.pos - along) });
+    }
   }
 
   function press(event: PointerEvent) {
@@ -1355,6 +1427,7 @@ export function startJunction(canvas: HTMLCanvasElement) {
     const p = c.path.at(best);
     blocks.push({ x: p.x, y: p.y, s: best, heading: p.h, until: time + CONE_LIFE });
     if (debug) debug.blocks++;
+    report({ kind: 'block', ahead: Math.round(best - racer.s) });
   }
 
   function drop() {

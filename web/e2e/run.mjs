@@ -331,6 +331,27 @@ try {
     await p.context().close();
   });
 
+  await step('the drone radio reports what happens, as it happens, in three voices and in blockchain terms', async () => {
+    const p = await chasePage('seed=4&plan=right,copSpin,clean');
+    await ended(p);
+    const { log, radio } = await p.evaluate(() => ({ log: window.__fx.log, radio: window.__fx.radio }));
+    const kinds = log.map((l) => l.kind);
+    const order = ['start', 'junction', 'slide', 'copSpin', 'escape'].map((k) => kinds.indexOf(k));
+    assert.ok(order.every((i) => i >= 0), `reports ${kinds}`);
+    assert.deepEqual([...order].sort((a, b) => a - b), order, `reports come in the order things happen: ${kinds}`);
+    for (const tag of ['NODE 7', 'UNIT', 'RACER']) assert.ok(radio.some((l) => l.startsWith(tag)), `${tag} speaks`);
+    assert.ok(radio.some((l) => /Congestion 1 of 5/.test(l)), 'the escape reports the congestion level');
+    assert.ok(radio.every((l) => l.length <= 50), 'no line is too long for a phone');
+    assert.deepEqual(p.errors, []);
+    await p.context().close();
+    const q = await chasePage('seed=5&plan=uturn,wipeout');
+    await ended(q);
+    const lines = await q.evaluate(() => window.__fx.radio.join('|'));
+    assert.match(lines, /out of gas/i); assert.doesNotMatch(lines, /Congestion/);
+    assert.deepEqual(q.errors, []);
+    await q.context().close();
+  });
+
   await step('the camera never lets go of the racer: it follows him through three junctions, far from home', async () => {
     const p = await chasePage('seed=7&plan=right,straight,left,clean');
     await p.evaluate(() => {
