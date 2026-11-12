@@ -5,6 +5,8 @@ Permanent means it cannot be changed after the step. Check each item before the 
 
 ## A. Before any deploy
 
+0. Read `docs/MAINNET-READINESS.md` first: it lists which gates are open and confirms the hosting.
+
 1. Run `cd contracts && forge build && forge test -vv`. Record the result in `docs/AUDIT-PACKET.md` section 7. Do not continue if anything fails or warns without an explanation.
 2. Run the harness once: `cd contracts/harness && pnpm install && node compile.mjs && node --test tests/*.test.mjs`.
 3. Check the name, symbol (GRID) and domain are free. Read the Cloudflare terms that apply today and record them in `docs/DECISIONS.md`.
@@ -30,7 +32,7 @@ Use `deploy/testnet.example.json` as a template: copy it to `deploy/testnet.json
 ## C. Mainnet (4663). Do not start before an external audit and your own decision.
 
 1. External audit finished. Fixes applied and re-tested. Put the report link in `AUDIT_REPORT_URL`. Until then the site shows "No external audit yet".
-2. Re-check the chain facts in `docs/DECISIONS.md` (chain id, RPC, explorer, EVM version, contract size limit) against the official docs on the day.
+2. Re-check the chain facts in `docs/DECISIONS.md` (chain id, RPC, explorer, EVM version, contract size limit) against the official docs on the day. The snapshot in `docs/MAINNET-READINESS.md` lists what was checked on 2026-11-12, including the sequencer ordering rule.
 3. Production values in `deploy/mainnet.json`: OPEN_TIMEOUT 604800, HEAT_DECAY_SECONDS 3600, REVEAL_MIN_DELAY 60, the real commitments, the real treasury. Read the file aloud against your notes.
 4. Simulate. Read the printed addresses and parameters. Then broadcast with a hardware wallet (`--ledger`) and `CONFIRM_MAINNET=I-HAVE-AN-EXTERNAL-AUDIT-AND-I-DECIDE`. Gas is paid by you.
 5. Verify the contracts on the explorer using the explorer's verifier and the build settings in `AUDIT-PACKET.md` section 2.
