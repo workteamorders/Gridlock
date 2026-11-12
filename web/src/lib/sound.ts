@@ -1,10 +1,13 @@
 import { MASTER_GAIN, MIN_GAP, soundPlan, type SoundKind } from './sound-plan';
+import { SAMPLES, sampleFiles, type Layer } from './sound-samples';
 
 const key = 'gridlock.sound';
 let enabled = false;
 let loaded = false;
 let ctx: AudioContext | undefined;
 let noise: AudioBuffer | undefined;
+const recordings = new Map<string, AudioBuffer>();
+let fetching = false;
 
 function load() {
   if (loaded) return;
@@ -26,7 +29,21 @@ function context(): AudioContext | undefined {
   const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
   if (!Ctor) return undefined;
   ctx = new Ctor();
+  fetchRecordings(ctx);
   return ctx;
+}
+
+/** Recorded sounds are fetched once, right after the visitor first allows sound. Any that fail stay synthesised. */
+function fetchRecordings(c: AudioContext) {
+  if (fetching) return;
+  fetching = true;
+  for (const file of sampleFiles()) {
+    fetch(`/audio/${file}.wav`)
+      .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(String(r.status)))))
+      .then((data) => c.decodeAudioData(data))
+      .then((buffer) => { recordings.set(file, buffer); })
+      .catch(() => undefined);
+  }
 }
 
 /** `quiet` skips the confirmation sound, for callers that play their own. */
@@ -77,7 +94,25 @@ function output(c: AudioContext): GainNode {
   return input;
 }
 
+function playRecordings(c: AudioContext, layers: Layer[]) {
+  const now = c.currentTime;
+  const master = output(c);
+  for (const layer of layers) {
+    const buffer = recordings.get(layer.file)!;
+    const src = c.createBufferSource();
+    src.buffer = buffer;
+    src.playbackRate.value = layer.rate;
+    if (layer.rateTo) src.playbackRate.linearRampToValueAtTime(layer.rateTo, now + layer.at + buffer.duration / ((layer.rate + layer.rateTo) / 2));
+    const gain = c.createGain();
+    gain.gain.value = layer.gain;
+    src.connect(gain); gain.connect(master);
+    src.start(now + layer.at);
+  }
+}
+
 function schedule(c: AudioContext, kind: SoundKind, level: number) {
+  const layers = SAMPLES[kind];
+  if (layers && layers.every((l) => recordings.has(l.file))) { playRecordings(c, layers); return; }
   const now = c.currentTime;
   const master = output(c);
   for (const t of soundPlan(kind, level)) {

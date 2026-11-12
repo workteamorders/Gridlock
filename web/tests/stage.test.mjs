@@ -119,3 +119,27 @@ test('the tracker picks the rung nearest the middle of the screen and maps ranks
   assert.ok(trackerPosition(8) > 0.49 && trackerPosition(8) < 0.51);
   assert.equal(trackerPosition(99), 1);
 });
+
+test('recorded sounds: every file exists, is small mono 16-bit WAV, and each layer is sane; kinds without a recording keep a recipe', async () => {
+  const { SAMPLES, sampleFiles } = await import('../src/lib/sound-samples.ts');
+  const { readFileSync, statSync } = await import('node:fs');
+  const dir = new URL('../public/audio/', import.meta.url);
+  let total = 0;
+  for (const file of sampleFiles()) {
+    const url = new URL(`${file}.wav`, dir);
+    const buf = readFileSync(url);
+    total += statSync(url).size;
+    assert.equal(buf.toString('ascii', 0, 4), 'RIFF'); assert.equal(buf.toString('ascii', 8, 12), 'WAVE');
+    assert.equal(buf.readUInt16LE(22), 1, `${file} is mono`); assert.equal(buf.readUInt16LE(34), 16, `${file} is 16-bit`);
+    const seconds = (buf.length - 44) / (buf.readUInt32LE(24) * 2);
+    assert.ok(seconds > 0.05 && seconds <= 1.2, `${file} lasts ${seconds.toFixed(2)} s`);
+    let peak = 0; for (let i = 44; i + 1 < buf.length; i += 2) peak = Math.max(peak, Math.abs(buf.readInt16LE(i)));
+    assert.ok(peak > 8000 && peak < 32000, `${file} is audible and does not clip`);
+  }
+  assert.ok(total < 400 * 1024, `recordings total ${Math.round(total / 1024)} KB`);
+  for (const [kind, layers] of Object.entries(SAMPLES)) {
+    assert.ok(SOUND_KINDS.includes(kind));
+    assert.ok(soundPlan(kind).length >= 1, `${kind} keeps its recipe as a fallback`);
+    for (const l of layers) { assert.ok(l.gain > 0 && l.gain <= 1 && l.at >= 0 && l.at < 0.5 && l.rate >= 0.5 && l.rate <= 2.5 && (!l.rateTo || (l.rateTo >= 0.5 && l.rateTo <= 2.5))); }
+  }
+});

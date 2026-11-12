@@ -433,7 +433,7 @@ try {
   });
 
   await step('intro: one press at a gate starts the intro with sound, the sequence plays once per session, any key skips it, and only in full motion', async () => {
-    const hook = () => { window.__tones = 0; const Native = window.AudioContext; window.__audio = 0; window.AudioContext = class extends Native { constructor(...a) { super(...a); window.__audio += 1; } createOscillator() { window.__tones += 1; return super.createOscillator(); } }; };
+    const hook = () => { window.__tones = 0; const Native = window.AudioContext; window.__audio = 0; window.AudioContext = class extends Native { constructor(...a) { super(...a); window.__audio += 1; } createOscillator() { window.__tones += 1; return super.createOscillator(); } createBufferSource() { window.__tones += 1; return super.createBufferSource(); } }; };
     const p = await newPage(browser, { intro: true });
     await p.addInitScript(hook);
     await p.goto(SITE);
@@ -585,18 +585,24 @@ try {
   await step('sound: the climb plays a rising note per rung, hover and click tick, and a quiet page stays quiet', async () => {
     const p = await newPage(browser);
     await p.addInitScript(() => {
-      window.__freqs = [];
+      window.__freqs = []; window.__starts = []; window.__audioRequests = [];
       const set = AudioParam.prototype.setValueAtTime;
       AudioParam.prototype.setValueAtTime = function (v, t) { if (v >= 100) window.__freqs.push(Math.round(v * 10) / 10); return set.call(this, v, t); };
+      // Recorded sounds start a buffer: note its length and playback speed.
+      const start = AudioBufferSourceNode.prototype.start;
+      AudioBufferSourceNode.prototype.start = function (...a) { if (this.buffer && this.buffer.duration > 0.05 && this.buffer.duration !== 0.5) window.__starts.push({ d: Math.round(this.buffer.duration * 100) / 100, r: Math.round(this.playbackRate.value * 100) / 100 }); return start.apply(this, a); };
     });
+    p.on('request', (r) => { if (r.url().includes('/audio/')) p.evaluate((u) => window.__audioRequests.push(u), r.url()).catch(() => undefined); });
     await p.goto(SITE); await p.waitForSelector('.climb'); await p.waitForSelector('text=Minted so far'); await p.waitForTimeout(500);
-    const count = () => p.evaluate(() => window.__freqs.length);
+    const count = () => p.evaluate(() => window.__freqs.length + window.__starts.length);
     assert.equal(await count(), 0, 'nothing plays before sound is turned on');
-    await p.locator('header .sound-button').click(); await p.waitForTimeout(400);
-    await p.evaluate(() => { window.__freqs.length = 0; });
+    assert.deepEqual(await p.evaluate(() => window.__audioRequests), [], 'no recording is fetched while sound is off');
+    await p.locator('header .sound-button').click(); await p.waitForTimeout(900);
+    assert.ok((await p.evaluate(() => window.__audioRequests)).length >= 8, 'turning sound on fetches the recordings');
+    await p.evaluate(() => { window.__freqs.length = 0; window.__starts.length = 0; });
     const goto = async (f) => { await p.evaluate((f) => { const r = document.querySelector('.climb').getBoundingClientRect(); scrollTo(0, r.top + scrollY + (r.height - innerHeight) * f); }, f); await p.waitForTimeout(160); };
     await goto(0.001); await p.waitForTimeout(600);
-    await p.evaluate(() => { window.__freqs.length = 0; }); await p.waitForTimeout(500);
+    await p.evaluate(() => { window.__freqs.length = 0; window.__starts.length = 0; }); await p.waitForTimeout(500);
     const before = await count();
     for (let i = 1; i <= 60; i++) await goto(i / 60);
     await p.waitForTimeout(300);
@@ -604,20 +610,22 @@ try {
     const notes = new Set(Array.from({ length: 15 }, (_, i) => Math.round(stepFrequency(i) * 10) / 10));
     // Each rung plays its note and the octave above it; keep only the first of every pair, and stop before the summit arpeggio.
     const fundamentals = (list) => list.filter((f) => notes.has(f)).filter((f, i, a) => !(i > 0 && Math.abs(f - a[i - 1] * 2) < 0.3));
-    const heard = fundamentals(freqs.slice(0, freqs.includes(523) ? freqs.indexOf(523) : freqs.length));
+    const heard = fundamentals(freqs);
     assert.ok(heard.length >= 10, `the climb played ${heard.length} step notes`);
     for (let i = 1; i < heard.length; i++) assert.ok(heard[i] >= heard[i - 1], 'notes only rise while scrolling down');
-    assert.ok(freqs.includes(1047), 'reaching rank 1 plays the summit arpeggio');
+    const coins = (await p.evaluate(() => window.__starts)).filter((x) => x.d === 0.28).map((x) => x.r);
+    assert.ok([1, 1.26, 1.5, 2].every((r) => coins.includes(r)), `reaching rank 1 plays the coin arpeggio (${coins})`);
     assert.equal(before, 0, 'resting on the first rung is silent');
     // Scrolling back up plays notes again, going down in pitch.
-    await p.evaluate(() => { window.__freqs.length = 0; });
+    await p.evaluate(() => { window.__freqs.length = 0; window.__starts.length = 0; });
     for (let i = 59; i >= 0; i -= 2) await goto(i / 60);
     const down = fundamentals(await p.evaluate(() => window.__freqs.slice()));
     assert.ok(down.length >= 6); for (let i = 1; i < down.length; i++) assert.ok(down[i] <= down[i - 1], 'notes fall while scrolling up');
     // Hover and click.
-    await p.evaluate(() => { scrollTo(0, 0); window.__freqs.length = 0; }); await p.waitForTimeout(300);
+    await p.evaluate(() => { scrollTo(0, 0); window.__freqs.length = 0; window.__starts.length = 0; }); await p.waitForTimeout(300);
     await p.locator('header .nav-links a').nth(1).hover(); await p.waitForTimeout(150);
     assert.ok(await count() >= 1, 'hovering a link ticks');
+    assert.ok((await p.evaluate(() => window.__starts)).some((x) => x.d === 0.11), 'the tick is the recording, not a synthesised blip');
     const afterHover = await count();
     await p.locator('header .nav-links a').nth(1).evaluate((el) => el.addEventListener('click', (e) => e.preventDefault(), { once: true }));
     await p.locator('header .nav-links a').nth(1).click(); await p.waitForTimeout(150);
@@ -654,7 +662,7 @@ try {
       window.__audio = 0;
       const Native = window.AudioContext;
       window.__tones = 0;
-      window.AudioContext = class extends Native { constructor(...a) { super(...a); window.__audio += 1; } createOscillator() { window.__tones += 1; return super.createOscillator(); } };
+      window.AudioContext = class extends Native { constructor(...a) { super(...a); window.__audio += 1; } createOscillator() { window.__tones += 1; return super.createOscillator(); } createBufferSource() { window.__tones += 1; return super.createBufferSource(); } };
     });
     await p.goto(SITE); await p.waitForSelector('header .sound-button');
     const sound = p.locator('header .sound-button');

@@ -41,20 +41,20 @@ export function soundPlan(kind: SoundKind, level = 0): Tone[] {
       { wave: 'square', from: 1500, to: 800, at: 0, length: 0.07, gain: 1, filter: { type: 'lowpass', freq: 4000 } },
       { wave: 'noise', from: 0, to: 0, at: 0, length: 0.03, gain: 0.7, filter: { type: 'highpass', freq: 4000 } },
     ];
-    // One rung of the climb: a bright blip whose pitch rises with the step, plus the octave above it.
+    // One rung of the climb: a soft mallet note (sine with a triangle octave over it) whose pitch rises with the step.
     case 'step': {
       const f = stepFrequency(level);
       return [
-        { wave: 'square', from: f, to: f, at: 0, length: 0.12, gain: 0.9, filter: { type: 'lowpass', freq: 3000 } },
-        { wave: 'triangle', from: f * 2, to: f * 2, at: 0, length: 0.1, gain: 0.8 },
+        { wave: 'sine', from: f, to: f, at: 0, length: 0.19, gain: 0.95 },
+        { wave: 'triangle', from: f * 2, to: f * 2, at: 0, length: 0.12, gain: 0.5 },
       ];
     }
     // Top of the ladder, rank 1: a short rising arpeggio that ends on a held note.
     case 'summit': return [
-      { wave: 'square', from: 523, to: 523, at: 0, length: 0.1, gain: 0.5, filter: { type: 'lowpass', freq: 3200 } },
-      { wave: 'square', from: 659, to: 659, at: 0.08, length: 0.1, gain: 0.5, filter: { type: 'lowpass', freq: 3200 } },
-      { wave: 'square', from: 784, to: 784, at: 0.16, length: 0.1, gain: 0.5, filter: { type: 'lowpass', freq: 3200 } },
-      { wave: 'square', from: 1047, to: 1047, at: 0.24, length: 0.25, gain: 0.55, filter: { type: 'lowpass', freq: 3200 } },
+      { wave: 'triangle', from: 523, to: 523, at: 0, length: 0.14, gain: 0.7 },
+      { wave: 'triangle', from: 659, to: 659, at: 0.08, length: 0.14, gain: 0.7 },
+      { wave: 'triangle', from: 784, to: 784, at: 0.16, length: 0.14, gain: 0.7 },
+      { wave: 'triangle', from: 1047, to: 1047, at: 0.24, length: 0.25, gain: 0.75 },
       { wave: 'triangle', from: 2093, to: 2093, at: 0.24, length: 0.2, gain: 0.35 },
     ];
     // Pointer moves onto something pressable: the lightest possible tick.
@@ -66,12 +66,12 @@ export function soundPlan(kind: SoundKind, level = 0): Tone[] {
       { wave: 'noise', from: 0, to: 0, at: 0, length: 0.3, gain: 0.55, filter: { type: 'bandpass', freq: 900, q: 0.9 } },
       { wave: 'sine', from: 300, to: 700, at: 0.04, length: 0.22, gain: 0.3 },
     ];
-    // A patrol car on the way: two rising and falling wails, the classic wee-ooo.
+    // A patrol car on the way: two rising and falling wails, the classic wee-ooo. Sawtooth through a low-pass, with a second voice a hair off for width.
     case 'siren': return [
-      { wave: 'square', from: 640, to: 980, at: 0, length: 0.23, gain: 0.5, filter: { type: 'lowpass', freq: 2600 } },
-      { wave: 'square', from: 980, to: 640, at: 0.23, length: 0.23, gain: 0.5, filter: { type: 'lowpass', freq: 2600 } },
-      { wave: 'triangle', from: 1280, to: 1960, at: 0, length: 0.23, gain: 0.25 },
-      { wave: 'triangle', from: 1960, to: 1280, at: 0.23, length: 0.23, gain: 0.25 },
+      { wave: 'sawtooth', from: 640, to: 980, at: 0, length: 0.23, gain: 0.55, filter: { type: 'lowpass', freq: 2800, q: 1.5 } },
+      { wave: 'sawtooth', from: 980, to: 640, at: 0.23, length: 0.23, gain: 0.55, filter: { type: 'lowpass', freq: 2800, q: 1.5 } },
+      { wave: 'sawtooth', from: 655, to: 1000, at: 0, length: 0.23, gain: 0.3, filter: { type: 'lowpass', freq: 2800, q: 1.5 } },
+      { wave: 'sawtooth', from: 1000, to: 655, at: 0.23, length: 0.23, gain: 0.3, filter: { type: 'lowpass', freq: 2800, q: 1.5 } },
     ];
     // Metal on metal: a heavy thud, a crunch of noise and a short rattle.
     case 'crash': return [
