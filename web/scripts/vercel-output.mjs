@@ -45,7 +45,8 @@ export function buildRoutes(headerBlocks) {
     { handle: 'filesystem' },
     { handle: 'miss' },
     // /risk -> /risk/ (only paths without a dot, never /api).
-    { src: '^/(?!api(?:/|$))((?:[^/.]+/)*[^/.]+)$', status: 308, headers: { Location: '/$1/' } },
+    // Vercel requires continue:true for miss-phase routes without a destination.
+    { src: '^/(?!api(?:/|$))((?:[^/.]+/)*[^/.]+)$', status: 308, headers: { Location: '/$1/' }, continue: true },
     { handle: 'error' },
     { src: '^/(?!api(?:/|$)).*$', status: 404, dest: '/404.html' },
   ];

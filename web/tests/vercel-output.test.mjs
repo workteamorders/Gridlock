@@ -82,6 +82,7 @@ test('routes: security headers on every path first, then folder index, filesyste
   const re = (route, path) => new RegExp(route.src).test(path);
   const redirect = routes[miss + 1];
   assert.equal(redirect.status, 308);
+  assert.equal(redirect.continue, true, 'Vercel requires continue for a miss-phase redirect without dest');
   assert.equal(re(redirect, '/risk'), true);
   assert.equal(re(redirect, '/hunt/claim'), true);
   assert.equal(re(redirect, '/api/rpc'), false, 'the API is never redirected');
