@@ -145,6 +145,6 @@ Before trusting any of this, the owner should run, once: `cd contracts && forge 
 ## 8. How to reproduce the harness results
 
 ```
-cd contracts/harness && pnpm install && node compile.mjs && node --test tests/*.test.mjs
+cd contracts && pnpm install && cd harness && pnpm install && node compile.mjs && node --test tests/*.test.mjs
 ```
 Golden images are in `contracts/harness/golden/` (SVG files plus `golden.json` with SHA-256). Set `UPDATE_GOLDEN=1` only when a renderer change is intended.

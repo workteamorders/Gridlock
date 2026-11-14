@@ -8,7 +8,7 @@ Permanent means it cannot be changed after the step. Check each item before the 
 0. Read `docs/MAINNET-READINESS.md` first: it lists which gates are open and confirms the hosting.
 
 1. Run `cd contracts && forge build && forge test -vv`. Record the result in `docs/AUDIT-PACKET.md` section 7. Do not continue if anything fails or warns without an explanation.
-2. Run the harness once: `cd contracts/harness && pnpm install && node compile.mjs && node --test tests/*.test.mjs`.
+2. Run the harness once. Install both folders first, because `scripts/gen-hunt.mjs` imports `viem` from `contracts/node_modules`: `cd contracts && pnpm install && cd harness && pnpm install && node compile.mjs && node --test tests/*.test.mjs`. Without the first `pnpm install`, the test "gen-hunt --check detects a mismatch" fails with `Cannot find package 'viem'`.
 3. Check the name, symbol (GRID) and domain are free. Read the Cloudflare terms that apply today and record them in `docs/DECISIONS.md`.
 4. Create free RPC and explorer keys. Put them in Cloudflare Pages environment variables, never in the repo.
 5. Prepare a hardware wallet or multisig for the deployer, and a separate treasury address you control. **Treasury is permanent.** Send a small test amount to it first and confirm you can move it.
