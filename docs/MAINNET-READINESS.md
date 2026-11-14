@@ -12,7 +12,7 @@ Nothing in this file was run on a chain. No key, no deploy, no transaction.
 | # | Gate | Status | Who |
 |---|---|---|---|
 | 1 | `forge build && forge test -vv` | **Done (2026-11-14, owner's machine).** `forge test`: 32 of 32 passed. Harness: 49 of 49 passed. See AUDIT-PACKET section 7. Re-run after any contract change. | Owner |
-| 2 | Static analysis (slither, aderyn) | **Not run.** | Owner or auditor |
+| 2 | Static analysis (slither, aderyn) | **Slither done (2026-11-14, owner's machine):** 29 results, none high, none about reentrancy, ETH transfers or access control; all classified in AUDIT-PACKET section 7, no contract change needed. **aderyn not run** (optional second tool). Re-run after any contract change. | Owner |
 | 3 | External audit | **None.** The audit packet (`docs/AUDIT-PACKET.md`) is ready to hand over. The site shows "No external audit yet" until `NEXT_PUBLIC_AUDIT_REPORT_URL` is set. | Owner |
 | 4 | Legal review (Risk page, Terms, region limits, hunt mechanism) | **Pending.** The Risk page still says so. | Owner |
 | 5 | Testnet rehearsal (46630, short clocks) | **Not done.** `deployments/46630.json` is still the `deployed: false` placeholder. | Owner |
@@ -52,7 +52,7 @@ Because ordering is by arrival, bots win by being faster, not by paying more. Th
 ## Order of work
 
 1. Confirm hosting (finding 1).
-2. `cd contracts && forge build && forge test -vv`, then the harness, then slither. Paste results into AUDIT-PACKET section 7.
+2. Done: `forge build && forge test -vv`, the harness, and slither (AUDIT-PACKET section 7). Repeat all three after any contract change.
 3. Decide and write down the permanent values (gate 6). Generate hunt commitments offline (gate 7).
 4. Testnet rehearsal, LAUNCH-CHECKLIST section B, including the marketplace check.
 5. Hand the audit packet to an external auditor. Apply fixes. Re-run steps 2 and 4.
