@@ -12,7 +12,7 @@ No external audit has been done. Slither 0.11.4 was run once by the owner (secti
 | `contracts/src/HeatLib.sol` | Heat constants and star thresholds (internal library, inlined). | n/a |
 | `contracts/src/IGridlockRenderer.sol` | Renderer interface. | n/a |
 
-Out of scope: Solady (vendored, pinned below), forge-std, the web app, the Cloudflare Function.
+Out of scope: Solady (vendored, pinned below), forge-std, the web app, the RPC relay function (Vercel Edge or Cloudflare).
 Both contracts are immutable: no proxy, no owner, no admin function, no pause, no burn, no setter, no SELFDESTRUCT or DELEGATECALL (checked by opcode scan in the harness). `GridlockCars` has no `receive` or `fallback`.
 
 ## 2. Versions and build settings

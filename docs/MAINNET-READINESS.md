@@ -18,15 +18,19 @@ Nothing in this file was run on a chain. No key, no deploy, no transaction.
 | 5 | Testnet rehearsal (46630, short clocks) | **Not done.** `deployments/46630.json` is still the `deployed: false` placeholder. | Owner |
 | 6 | Permanent values decided: treasury, START_TIME, OPEN_TIMEOUT, caps, 15 prices, 12 hunt commitments | **Not decided.** `deploy/mainnet.example.json` fails on purpose until filled. | Owner |
 | 7 | Hunt secrets generated offline and backed up twice | **Not done.** No real secret exists. | Owner |
-| 8 | Hosting matches the code (see finding 1) | **To confirm.** | Owner |
+| 8 | Hosting matches the code (see finding 1) | **Vercel chosen by the owner (2026-11-14) and the code is ported and tested locally.** Open: the first preview deploy must show `/api/rpc` and `/api/geo` working and the CSP header present; the Vercel **Pro** plan is needed for a paid mint. | Owner |
 | 9 | Production RPC provider and key | **Not set.** | Owner |
 | 10 | Marketplace check: image, royalty (ERC-2981), heat refresh | **Not done.** Needs testnet. | Owner |
 
 ## Findings from this review
 
-### 1. Hosting must be Cloudflare Pages, or the relay and headers must be ported
+### 1. Hosting: ported to Vercel (2026-11-14). Two things still need the owner
 
-The code was built for Cloudflare Pages: `web/functions/api/rpc.ts` (RPC relay that hides the provider key), `web/functions/api/geo.ts` (country block for view-only mode), `out/_headers` (the CSP, written by `scripts/csp-headers.mjs`) and `wrangler.toml`. A host that ignores these files (Vercel, for example) will serve a site where `/api/rpc` and `/api/geo` do not exist, so **every on-chain read fails**, the country block does nothing and the CSP is not sent. Confirm where the live site runs before any other step. If it is not Cloudflare Pages, the relay, geo check and headers have to be ported first. Also re-read the host's terms for commercial use: a paid mint is commercial (DECISIONS.md section on hosting).
+**Update 2026-11-14.** The owner chose Vercel. The port is done: `web/scripts/vercel-output.mjs` builds a Build Output API deployment (`.vercel/output`) from the static export. It turns `out/_headers` (the CSP with the inline-script hashes) into response headers on every path, adds the trailing-slash and 404 handling, and generates two Edge Functions, `/api/rpc` and `/api/geo`, from the same tested cores (`functions/_lib`). On Vercel the rate limit counts by `x-real-ip` and the country comes from `x-vercel-ip-country`; the Cloudflare headers are ignored because a visitor could send them. `tests/vercel-output.test.mjs` runs the generated functions. What was **not** done: no deploy to Vercel was made from here, so the behaviour on Vercel itself is untested. Do a preview deploy first and check: the page loads, `/api/geo` answers, a read through `/api/rpc` works, the response has the `Content-Security-Policy` header, `/risk` redirects to `/risk/`, and a bad path shows the 404 page. Setup steps are in `docs/LAUNCH-CHECKLIST.md` section A.
+
+**Plan.** Vercel's Hobby plan is for personal, non-commercial use only (Vercel fair use guidelines and Terms, read 2026-11-14). A site that sells NFTs is commercial, so the project needs the Pro plan. Record the date you read the current terms in DECISIONS.md D-5.3.
+
+Original finding, kept for the record: the code was built for Cloudflare Pages: `web/functions/api/rpc.ts` (RPC relay that hides the provider key), `web/functions/api/geo.ts` (country block for view-only mode), `out/_headers` (the CSP, written by `scripts/csp-headers.mjs`) and `wrangler.toml`. A host that ignores these files (Vercel, for example) will serve a site where `/api/rpc` and `/api/geo` do not exist, so **every on-chain read fails**, the country block does nothing and the CSP is not sent. Confirm where the live site runs before any other step. If it is not Cloudflare Pages, the relay, geo check and headers have to be ported first. Also re-read the host's terms for commercial use: a paid mint is commercial (DECISIONS.md section on hosting).
 
 ### 2. Chain facts, re-checked today against docs.robinhood.com
 
@@ -41,9 +45,9 @@ The code was built for Cloudflare Pages: `web/functions/api/rpc.ts` (RPC relay t
 | `block.number` | Returns an estimate of the L1 block number, updated only periodically. The contracts never read it (AUDIT-PACKET section 3), so no change is needed. Keep it that way. |
 | Sanctions | The sequencer excludes transactions tied to sanctioned addresses. Say so on the Risk page and let the lawyer word it. |
 
-### 3. Some scene wording is wrong for this chain
+### 3. Scene wording was wrong for this chain (fixed 2026-11-14)
 
-The junction scene uses "PRIORITY FEE!", "FRONT-RUN!" and "Bots in the mempool?". On this chain fees do not buy position and there is no public mempool ordering, so a reader who knows Arbitrum will notice. Suggested wording that stays true: PRIORITY FEE! becomes GAS UP!, FRONT-RUN! becomes CUT OFF!, and "mempool" becomes "queue" in the hint and the radio lines. Not changed yet; it is a text-only edit.
+The junction scene uses "PRIORITY FEE!", "FRONT-RUN!" and "Bots in the mempool?". On this chain fees do not buy position and there is no public mempool ordering, so a reader who knows Arbitrum will notice. Suggested wording that stays true: PRIORITY FEE! becomes GAS UP!, FRONT-RUN! becomes CUT OFF!, and "mempool" becomes "queue" in the hint and the radio lines. **Done:** the scene and the radio now say GAS UP!, CUT OFF!, "queue" and "QUEUE CAM" (`junction.ts`, `dispatch.ts`, `LiveJunction.tsx`); the radio lines that said fee, pool or front-run follow. REORG!, SLIPPAGE! and the gas price in the telemetry line were left, because they are still fair pictures of what the scene shows.
 
 ### 4. Mint pressure is about speed, not fees
 

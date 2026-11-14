@@ -409,7 +409,7 @@ export function startJunction(canvas: HTMLCanvasElement) {
       report({ kind: 'wipeout' });
     } else if (cause === 'pit') {
       announce('crash');
-      say('FRONT-RUN!', racer.x, racer.y - 28, true);
+      say('CUT OFF!', racer.x, racer.y - 28, true);
       report({ kind: 'pitWin' });
     } else {
       announce('busted');
@@ -473,7 +473,7 @@ export function startJunction(canvas: HTMLCanvasElement) {
       const here = path.at(racer.s);
       const bendiness = Math.min(1, Math.abs(here.k) * 28);
       const cruise = plan.speed * (1 + heat * 0.05) * (1 - 0.38 * bendiness);
-      const fireNitro = () => { c.nitroDone = true; c.nitroUntil = time + 900; say('PRIORITY FEE!', racer.x, racer.y - 26, true); report({ kind: 'nitro' }); };
+      const fireNitro = () => { c.nitroDone = true; c.nitroUntil = time + 900; say('GAS UP!', racer.x, racer.y - 26, true); report({ kind: 'nitro' }); };
       if (!c.nitroDone && plan.nitro !== null && racer.s >= path.apex + plan.nitro) fireNitro();
       else if (x >= 0 && time > c.nitroUntil + 600 && Math.hypot(x - racer.x, y - racer.y) < 46) fireNitro();
       racer.speed += ((time < c.nitroUntil ? cruise * 1.4 : cruise) - racer.speed) * Math.min(1, delta / 200);
@@ -982,7 +982,7 @@ export function startJunction(canvas: HTMLCanvasElement) {
       g.arc(dotX, inset + 14 * px, 4.5 * px, 0, Math.PI * 2);
       g.fill();
     }
-    label('MEMPOOL CAM', dotX - 10 * px, inset + 8 * px, 'right', cream);
+    label('QUEUE CAM', dotX - 10 * px, inset + 8 * px, 'right', cream);
     label(`NODE 7  BLOCK ${blockNo.toLocaleString('en-US')}  ${cam.zoom.toFixed(1)}X`, inset + 8 * px, h - inset - 20 * px, 'left', cream);
     if (chase) label(chase.state === 'busted' ? 'TX REVERTED' : 'TRACING TX 0xGRID…LOCK', inset + 8 * px, h - inset - 36 * px, 'left', chase.state === 'busted' ? green : red);
     drawRadio(g, label, px, inset, h, w);

@@ -25,7 +25,7 @@ export function LiveJunction({ title, shortcut }: { title: string; shortcut: Rea
         </div>
       </div>
       <figcaption className="junction-caption">
-        <span className="junction-hint">Bots in the mempool? Click the road ahead to block them</span>
+        <span className="junction-hint">Bots in the queue? Click the road ahead to block them</span>
         <div className="junction-actions">
           <button type="button" className="motion-button junction-cone"
             onClick={() => canvas.current?.dispatchEvent(new Event('gridlock:cone'))}>Drop cone</button>

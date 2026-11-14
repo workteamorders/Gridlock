@@ -51,7 +51,7 @@ const TURN: Record<Route, (index: number) => string[]> = {
   donut: (i) => [`junction ${i}, circling the block.`, `junction ${i}, going round and round.`],
 };
 const RACER_TURN: Record<Route, string[]> = {
-  straight: ['Straight on. Keep the fee up.'],
+  straight: ['Straight on. Keep the gas up.'],
   right: ['Tight right. Hold the line.', 'Right! Do not lift.'],
   left: ['Tight left. Hold the line.', 'Left! Do not lift.'],
   uturn: ['Hand brake. Turn it around.', 'Back the way I came!'],
@@ -63,18 +63,18 @@ export function lines(report: Report, pick: Pick): Line[] {
   switch (report.kind) {
     case 'quiet': {
       if (report.first) return [drone('on station. Watching the junction.')];
-      const mempool = report.waiting < 3 ? 'Mempool quiet.' : 'Mempool filling.';
+      const queue = report.waiting < 3 ? 'Queue quiet.' : 'Queue filling.';
       return [one([
         drone(`${report.waiting} pending at the lights. ${report.gate} open.`),
-        drone(`block ${report.block.toLocaleString('en-US')} sealed. ${mempool}`),
+        drone(`block ${report.block.toLocaleString('en-US')} sealed. ${queue}`),
         drone(`${report.confirmed} confirmed, ${report.reverted} reverted so far.`),
         drone(`${report.gate} gate open. ${report.waiting} tx waiting.`),
       ], pick)];
     }
     case 'start': return [
       drone(`pending tx, ${report.gate} gate. ${report.cops} ${report.cops === 1 ? 'bot' : 'bots'} on it.`),
-      police(`Rolling. ${report.cops} ${report.cops === 1 ? 'unit' : 'units'} in the pool.`, 500),
-      racer(one(['Bots behind me. Fee up, go go.', 'They found me. Fee up!'], pick), 1100),
+      police(`Rolling. ${report.cops} ${report.cops === 1 ? 'unit' : 'units'} in the queue.`, 500),
+      racer(one(['Bots behind me. Gas up, go go.', 'They found me. Gas up!'], pick), 1100),
     ];
     case 'junction': {
       const racerLine = one(RACER_TURN[report.route], pick);
@@ -84,15 +84,15 @@ export function lines(report: Report, pick: Pick): Line[] {
       drone(`fee ${report.fee} gwei, gap ${report.gap} m.`),
       police(report.gap < 40 ? `Gap ${report.gap}. Closing in.` : `Gap ${report.gap}. Push, push.`, 450),
     ];
-    case 'nitro': return [racer(one(['Priority fee up. Floor it.', 'Tipping the validators. Go!'], pick)), police('Fee spike. He is pulling away.', 350)];
+    case 'nitro': return [racer(one(['Gas up. Floor it.', 'Burning extra gas. Go!'], pick)), police('Gas spike. He is pulling away.', 350)];
     case 'slide': return [police(one(['He is sliding wide. Slippage!', 'Slippage! He is all over the road.'], pick), 0, 'UNIT 2'), racer('Slippage! Hold it, hold it.', 350)];
     case 'copSpin': return [
-      police(one(['Lost grip. Out of the pool.', 'Spinning! Dropping out.'], pick), 0, `UNIT ${report.unit}`),
+      police(one(['Lost grip. Out of the queue.', 'Spinning! Dropping out.'], pick), 0, `UNIT ${report.unit}`),
       drone(`unit ${report.unit} down. Reorg at junction ${report.junction}.`, 500),
     ];
     case 'pileup': return [police('Contact! Units 1 and 2 are down.'), drone('deep reorg. Two units out.', 400), racer('Both gone. Free road.', 900)];
-    case 'pitWin': return [police('Front-run landed. Suspect stopped.'), racer('Front-run! I am spinning...', 400), drone('tx stopped by a front-run.', 700)];
-    case 'pitMiss': return [police('Front-run missed. Losing the car.'), racer('Nice try. Still pending.', 300), drone('front-run failed. Reorg, unit down.', 600)];
+    case 'pitWin': return [police('Cut-off landed. Suspect stopped.'), racer('Cut off! I am spinning...', 400), drone('tx stopped by a cut-off.', 700)];
+    case 'pitMiss': return [police('Cut-off missed. Losing the car.'), racer('Nice try. Still pending.', 300), drone('cut-off failed. Reorg, unit down.', 600)];
     case 'wipeout': return [racer('Out of gas! I am rolling!'), drone('suspect out of gas, rolled over.', 400), police('Suspect down. Moving in.', 900)];
     case 'block': return [
       drone(`block on the route, ${report.ahead} m ahead.`),

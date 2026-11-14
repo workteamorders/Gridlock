@@ -9,12 +9,21 @@ Permanent means it cannot be changed after the step. Check each item before the 
 
 1. Run `cd contracts && forge build && forge test -vv`. Record the result in `docs/AUDIT-PACKET.md` section 7. Do not continue if anything fails or warns without an explanation.
 2. Run the harness once. Install both folders first, because `scripts/gen-hunt.mjs` imports `viem` from `contracts/node_modules`: `cd contracts && pnpm install && cd harness && pnpm install && node compile.mjs && node --test tests/*.test.mjs`. Without the first `pnpm install`, the test "gen-hunt --check detects a mismatch" fails with `Cannot find package 'viem'`.
-3. Check the name, symbol (GRID) and domain are free. Read the Cloudflare terms that apply today and record them in `docs/DECISIONS.md`.
-4. Create free RPC and explorer keys. Put them in Cloudflare Pages environment variables, never in the repo.
+3. Check the name, symbol (GRID) and domain are free. Read the Vercel terms and plan limits that apply today and record the date in `docs/DECISIONS.md` (D-5.3). A paid mint needs the Pro plan; the Hobby plan is non-commercial only.
+4. Create free RPC and explorer keys. Put them in the Vercel project's environment variables, never in the repo (see section A2 below).
 5. Prepare a hardware wallet or multisig for the deployer, and a separate treasury address you control. **Treasury is permanent.** Send a small test amount to it first and confirm you can move it.
 6. Offline, on a trusted machine, run `node contracts/scripts/gen-hunt.mjs --out <folder outside the repo>`. Back up `hunt-secrets.txt` in two places. Only `hunt-commitments.json` may be committed. Decide how to spread the clues outside the site (posters, images, social media). **The 12 commitments are permanent.**
 7. Decide START_TIME, OPEN_TIMEOUT, prices (rank 15 lowest, rising to rank 1) and caps. **All are permanent.** Announce them before START_TIME.
 8. Legal review of the Risk and Terms text, region limits and the hunt mechanism.
+
+## A2. Vercel project setup (once)
+
+1. Create a Vercel project from the GitHub repository. **Root Directory: `web`.** Framework Preset: Other (`web/vercel.json` already sets this, and the build command `npm run build:vercel`). Do not set an Output Directory: the build writes `.vercel/output` itself. Node.js version: 22.x.
+2. Environment variables (Project Settings, Environment Variables). Build time, not secret: `NEXT_PUBLIC_CHAIN_ID` (46630 for the testnet site, 4663 for mainnet), `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_INDEXABLE` (1 only on the real production site), `NEXT_PUBLIC_AUDIT_REPORT_URL`, `NEXT_PUBLIC_CONTACT_URL`. Runtime, **secret**: `UPSTREAM_RPC_URL` (the provider URL with its key), `CONTRACT_ADDRESSES` (comma separated: the cars contract and the renderer), optional `ALLOWED_ORIGINS`, `BLOCKED_COUNTRIES`, `RATE_LIMIT_PER_MIN`, `MAX_LOG_RANGE`, `CACHE_SECONDS`. Changing a `NEXT_PUBLIC_` value needs a new build.
+3. Deploy a **preview** first and check, on the preview URL: the home page and `/mint/` load; `https://<preview>/api/geo` returns `{"blocked":false}`; the browser shows live ladder data (a read through `/api/rpc` works); the page response carries `Content-Security-Policy` and `X-Frame-Options` (browser dev tools, Network tab); `/risk` redirects to `/risk/`; a wrong path shows the 404 page; the sound files under `/audio/` load after turning sound on.
+4. If the preview shows none of the headers and no `/api/*`, Vercel did not use `.vercel/output`. Stop and use the fallback in DECISIONS.md D-5.3 (`npx vercel build` then `npx vercel deploy --prebuilt` from `web/`).
+5. Add a rate-limit rule in the Vercel Firewall for `/api/rpc` if your plan allows it. The in-code limit is per function instance and only best effort.
+6. Custom domain, then set `NEXT_PUBLIC_SITE_URL` to it and rebuild.
 
 ## B. Testnet (46630) with short clocks
 

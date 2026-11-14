@@ -1,18 +1,19 @@
 # Gridlock web
 
-Static Next.js export for Cloudflare Pages, plus two read-only Pages Functions (`/api/rpc`, `/api/geo`).
+Static Next.js export, hosted on Vercel, plus two read-only Edge Functions (`/api/rpc`, `/api/geo`). `npm run build:vercel` writes the Vercel deployment (`.vercel/output`); `npm run build` alone gives the plain export in `out/` (the Cloudflare Pages route is still possible, see `docs/DECISIONS.md` D-5.3). Vercel setup: `docs/LAUNCH-CHECKLIST.md` section A2.
 
 ```
 pnpm install            # or npm install
 pnpm sync:abi           # regenerate src/lib/gridlock-abi.ts after compiling the contracts
 pnpm dev                # local dev server
 pnpm build              # next build + CSP headers (out/)
+pnpm build:vercel       # the same, then .vercel/output for Vercel (needs Node 22.x)
 pnpm check              # typecheck, token lint, copy check, unit tests, secret scan
 pnpm verify:deployment  # compare a deployed pair with this repo (reads only)
 pnpm e2e                # needs a build with NEXT_PUBLIC_CHAIN_ID=31337 in out-e2e (see e2e/run.mjs)
 ```
 
-Environment variables: see `.env.example`. Nothing in `NEXT_PUBLIC_*` is secret. `UPSTREAM_RPC_URL` is set only in the Cloudflare dashboard.
+Environment variables: see `.env.example`. Nothing in `NEXT_PUBLIC_*` is secret. `UPSTREAM_RPC_URL` is set only in the Vercel project settings (or the Cloudflare dashboard if you host there).
 
 Local end-to-end run (no network, no keys):
 

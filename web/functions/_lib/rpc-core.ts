@@ -1,4 +1,4 @@
-// Read-only JSON-RPC relay core. No imports: runs in Cloudflare Pages Functions and in Node tests.
+// Read-only JSON-RPC relay core. No imports: runs in Vercel Edge Functions, Cloudflare Pages Functions and in Node tests.
 // The upstream URL (which may hold a provider key) exists only in env and is never returned to clients.
 
 export interface RpcEnv {
@@ -14,6 +14,8 @@ export interface RpcDeps {
   fetchImpl: typeof fetch;
   now: () => number; // ms
   cache?: { get(key: string): Promise<string | null>; put(key: string, value: string, ttlSeconds: number): Promise<void> };
+  /** Where the caller's address comes from. The default trusts Cloudflare's header; on any other host pass the header that host sets itself, never one a client could send. */
+  clientIp?: (req: Request) => string;
 }
 
 export const ALLOWED_METHODS = [
@@ -127,7 +129,7 @@ export async function handleRpc(req: Request, env: RpcEnv, deps: RpcDeps): Promi
   if (req.method === 'OPTIONS') return new Response(null, { status: 204 });
   if (req.method !== 'POST') return json(rpcError(null, -32600, 'POST only'), 405);
   if (!originAllowed(req, env)) return json(rpcError(null, -32600, 'origin not allowed'), 403);
-  const ip = req.headers.get('cf-connecting-ip') ?? 'unknown';
+  const ip = deps.clientIp ? deps.clientIp(req) : (req.headers.get('cf-connecting-ip') ?? 'unknown');
   if (rateLimited(ip, env, deps.now())) return json(rpcError(null, -32005, 'rate limit exceeded'), 429);
   const text = await req.text();
   if (new TextEncoder().encode(text).length > MAX_BODY_BYTES) return json(rpcError(null, -32600, 'body too large'), 413);
