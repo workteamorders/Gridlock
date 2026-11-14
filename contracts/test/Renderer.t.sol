@@ -24,10 +24,16 @@ contract RendererTest is Base {
     function test_svgSafeCharacters() public view {
         for (uint8 rank; rank <= 15; ++rank) {
             bytes memory s = bytes(renderer.svg(input(rank, rank == 0 ? 5 : 3, 80)));
+            // Aggregate character checks: allocating assertion messages for every
+            // character makes the test itself exhaust memory on detailed artwork.
+            bool printable = true;
+            bool safeQuotes = true;
             for (uint256 i; i < s.length; ++i) {
-                assertTrue(s[i] >= 0x20 && s[i] <= 0x7e, "printable ascii");
-                assertTrue(s[i] != '"' && s[i] != "&", "no double quote or ampersand");
+                if (s[i] < 0x20 || s[i] > 0x7e) printable = false;
+                if (s[i] == '"' || s[i] == "&") safeQuotes = false;
             }
+            assertTrue(printable, "printable ascii");
+            assertTrue(safeQuotes, "no double quote or ampersand");
             assertFalse(contains(s, "<script"));
             assertFalse(contains(s, "<pattern"));
             assertFalse(contains(s, "href"));

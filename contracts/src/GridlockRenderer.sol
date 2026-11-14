@@ -3,6 +3,7 @@ pragma solidity 0.8.38;
 
 import {Base64} from "solady/utils/Base64.sol";
 import {LibString} from "solady/utils/LibString.sol";
+import {GridlockVehicle} from "./GridlockVehicle.sol";
 import {HeatLib} from "./HeatLib.sol";
 import {IGridlockRenderer} from "./IGridlockRenderer.sol";
 
@@ -84,7 +85,7 @@ contract GridlockRenderer is IGridlockRenderer {
                 _frame(t),
                 _title(t),
                 _backdrop(t),
-                t.hidden ? _hiddenCar(p.serial) : _car(h, t),
+                t.hidden ? _hiddenCar(p.serial) : _car(h, p.rank, p.serial),
                 _rankNumber(t, p.rank),
                 _plate(h, t, p.serial),
                 _stars(t, HeatLib.stars(p.heat)),
@@ -199,163 +200,20 @@ contract GridlockRenderer is IGridlockRenderer {
                                    CAR
     //////////////////////////////////////////////////////////////*/
 
-    // Body colors: cream, yellow, orange, steel, teal, sky, mint, red.
-    function _bodyColor(uint256 i) private pure returns (string memory) {
-        if (i == 0) return CREAM;
-        if (i == 1) return YEL;
-        if (i == 2) return "#ff7a1a";
-        if (i == 3) return "#a39e92";
-        if (i == 4) return "#2fb5a8";
-        if (i == 5) return "#7cc4ff";
-        if (i == 6) return "#5bd38a";
-        return RED;
+    function _car(bytes32 h, uint8 rank, uint16 serial) private pure returns (string memory) {
+        return string(abi.encodePacked(
+            "<g transform='translate(9 70) scale(.94)'>",
+            GridlockVehicle.draw(uint8(h[0]) % 6, uint8(h[1]) % 2 == 0 ? RED : YEL, uint256(rank) * 512 + serial),
+            "</g>"
+        ));
     }
 
-    function _liveryColor(uint256 i) private pure returns (string memory) {
-        if (i == 0) return YEL;
-        if (i == 1) return RED;
-        if (i == 2) return INK;
-        return CREAM;
-    }
-
-    function _car(bytes32 h, Theme memory) private pure returns (string memory) {
-        uint256 shape = uint8(h[0]) % 6;
-        string memory body = _bodyColor(uint8(h[1]) % 8);
-        string memory livery = _liveryColor(uint8(h[3]) % 4);
-        // Avoid a livery that matches the body color.
-        if (keccak256(bytes(livery)) == keccak256(bytes(body))) livery = _liveryColor((uint8(h[3]) % 4 + 1) % 4);
-        return string(
-            abi.encodePacked(
-                "<g transform='translate(30 0)' stroke-linejoin='round'>",
-                _path(_bodyPath(shape), CREAM, CREAM, 10),
-                _path(_bodyPath(shape), body, INK, 4),
-                _livery(uint8(h[2]) % 8, livery, shape),
-                _path(_windowPath(shape), PAPER, INK, 3),
-                _wheels(),
-                "</g>"
-            )
-        );
-    }
-
-    function _path(string memory d, string memory fill, string memory stroke, uint256 w)
-        private
-        pure
-        returns (string memory)
-    {
-        return string(
-            abi.encodePacked("<path d='", d, "' fill='", fill, "' stroke='", stroke, "' stroke-width='", w.toString(), "'/>")
-        );
-    }
-
-    function _rect(uint256 x, uint256 y, uint256 w, uint256 h, string memory fill) private pure returns (string memory) {
-        return string(
-            abi.encodePacked(
-                "<rect x='", x.toString(), "' y='", y.toString(), "' width='", w.toString(), "' height='", h.toString(), "' fill='", fill, "'/>"
-            )
-        );
-    }
-
-    function _poly(uint256 sx, uint256 top, uint256 bottom, string memory fill) private pure returns (string memory) {
-        bytes memory pts = abi.encodePacked(sx.toString(), ",", bottom.toString(), " ", (sx + 8).toString(), ",", top.toString());
-        pts = abi.encodePacked(pts, " ", (sx + 20).toString(), ",", top.toString(), " ", (sx + 12).toString(), ",", bottom.toString());
-        return string(abi.encodePacked("<polygon points='", pts, "' fill='", fill, "'/>"));
-    }
-
-    function _wheels() private pure returns (string memory) {
-        return string(abi.encodePacked(_wheel(76), _wheel(200)));
-    }
-
-    function _wheel(uint256 cx) private pure returns (string memory) {
-        string memory x = cx.toString();
-        return string(
-            abi.encodePacked(
-                "<circle cx='", x, "' cy='162' r='20' fill='", INK, "' stroke='", CREAM, "' stroke-width='3'/>",
-                "<circle cx='", x, "' cy='162' r='7' fill='", CREAM, "'/>"
-            )
-        );
-    }
-
-    // Shapes: 0 hatchback, 1 coupe, 2 sedan, 3 van, 4 small truck, 5 wedge. Front is on the right.
-    function _bodyPath(uint256 s) private pure returns (string memory) {
-        if (s == 0) return "M24 140L44 140Q52 100 96 96L156 96Q196 98 220 128L240 132L240 160L24 160Z";
-        if (s == 1) return "M20 142L48 138Q74 108 124 104L170 106Q204 110 228 134L248 138L248 162L20 162Z";
-        if (s == 2) return "M22 160V138L58 134Q68 104 108 100L150 100Q180 102 200 124L240 130L248 140V160Z";
-        if (s == 3) return "M28 160V94Q28 86 38 86L184 86Q204 86 216 112L244 134L244 160Z";
-        if (s == 4) return "M20 160V112L96 112L96 100Q98 90 110 88L160 88Q184 90 198 108L206 126L242 130L248 140V160Z";
-        return "M20 160V110L60 100L190 118L236 134L250 144V160Z";
-    }
-
-    function _windowPath(uint256 s) private pure returns (string memory) {
-        if (s == 0) return "M62 126L74 106L100 104L100 126ZM110 104L152 104Q172 108 188 126L110 126Z";
-        if (s == 1) return "M78 128L94 112L128 110L128 128ZM138 110L168 112Q190 118 204 130L138 130Z";
-        if (s == 2) return "M72 126L80 108L112 106L112 126ZM122 106L150 106Q170 110 184 126L122 126Z";
-        if (s == 3) return "M44 118L44 98L104 98L104 118ZM114 98L180 98Q192 100 200 118L114 118Z";
-        if (s == 4) return "M112 98L158 98Q176 100 188 118L112 118Z";
-        return "M48 112L64 104L160 120L160 128L48 128Z";
-    }
-
-    // Livery stripes sit in the rectangular lower body (y 140 to 160), so no clip path is needed.
-    function _liveryBounds(uint256 s) private pure returns (uint256 x0, uint256 x1) {
-        if (s == 0) return (24, 240);
-        if (s == 1) return (20, 248);
-        if (s == 2) return (22, 248);
-        if (s == 3) return (28, 244);
-        if (s == 4) return (20, 248);
-        return (20, 250);
-    }
-
-    function _livery(uint256 v, string memory c, uint256 shape) private pure returns (string memory) {
-        if (v == 0) return "";
-        (uint256 x0, uint256 x1) = _liveryBounds(shape);
-        uint256 w = x1 - x0;
-        if (v == 1) return _rect(x0, 142, w, 7, c);
-        if (v == 2) return string(abi.encodePacked(_rect(x0, 141, w, 4, c), _rect(x0, 149, w, 4, c)));
-        if (v == 3) return _rect(x0, 146, w, 12, c);
-        bytes memory out;
-        if (v == 4) {
-            // Blocks.
-            uint256 bw = (w - 8) / 9;
-            for (uint256 i; i < 9; i += 2) out = abi.encodePacked(out, _rect(x0 + 4 + i * bw, 143, bw, 9, c));
-            return string(out);
-        }
-        if (v == 5) {
-            // Diagonal slashes.
-            for (uint256 i; i < 6; ++i) out = abi.encodePacked(out, _poly(x0 + 10 + i * 34, 142, 158, c));
-            return string(out);
-        }
-        if (v == 6) {
-            // Dots.
-            out = abi.encodePacked("<g fill='", c, "'>");
-            for (uint256 i; i < 7; ++i) {
-                out = abi.encodePacked(out, "<circle cx='", (x0 + 14 + i * 30).toString(), "' cy='150' r='4'/>");
-            }
-            return string(abi.encodePacked(out, "</g>"));
-        }
-        // 7: stripe and number roundel on the door.
-        return string(
-            abi.encodePacked(
-                _rect(x0, 152, w, 5, c),
-                "<circle cx='", (x0 + w / 2).toString(), "' cy='128' r='9' fill='", c, "' stroke='", INK, "' stroke-width='3'/>"
-            )
-        );
-    }
-
-    /// @dev Hidden cars: a distinct low phantom silhouette, dashed outline, redaction bars and hazard livery.
     function _hiddenCar(uint16 index) private pure returns (string memory) {
-        string memory accent = index % 4 == 0 ? YEL : index % 4 == 1 ? "#7cc4ff" : index % 4 == 2 ? "#5bd38a" : CREAM;
-        uint256 phase = (index / 4) * 4;
-        bytes memory haz;
-        for (uint256 i; i < 10; ++i) {
-            haz = abi.encodePacked(haz, _poly(22 + phase + i * 24, 142, 154, accent));
-        }
-        bytes memory top = abi.encodePacked(
-            "<g transform='translate(14 0)' stroke-linejoin='round'>",
-            "<path d='M16 160V138L58 130Q80 104 130 98L176 98Q214 102 236 128L262 136L270 148V160Z' fill='", INK,
-            "' stroke='", CREAM, "' stroke-width='4' stroke-dasharray='10 6'/>"
-        );
-        return string(
-            abi.encodePacked(top, haz, _rect(96, 106, 70, 16, CREAM), _rect(172, 110, 40, 12, CREAM), _wheels(), "</g>")
-        );
+        return string(abi.encodePacked(
+            "<g transform='translate(9 70) scale(.94)'>",
+            GridlockVehicle.draw(index % 6, index < 6 ? RED : YEL, 8192 + index),
+            "</g>"
+        ));
     }
 
     /*//////////////////////////////////////////////////////////////

@@ -125,6 +125,7 @@
 
 /* comic car paints that are not status colors (same values as the on-chain renderer) */
 :root {
+  --car-paper: #ffffff;
   --car-orange: #ff7a1a;
   --car-teal: #2fb5a8;
 }

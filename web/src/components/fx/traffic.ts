@@ -1,4 +1,4 @@
-import { carBodies, carWindows, liveries, carPaint } from '@/art/cars';
+import { drawInkCar } from './inkCar';
 import { frameGovernor } from './governor';
 
 const ROAD = 108;
@@ -18,10 +18,8 @@ export function startTraffic(canvas: HTMLCanvasElement) {
   const ink = color('--surface');
   const brake = color('--brush');
   const green = color('--ok');
-  const colors = carPaint.map(color);
-  const bodies = carBodies.map((d) => new Path2D(d));
-  const windows = carWindows.map((d) => new Path2D(d));
-  const stripes = liveries.map((d) => new Path2D(d));
+  const paper = color('--car-paper');
+  const accent = color('--action');
   const cars = Array.from({ length: 36 }, (_, i) => ({ pos: 0, lane: 0, speed: 35 + i % 9 * 4 }));
   const marks = Array.from({ length: 12 }, () => ({ x: 0, y: 0, dx: 0, dy: 0, at: -Infinity }));
   const cones = Array.from({ length: 6 }, () => ({ x: 0, y: 0, at: -Infinity }));
@@ -112,11 +110,7 @@ export function startTraffic(canvas: HTMLCanvasElement) {
       g.rotate(vertical ? direction * Math.PI / 2 : direction < 0 ? Math.PI : 0);
       g.scale(0.33, 0.33);
       g.globalAlpha = 0.95;
-      g.fillStyle = colors[i % colors.length]!;
-      g.fill(bodies[i % bodies.length]!);
-      g.fillStyle = ink;
-      g.fill(windows[i % windows.length]!);
-      g.fill(stripes[i % stripes.length]!);
+      drawInkCar(g, i, i % 2 ? brake : accent, ink, paper);
       g.restore();
     }
 

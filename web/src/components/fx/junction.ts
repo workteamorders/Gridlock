@@ -1,4 +1,5 @@
-import { carBodies, carWindows, liveries } from '@/art/cars';
+import { drawInkCar } from './inkCar';
+import { carBodies } from '@/art/cars';
 import { frameGovernor } from './governor';
 import { buildPath, forcePlan, mulberry32, planChase, signature, type Mishap, type Path, type Plan, type Vec } from './chase-plan';
 import { FEED, Feed, lines, type Report, type Voice } from './dispatch';
@@ -64,11 +65,7 @@ export function startJunction(canvas: HTMLCanvasElement) {
   const blue = color('--info');
   const orange = color('--car-orange');
   const teal = color('--car-teal');
-  // Civilians keep to calm colours so nothing but the patrol cars is red and blue, and nothing but the racer is orange.
-  const civilPaint = ['--action', '--text', '--ok', '--text-dim', '--car-teal'].map(color);
   const bodies = carBodies.map((path) => new Path2D(path));
-  const glass = carWindows.map((path) => new Path2D(path));
-  const stripes = liveries.map((path) => new Path2D(path));
   const dots = new Path2D();
   for (let row = 5; row < HEIGHT; row += 9) {
     for (let col = 5; col < WIDTH; col += 9) {
@@ -122,17 +119,8 @@ export function startJunction(canvas: HTMLCanvasElement) {
       beamContext.fill();
     }
   }
-  /** Comic shading: a field of small dots, laid over the lower half of each car. */
-  const shade = new Path2D();
-  for (let row = 1; row < 15; row += 3) {
-    for (let col = -32; col < 32; col += 3) {
-      const offset = (row / 3) % 2 ? 1.5 : 0;
-      shade.moveTo(col + offset + 0.8, row);
-      shade.arc(col + offset, row, 0.8, 0, Math.PI * 2);
-    }
-  }
   const SPRITE_SCALE = 2;
-  const buildSprite = (i: number, fill: string, extra?: (g: CanvasRenderingContext2D) => void) => {
+  const buildSprite = (i: number, extra?: (g: CanvasRenderingContext2D) => void) => {
     const sprite = document.createElement('canvas');
     sprite.width = 72 * SPRITE_SCALE;
     sprite.height = 42 * SPRITE_SCALE;
@@ -140,70 +128,13 @@ export function startJunction(canvas: HTMLCanvasElement) {
     if (!g) return sprite;
     g.scale(SPRITE_SCALE, SPRITE_SCALE);
     g.translate(36, 21);
-    const body = bodies[i % bodies.length]!;
-    const glassShape = glass[i % glass.length]!;
-    // Ink drop shadow, offset like a printed second plate.
-    g.save();
-    g.translate(2.5, 3);
-    g.fillStyle = ink;
-    g.fill(body);
-    g.restore();
-    // Wheels poke out above and below the body.
-    g.fillStyle = ink;
-    g.strokeStyle = border;
-    g.lineWidth = 1.2;
-    for (const wheel of [-25, 10]) {
-      for (const top of [-16, 8]) {
-        g.fillRect(wheel, top, 13, 8);
-        g.strokeRect(wheel, top, 13, 8);
-      }
-    }
-    g.fillStyle = fill;
-    g.fill(body);
+    drawInkCar(g, i, i % 2 ? red : yellow, ink, color('--car-paper'));
     extra?.(g);
-    // Halftone shade on the lower half, clipped to the body.
-    g.save();
-    g.clip(body);
-    g.fillStyle = ink;
-    g.globalAlpha = 0.42;
-    g.fill(shade);
-    g.restore();
-    g.strokeStyle = ink;
-    g.lineWidth = 3;
-    g.lineJoin = 'round';
-    g.stroke(body);
-    // Glass with two glare strokes, then the livery.
-    g.fillStyle = ink;
-    g.fill(glassShape);
-    g.save();
-    g.clip(glassShape);
-    g.strokeStyle = cream;
-    g.globalAlpha = 0.55;
-    g.lineWidth = 1.4;
-    g.beginPath();
-    g.moveTo(-14, 10); g.lineTo(-2, -10);
-    g.moveTo(-8, 10); g.lineTo(4, -10);
-    g.stroke();
-    g.restore();
-    g.fillStyle = ink;
-    g.fill(stripes[i % stripes.length]!);
-    // Specular streak along the roof edge, and two warm headlights at the nose.
-    g.strokeStyle = cream;
-    g.globalAlpha = 0.85;
-    g.lineWidth = 1.4;
-    g.lineCap = 'round';
-    g.beginPath();
-    g.moveTo(-16, -11); g.lineTo(6, -11);
-    g.stroke();
-    g.globalAlpha = 1;
-    g.fillStyle = yellow;
-    g.fillRect(27, -9, 3, 4);
-    g.fillRect(27, 5, 3, 4);
     return sprite;
   };
-  const sprites = Array.from({ length: approaches.length * CARS_PER_APPROACH }, (_, i) => buildSprite(i, civilPaint[i % civilPaint.length]!));
-  // The racer: the low wedge body in orange, a cream racing stripe and a big rear wing.
-  const racerSprite = buildSprite(5, orange, (g) => {
+  const sprites = Array.from({ length: approaches.length * CARS_PER_APPROACH }, (_, i) => buildSprite(i));
+  // The racer keeps the ink palette, with twin stripes and a large rear wing.
+  const racerSprite = buildSprite(5, (g) => {
     g.save();
     g.clip(bodies[5]!);
     g.fillStyle = cream;
@@ -216,7 +147,7 @@ export function startJunction(canvas: HTMLCanvasElement) {
     g.fillRect(-37, -12, 2.4, 24);
   });
   // The patrol car: a white saloon with black hood and boot, and a dark housing for the light bar.
-  const copSprite = buildSprite(4, cream, (g) => {
+  const copSprite = buildSprite(4, (g) => {
     g.save();
     g.clip(bodies[4]!);
     g.fillStyle = ink;

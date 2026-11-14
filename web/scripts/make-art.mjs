@@ -34,7 +34,11 @@ const token = (name) => {
   return value;
 };
 const rect = (x, y, width, height, name) => `<rect x="${x}" y="${y}" width="${width}" height="${height}" fill="${token(name)}"/>`;
-export const car = (shape, color, livery) => `<path fill="${token(paint[color])}" d="${bodies[shape]}"/><path fill="${token('--surface')}" d="${windows[shape]} ${liveries[livery]}"/>`;
+export const car = (shape, color, livery) => {
+ const accent=token(color%2?'--brush':'--action');
+ const wheels=[-23,15].flatMap(x=>[-14,10].map(y=>`<rect x="${x}" y="${y}" width="10" height="4" fill="#0b0b0c" stroke="#ffffff" stroke-width=".65"/>`)).join('');
+ return wheels+`<path fill="#ffffff" stroke="#0b0b0c" stroke-width="1.3" d="${bodies[shape]}"/><path fill="#0b0b0c" stroke="#ffffff" stroke-width=".65" d="${windows[shape]}"/><path fill="#0b0b0c" d="M14 -8L27 -5V5L14 8L17 0ZM-22 -9L-17 -5V5L-22 9Z"/><path fill="none" stroke="#0b0b0c" stroke-width=".6" d="M13 -9L10 -5V5L13 9M-14 -10L-10 -11H5L9 -9"/><path fill="#ffffff" d="M-10 -8L-7 -9L-1 7L-3 7Z"/><path stroke="${accent}" stroke-width="1.2" d="M-18 10H16M28 -6V6"/><path stroke="#0b0b0c" stroke-width=".8" d="M-25 -4V4M-22 -4V4M-19 -4V4"/>`;
+};
 const at = (transform, content) => `<g transform="${transform}">${content}</g>`;
 const cone = `<path fill="${token('--brush')}" d="M20 3 H28 L37 32 H11 Z"/>${rect(7, 32, 34, 5, '--action')}${rect(16, 19, 16, 4, '--text')}`;
 const hazard = rect(0, 0, 32, 16, '--action') + `<path fill="${token('--surface')}" d="M0 0H12L2 16H0ZM28 0H32V16H18Z"/>`;

@@ -1,11 +1,11 @@
 import { useId } from 'react';
-import { carBodies, carWindows, liveries, carPaint } from '@/art/cars';
+import { vehicleArt } from '@/art/vehicles';
 import { HeatStars } from './HeatStars';
 
 export type CarShape = 'hatch' | 'coupe' | 'van';
 export type CardKind = 'standard' | 'rank1' | 'hidden';
 
-const SHAPES = { hatch: 0, coupe: 1, van: 2 } as const;
+const SHAPES = { hatch: 0, coupe: 1, van: 3 } as const;
 
 interface CardArtProps {
   kind: CardKind;
@@ -31,7 +31,6 @@ export function CardArt({ kind, rank, plate, shape = 'hatch', stars, transfers =
     : `Rank ${rank}, plate ${plate}, heat ${stars} of 5, ${transfers} transfers, peak heat ${peak}`;
   const uid = useId();
   const variant = SHAPES[shape];
-  const paint = carPaint[(rank ?? 0) % carPaint.length];
   return (
     <figure className="cardart">
       <span className="badge badge--example">Example</span>
@@ -52,12 +51,7 @@ export function CardArt({ kind, rank, plate, shape = 'hatch', stars, transfers =
             <rect x="46" y="154" width="130" height="26" fill="var(--text)" />
           </g>
         ) : (
-          <g transform="translate(149 152) rotate(-12) scale(3.6)">
-            <path d={carBodies[variant]} fill="var(--surface)" transform="translate(1.8 2)" />
-            <path d={carBodies[variant]} fill={`var(${paint})`} stroke="var(--surface)" strokeWidth="1.5" />
-            <path d={carWindows[variant]} fill="var(--surface)" />
-            <path d={liveries[(rank ?? 0) % liveries.length]} fill="var(--surface)" />
-          </g>
+          <g transform="translate(9 70) scale(.94)" dangerouslySetInnerHTML={{ __html: vehicleArt[variant] }} />
         )}
         <text x="22" y="352" fontFamily="var(--font-display)" fontSize="112" fill={ink}>{rankText}</text>
         <rect x="170" y="296" width="110" height="38" fill="var(--surface)" stroke={ink} strokeWidth="3" />

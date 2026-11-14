@@ -16,7 +16,8 @@
     "verify:deployment": "node scripts/verify-deployment.mjs",
     "check": "npm run typecheck && npm run lint:tokens && npm run copy:check && npm test && npm run secret:scan",
     "secret:scan": "node scripts/secret-scan.mjs",
-    "e2e": "node e2e/run.mjs"
+    "e2e": "node e2e/run.mjs",
+    "art:generate": "node scripts/make-vehicles.mjs && node scripts/make-art.mjs && node scripts/make-images.mjs"
   },
   "dependencies": {
     "next": "^16.4.6",
