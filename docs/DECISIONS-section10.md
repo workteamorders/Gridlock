@@ -26,7 +26,7 @@ Secrets are `bytes32`. Commitment is `keccak256(abi.encodePacked(secret))`. Clai
 
 ### D-10.7 Renderer
 Standalone SVG with attributes only. No `pattern`, `clipPath`, `filter`, `style`, `text`, `use`, script or animation. Halftone is rows of plain circles (D-4.1 flat fallback). Lettering is stroked paths from a small fixed glyph table. Livery stripes stay in the rectangular lower body so no clip path is needed. `mintedAt` is metadata only, so the previewed SVG equals the minted SVG at heat 0. A serial tag (`#serial`) is drawn so two cards of the same rank never share an image. Hidden cars use a different silhouette, dashed outline, redaction bars and hazard livery. Hidden cars also show heat stars and the rap sheet because heat applies to every car.
-Measured: 2,487 of 2,487 images unique, tokenURI gas worst case 1,469,378, largest SVG 6,669 bytes.
+Measured on the first renderer: 2,487 of 2,487 images unique, tokenURI gas worst case 1,469,378, largest SVG 6,669 bytes. Re-measured on 2026-11-15 after the monochrome comic restyle (`GridlockVehicle`, commit c4523d8): 2,487 of 2,487 unique, largest SVG 9,771 bytes, tokenURI gas still under the 3,000,000 limit (AUDIT-PACKET section 7). The description above was written for the first renderer; the drawing rules (attributes only, no `pattern`, `clipPath`, `filter`, `style`, `text`, `use`, script or animation) are asserted by the tests on every image.
 SVG rendering inside real marketplaces is still unverified (D-4.1).
 
 ### D-10.8 Heat arithmetic

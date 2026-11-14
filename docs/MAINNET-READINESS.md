@@ -11,8 +11,8 @@ Nothing in this file was run on a chain. No key, no deploy, no transaction.
 
 | # | Gate | Status | Who |
 |---|---|---|---|
-| 1 | `forge build && forge test -vv` | **Done (2026-11-14, owner's machine).** `forge test`: 32 of 32 passed. Harness: 49 of 49 passed. See AUDIT-PACKET section 7. Re-run after any contract change. | Owner |
-| 2 | Static analysis (slither, aderyn) | **Slither done (2026-11-14, owner's machine):** 29 results, none high, none about reentrancy, ETH transfers or access control; all classified in AUDIT-PACKET section 7, no contract change needed. **aderyn not run** (optional second tool). Re-run after any contract change. | Owner |
+| 1 | `forge build && forge test -vv` | **Done, and repeated on the current renderer (2026-11-15, owner's machine).** `forge test`: 32 of 32 passed. Harness: 49 of 49 passed (2,487 unique images, largest SVG 9,771 bytes). See AUDIT-PACKET section 7. Re-run after any contract change. | Owner |
+| 2 | Static analysis (slither, aderyn) | **Slither done twice (2026-11-14 and, on the current renderer, 2026-11-15, owner's machine):** latest run 25 results, none high, none about reentrancy, ETH transfers or access control; all classified in AUDIT-PACKET section 7, no contract change needed. **aderyn not run** (optional second tool). Re-run after any contract change. | Owner |
 | 3 | External audit | **None.** The audit packet (`docs/AUDIT-PACKET.md`) is ready to hand over. The site shows "No external audit yet" until `NEXT_PUBLIC_AUDIT_REPORT_URL` is set. | Owner |
 | 4 | Legal review (Risk page, Terms, region limits, hunt mechanism) | **Pending.** The Risk page still says so. | Owner |
 | 5 | Testnet rehearsal (46630, short clocks) | **Not done.** `deployments/46630.json` is still the `deployed: false` placeholder. | Owner |
@@ -39,7 +39,7 @@ Original finding, kept for the record: the code was built for Cloudflare Pages: 
 | Mainnet chain ID 4663, testnet 46630 | Matches `web/src/lib/config.ts`. |
 | Public RPC | Rate-limited and not recommended for production. Use a provider (Alchemy is the one the docs recommend) behind the relay: `UPSTREAM_RPC_URL`. |
 | Mainnet verifier | Blockscout. Foundry: `--verifier blockscout --verifier-url https://robinhoodchain.blockscout.com/api/`. Closes the "confirm at deploy time" item. |
-| Max contract code size | 96 KB (our largest runtime: 19,361 bytes). |
+| Max contract code size | 96 KB (our largest runtime: 21,103 bytes, `GridlockRenderer`). |
 | EVM version | The docs name none. Keep `shanghai` (nothing here needs Cancun). |
 | Sequencer ordering | **First come, first served by arrival time. A higher fee does not move a transaction ahead.** See finding 3. |
 | `block.number` | Returns an estimate of the L1 block number, updated only periodically. The contracts never read it (AUDIT-PACKET section 3), so no change is needed. Keep it that way. |

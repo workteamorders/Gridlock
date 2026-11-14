@@ -1,14 +1,15 @@
 # Gridlock audit packet
 
 Status: **draft for an external auditor. These contracts must not be used on mainnet before an external audit and an explicit owner decision.**
-No external audit has been done. Slither 0.11.4 was run once by the owner (section 7); aderyn has not been run.
+No external audit has been done. Slither 0.11.4 was run twice by the owner, the second time on the current renderer (section 7); aderyn has not been run.
 
 ## 1. Scope
 
 | File | Role | Runtime size |
 |---|---|---|
 | `contracts/src/GridlockCars.sol` | ERC-721 + ERC-2981 + ERC-4906. Ladder, heat, hunt, withdraw, read functions. | 12,132 bytes |
-| `contracts/src/GridlockRenderer.sol` | Stateless SVG and metadata renderer. | 19,361 bytes |
+| `contracts/src/GridlockRenderer.sol` | Stateless SVG and metadata renderer. Calls `GridlockVehicle.draw` for the car. | 21,103 bytes (initcode 21,131) |
+| `contracts/src/GridlockVehicle.sol` | Pure drawing of the car (six shapes, serial number, serial bit cells). Inputs are numbers and two fixed colours only. Internal library, inlined into the renderer. | n/a |
 | `contracts/src/HeatLib.sol` | Heat constants and star thresholds (internal library, inlined). | n/a |
 | `contracts/src/IGridlockRenderer.sol` | Renderer interface. | n/a |
 
@@ -126,7 +127,9 @@ State-changing functions are exactly: `approve`, `setApprovalForAll`, `transferF
 
 ## 7. Test results (honest status)
 
-**Owner's second Foundry run, 2026-11-14, after the test fix: `forge test` 32 passed, 0 failed (5 suites, 9.16 s CPU); harness `node --test` 49 of 49 passed (6 suites, 170.8 s).** `test_uniqueImages_allCombinations` now passes: it renders all 2,487 images and asserts 0 duplicates (gas shows about 3,000 because metering is paused for that scan; the gas of a real render is measured in `test_tokenURI_gasBelow3M`, 22,278,743 for the 16 worst cases). Static analysis: see the next paragraph.
+**Owner's third run, 2026-11-15, after the renderer change (commit c4523d8, monochrome comic styling, new `GridlockVehicle` library): `forge test` 32 passed, 0 failed, 0 skipped (5 suites); harness `node --test` 49 of 49 passed (6 suites, about 279 s), run twice with the same result.** The renderer change removed no test. Measured by the harness on the new renderer: **2,487 images rendered, 2,487 unique, largest SVG 9,771 bytes**; the tokenURI gas limit test (under 3,000,000, worst cases included) passes; golden images per rank, per star count and for the hidden cars pass; the full ladder still sells out at exactly 2,475 with 12 hunt cars, maximum 2,487. Contract sizes from `forge build --sizes`: `GridlockCars` runtime 12,132 bytes (initcode 14,069); `GridlockRenderer` runtime 21,103 bytes (initcode 21,131), 3,473 bytes below the 24,576-byte limit of a standard EVM. The target chain allows 96 KB (docs/MAINNET-READINESS.md), so there is more room there. The renderer is the one to watch if it grows. The tokenURI gas figures of section 7 (table below) belong to the old renderer; on the new one the harness printed a worst case of 2,131,564 for the renderer call and 1,968,609 through `GridlockCars.tokenURI`, both under the 3,000,000 limit (these two figures come from an earlier screen of the same harness run and were not re-recorded in the last run). `forge build` prints `unsafe-typecast` lint notes for `GridlockVehicle._num` (`uint8(48 + n/100)` and similar); the values are decimal digits, so the casts cannot truncate. They are style notes, not errors.
+
+**Owner's second Foundry run, 2026-11-14, after the test fix: `forge test` 32 passed, 0 failed (5 suites, 9.16 s CPU); harness `node --test` 49 of 49 passed (6 suites, 170.8 s).** `test_uniqueImages_allCombinations` now passes: it renders all 2,487 images and asserts 0 duplicates (gas shows about 3,000 because metering is paused for that scan; the gas of a real render is measured in `test_tokenURI_gasBelow3M`; its figure was 22,278,743 for the 16 worst cases on the old renderer and has not been re-recorded). Static analysis: see the next paragraph.
 
 **Slither 0.11.4, owner's run, 2026-11-14** (`slither . --filter-paths "lib|test|script"`, macOS, Foundry build, 11 contracts, 100 detectors): **29 results, none high, none about reentrancy, ETH transfers, access control or unchecked calls.** Every result was read against the source and is classified below. No contract change was needed. Slither finds patterns, not logic errors, and says nothing about the economic design or the hunt; it does not replace the external audit.
 
@@ -144,6 +147,17 @@ State-changing functions are exactly: `approve`, `setApprovalForAll`, `transferF
 
 Still open: aderyn has not been run. The raw Slither output file is not stored in the repository.
 
+**Second Slither run, owner's machine, 2026-11-15, on the new renderer** (same command, 12 contracts because `GridlockVehicle` is new, 100 detectors, forced rebuild): **25 results, none high, none about reentrancy, ETH transfers, access control or unchecked calls.** Compared with the first run (29), five results are gone (two `encode-packed-collision` entries in `_livery` and `_hiddenCar`, both `divide-before-multiply` entries, and the `haz` variable; the old drawing code no longer exists), one is new (`too-many-digits` in `GridlockVehicle`, harmless), and the `out` variable that the renderer had is now `GridlockVehicle.draw`'s `out`, so that count did not change. `GridlockCars` is unchanged, so its results (`incorrect-equality` 2, `timestamp` 8, `assembly` 1, `costly-loop` 1, `cyclomatic-complexity` 1, `naming-convention` 7, `uninitialized-local` `packed`) keep the verdicts of the table above.
+
+| Detector (count) | Where | Verdict |
+|---|---|---|
+| encode-packed-collision (1) | `GridlockRenderer._attributes` | False positive, same reason as in the first table: text concatenation, never hashed. |
+| uninitialized-local (3) | `packed` (constructor), `decor` (renderer `_frame`), `out` (`GridlockVehicle.draw`) | Intended. Zero or empty start value; `out` starts as an empty byte string and is built by appending. |
+| too-many-digits (1, new) | `GridlockVehicle.draw`, the line that appends a wheel | False positive. Slither flags the long SVG text of the wheel (numbers such as 9.450000000000001 inside a string), not a numeric literal. |
+| incorrect-equality, timestamp, assembly, costly-loop, cyclomatic-complexity, naming-convention | `GridlockCars` | Same as the first table. |
+
+Review of the renderer change (read against `GridlockVehicle.sol` and `GridlockRenderer._car`): `draw(shape, accent, serial)` takes `shape = uint8(h[0]) % 6`, one of two fixed colours, and `uint256(rank) * 512 + serial`. No text from a user or from the chain reaches the SVG, so there is no injection path. The serial number bits read 13 bits; the largest input is rank 15 times 512 plus 400, which fits. The largest printed coordinate is 159. The forge test asserts that every output is printable and has safe quotes, and the harness checks the same on all 2,487 images. This is the author's reading plus tests; an external reviewer should still read it.
+
 **Owner's first Foundry run, 2026-11-14 (macOS, forge with solc 0.8.38, evm shanghai):** `forge build` compiled (Solady warnings only). `forge test`: 31 passed, 1 failed (32 total). The fuzz and invariant suites passed (invariants: 64 runs, 4,096 calls, 0 reverts). The single failure was `RendererTest.test_uniqueImages_allCombinations`, which stopped with `EvmError: MemoryOOG` at about 1,000,000,000 gas, the `gas_limit` in `foundry.toml`. Cause: the test rendered all 2,487 images (about 6 KB each) in one call frame, so memory grew without bound and the gas ran out. It is a test problem, not a contract defect: the renderer is `pure` and every real call starts with fresh memory. Fix (in the repository, **not yet re-run with Foundry**): the image hash is computed in an external helper call so memory is freed after each image, and gas metering is paused for that one scan. The same property (2,487 unique images) passed in the harness. Harness: 46 of 49 passed; the 3 failures were the `gen-hunt` tests, which need `pnpm install` in `contracts/` (`viem`); fixed in the instructions.
 
 Original status, kept for the record: **`forge build` and `forge test` had NOT been run when this packet was written.** Foundry was not available in the build environment and could not be installed there (access to the Foundry repository was not granted). What was done instead:
@@ -154,8 +168,8 @@ Original status, kept for the record: **`forge build` and `forge test` had NOT b
 | Behavior tests on an in-process EVM (`contracts/harness`, node test runner, ethereumjs) | 49 of 49 pass. Covers the opening rule with all boundary cases, mint limits, exact payment, ETH accounting, heat, stars at every threshold, hunt including copy attempts, ERC-165, ERC-2981, ERC-4906, ABI surface, renderer safety, gas, and the full ladder to 2,475 + 12. |
 | Randomized sequence tests (6 seeds, 220 steps each) | Every mint outcome is predicted by an independent JavaScript model of the opening rule and caps, and invariants 1 to 6 are checked after each step. |
 | Mutation checks | Four deliberate bugs (wrong wallet cap threshold, ignoring the timeout, heat on mint, no reveal delay) each made tests fail. |
-| Images | 2,487 cards (2,475 ladder plus 12 hidden) rendered at heat 0: **2,487 unique images**, largest SVG 6,669 bytes. |
-| tokenURI gas | worst case measured **1,469,378** (renderer call), 1,201,936 through `GridlockCars.tokenURI` for a rank 15 card. Limit used: 3,000,000. |
+| Images | 2,487 cards (2,475 ladder plus 12 hidden) rendered at heat 0: **2,487 unique images**, largest SVG 6,669 bytes (old renderer; 9,771 bytes on the current one, see the third run above). |
+| tokenURI gas | worst case measured **1,469,378** (renderer call), 1,201,936 through `GridlockCars.tokenURI` for a rank 15 card (old renderer; current figures in the third run above). Limit used: 3,000,000. |
 | Other gas (harness measurement) | mint one car about 163,700 (first mint, cold slots), transfer about 39,200, commit about 46,200, reveal about 132,000, `ladderState` view about 47,700. |
 | Static analysis | slither: run by the owner on 2026-11-14 (see the slither paragraph in this section). aderyn: not run. |
 | Fuzz and invariant (forge) | written in `contracts/test/*.t.sol`, not executed. The harness random tests cover the same properties. |
