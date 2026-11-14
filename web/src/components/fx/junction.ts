@@ -1,3 +1,5 @@
+import { RadioVoice } from './radioVoice';
+import { soundReady, radioTransmission, subscribeSound, createChaseAmbience } from '@/lib/sound';
 import { drawInkCar } from './inkCar';
 import { carBodies } from '@/art/cars';
 import { frameGovernor } from './governor';
@@ -246,10 +248,30 @@ export function startJunction(canvas: HTMLCanvasElement) {
   const announce = (phase: 'siren' | 'busted' | 'crash' | 'skid') => window.dispatchEvent(new CustomEvent('gridlock:chase', { detail: phase }));
   mark('data-heat', '0');
 
-  // The radio: what the drone, the patrol units and the racer say about what is happening right now. Its own random stream, so the chases do not change.
+  // The radio: what the police drone operator and patrol units say about what is happening right now. Its own random stream, so the chases do not change.
   const GATES = ['WEST', 'NORTH', 'EAST', 'SOUTH'];
   const talk = mulberry32(seedText ? Number(seedText) + 101 : Date.now() % 100000);
-  const feed = new Feed();
+  const radioEvent = (detail: object) => canvas.dispatchEvent(new CustomEvent('gridlock:radio', { detail }));
+  let radioState = 'idle';
+  const radio = new RadioVoice({
+    synth: typeof speechSynthesis === 'undefined' ? undefined : speechSynthesis,
+    utterance: typeof SpeechSynthesisUtterance === 'undefined' ? undefined : text => new SpeechSynthesisUtterance(text),
+    enabled: () => active && !document.hidden && soundReady(),
+    transmit: radioTransmission,
+    status: state => { if (state !== radioState) { radioState = state; radioEvent({ state }); } },
+  });
+  const feed = new Feed(line => {
+    if (!radio.present(line)) return false;
+    radioEvent({ line });
+    return true;
+  }, () => radio.busy);
+  const ambience = createChaseAmbience();
+  let previousSpeed = 0;
+  const stopRadio = () => { radio.stop(); feed.clearPending(); ambience.stop(); previousSpeed = 0; };
+  const unsubscribeSound = subscribeSound(() => { stopRadio(); radio.retry(); });
+  const retryRadio = () => radio.retry();
+  window.addEventListener('pointerdown', retryRadio);
+  window.addEventListener('keydown', retryRadio);
   const tally = { escaped: 0, busted: 0 };
   let nextTalk = 1200;
   let talked = false;
@@ -923,7 +945,7 @@ export function startJunction(canvas: HTMLCanvasElement) {
   function drawRadio(g: CanvasRenderingContext2D, label: (text: string, tx: number, ty: number, align: CanvasTextAlign, tint: string) => void, px: number, inset: number, h: number, w: number) {
     const rows = feed.visible(time).slice(-(canvas.clientWidth < 480 ? 2 : FEED.max));
     if (!rows.length) return;
-    const tint: Record<Voice, string> = { drone: cream, police: blue, racer: orange };
+    const tint: Record<Voice, string> = { drone: cream, police: blue };
     const room = w - 2 * (inset + 8 * px);
     const x = inset + 8 * px;
     let y = h - inset - 58 * px;
@@ -1226,16 +1248,21 @@ export function startJunction(canvas: HTMLCanvasElement) {
     const delta = Math.min(elapsed, 50);
     time += delta;
     draw(ctx!, delta);
+    const pursuing = chase?.state === 'run';
+    const speed = pursuing ? chase!.actors[0]!.speed : 0;
+    ambience.update(speed, speed > previousSpeed + 0.15, !!chase && time < chase.nitroUntil, pursuing);
+    previousSpeed = speed;
     frameId = requestAnimationFrame(frame);
   }
 
   function sync() {
     const mode = document.documentElement.dataset.motion;
     // The entry intro covers the page, so nothing underneath is drawn while it runs and its frames are never counted against this scene.
-    const run = visible && mode === 'full' && !exhausted && !document.documentElement.dataset.intro;
+    const run = visible && !document.hidden && mode === 'full' && !exhausted && !document.documentElement.dataset.intro;
     if (run && !active) frameId = requestAnimationFrame(frame);
     if (!run && active) {
       cancelAnimationFrame(frameId);
+      stopRadio();
       lastFrame = 0;
       clear();
       governor.pause();
@@ -1390,10 +1417,17 @@ export function startJunction(canvas: HTMLCanvasElement) {
   window.addEventListener('resize', resize);
   window.addEventListener('gridlock:motion', sync);
   window.addEventListener('gridlock:intro', sync);
+  document.addEventListener('visibilitychange', sync);
   resize();
   sync();
 
   return () => {
+    ambience.stop();
+    radio.dispose();
+    unsubscribeSound();
+    window.removeEventListener('pointerdown', retryRadio);
+    window.removeEventListener('keydown', retryRadio);
+    document.removeEventListener('visibilitychange', sync);
     cancelAnimationFrame(frameId);
     intersection?.disconnect();
     size?.disconnect();

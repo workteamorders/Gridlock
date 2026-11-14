@@ -1,3 +1,4 @@
+import { ambiencePlan } from './ambience-plan';
 import { MASTER_GAIN, MIN_GAP, soundPlan, type SoundKind } from './sound-plan';
 import { SAMPLES, sampleFiles, type Layer } from './sound-samples';
 
@@ -149,4 +150,94 @@ function schedule(c: AudioContext, kind: SoundKind, level: number) {
       osc.stop(now + t.at + t.length);
     }
   }
+}
+
+/** Radio effects share the existing gesture-unlocked audio context. Speech itself uses the device voice. */
+export const soundReady = () => enabled && ctx?.state === 'running';
+export function radioTransmission(): () => void {
+  if (!soundReady() || !ctx) return () => undefined;
+  const c = ctx;
+  const master = output(c);
+  // Keep sirens and engines behind the spoken dialog.
+  master.gain.setTargetAtTime(MASTER_GAIN * 0.25, c.currentTime, 0.025);
+  const carrier = c.createBuffer(1, Math.ceil(c.sampleRate * 0.35), c.sampleRate);
+  const data = carrier.getChannelData(0);
+  for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+  const source = c.createBufferSource(); source.buffer = carrier; source.loop = true;
+  const filter = c.createBiquadFilter(); filter.type = 'bandpass'; filter.frequency.value = 1800; filter.Q.value = 0.7;
+  const gain = c.createGain();
+  gain.gain.setValueAtTime(0.055, c.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.006, c.currentTime + 0.09);
+  source.connect(filter); filter.connect(gain); gain.connect(c.destination);
+  source.start();
+  let ended = false;
+  return () => {
+    if (ended) return;
+    ended = true;
+    const now = c.currentTime;
+    gain.gain.cancelScheduledValues(now);
+    gain.gain.setValueAtTime(enabled && !document.hidden ? 0.025 : 0, now);
+    gain.gain.linearRampToValueAtTime(0, now + 0.06);
+    source.stop(now + 0.065);
+    source.onended = () => { source.disconnect(); filter.disconnect(); gain.disconnect(); };
+    master.gain.setTargetAtTime(MASTER_GAIN, now, 0.08);
+  };
+}
+
+/** One scene-owned engine/drone graph. Created only after sound is unlocked; fully released on pause. */
+export function createChaseAmbience() {
+  let graph: { c: AudioContext; sources: AudioScheduledSourceNode[]; nodes: AudioNode[];
+    engine: OscillatorNode; harmonic: OscillatorNode; engineGain: GainNode;
+    exhaust: BiquadFilterNode; exhaustGain: GainNode; rotors: OscillatorNode[]; droneGain: GainNode } | undefined;
+  let last = -Infinity;
+  const stop = () => {
+    if (!graph) return;
+    for (const source of graph.sources) { try { source.stop(); } catch {} }
+    for (const node of graph.nodes) node.disconnect();
+    graph = undefined;
+    last = -Infinity;
+  };
+  const update = (speed: number, accelerating: boolean, nitro: boolean, chasing: boolean) => {
+    if (!soundReady() || !ctx) { stop(); return; }
+    const c = ctx;
+    if (!graph) {
+      const master = output(c);
+      const engine = c.createOscillator(); engine.type = 'sawtooth';
+      const harmonic = c.createOscillator(); harmonic.type = 'triangle';
+      const engineGain = c.createGain(); engineGain.gain.value = 0;
+      const muffler = c.createBiquadFilter(); muffler.type = 'lowpass'; muffler.frequency.value = 1400;
+      engine.connect(muffler); harmonic.connect(muffler); muffler.connect(engineGain); engineGain.connect(master);
+      const buffer = c.createBuffer(1, c.sampleRate, c.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i=0;i<data.length;i++) data[i] = Math.random()*2-1;
+      const air = c.createBufferSource(); air.buffer = buffer; air.loop = true;
+      const exhaust = c.createBiquadFilter(); exhaust.type = 'bandpass'; exhaust.Q.value = 0.8;
+      const exhaustGain = c.createGain(); exhaustGain.gain.value = 0;
+      air.connect(exhaust); exhaust.connect(exhaustGain); exhaustGain.connect(master);
+      const droneGain = c.createGain(); droneGain.gain.value = 0;
+      const rotorFilter = c.createBiquadFilter(); rotorFilter.type = 'lowpass'; rotorFilter.frequency.value = 850;
+      const pulse = c.createGain(); pulse.gain.value = 0.65;
+      const lfo = c.createOscillator(); lfo.frequency.value = 19;
+      const depth = c.createGain(); depth.gain.value = 0.25;
+      lfo.connect(depth); depth.connect(pulse.gain);
+      const rotors = [0,1,2,3].map(() => { const o=c.createOscillator(); o.type='triangle'; o.connect(rotorFilter); return o; });
+      rotorFilter.connect(pulse); pulse.connect(droneGain); droneGain.connect(master);
+      const sources = [engine,harmonic,air,lfo,...rotors];
+      const nodes = [...sources,engineGain,muffler,exhaust,exhaustGain,droneGain,rotorFilter,pulse,depth];
+      graph = { c, sources, nodes, engine, harmonic, engineGain, exhaust, exhaustGain, rotors, droneGain };
+      sources.forEach(source=>source.start());
+    }
+    if (c.currentTime-last < 0.05) return;
+    last = c.currentTime;
+    const plan = ambiencePlan(speed,accelerating,nitro,chasing);
+    const smooth = (param: AudioParam, value: number) => param.setTargetAtTime(value,c.currentTime,0.1);
+    smooth(graph.engine.frequency,plan.engineHz);
+    smooth(graph.harmonic.frequency,plan.engineHz*2.01);
+    smooth(graph.engineGain.gain,plan.engineGain);
+    smooth(graph.exhaust.frequency,plan.exhaustHz);
+    smooth(graph.exhaustGain.gain,plan.exhaustGain);
+    graph.rotors.forEach((rotor,i)=>smooth(rotor.frequency,plan.rotorHz*(i<2?1:2)+i*2.3));
+    smooth(graph.droneGain.gain,plan.droneGain);
+  };
+  return { update, stop };
 }

@@ -1,12 +1,27 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
+import type { Line } from './dispatch';
+import { SoundButton } from '../stage/SoundButton';
 import { useTrafficCanvas } from './useTrafficCanvas';
 
 const loadJunction = () => import('./junction').then((module) => module.startJunction);
 
 export function LiveJunction({ title, shortcut }: { title: string; shortcut: ReactNode }) {
   const canvas = useTrafficCanvas(loadJunction);
+  const [line, setLine] = useState<Line | null>(null);
+  const [radioState, setRadioState] = useState('idle');
+  useEffect(() => {
+    const surface = canvas.current;
+    if (!surface) return;
+    const update = (event: Event) => {
+      const detail = (event as CustomEvent<{ line?: Line; state?: string }>).detail;
+      if (detail.line) setLine(detail.line);
+      if (detail.state) setRadioState(detail.state);
+    };
+    surface.addEventListener('gridlock:radio', update);
+    return () => surface.removeEventListener('gridlock:radio', update);
+  }, [canvas]);
   return (
     <figure className="junction">
       <h1 id="junction-title" className="junction-title">{title}</h1>
@@ -23,6 +38,14 @@ export function LiveJunction({ title, shortcut }: { title: string; shortcut: Rea
           <span className="chase-state chase-state--run">Pending</span>
           <span className="chase-state chase-state--busted">Reverted</span>
         </div>
+      </div>
+      <div className="junction-radio-transcript" data-speaking={radioState === 'speaking'} aria-live="off">
+        <div className="junction-radio-toolbar">
+          <span className="label">{radioState === 'speaking' ? 'Radio · transmitting' : 'Radio'}</span>
+          <SoundButton />
+        </div>
+        <p>{line ? <><b>{line.tag}:</b> {line.text}</> : 'Standing by.'}</p>
+        {radioState === 'unavailable' ? <p className="dim">Radio voice is unavailable on this device. The transcript stays available.</p> : null}
       </div>
       <figcaption className="junction-caption">
         <span className="junction-hint">Bots in the queue? Click the road ahead to block them</span>

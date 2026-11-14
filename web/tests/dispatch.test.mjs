@@ -23,7 +23,8 @@ test('every report speaks in known voices, in short lines, with sensible delays,
     assert.equal(batch[0].delay, 0, `${report.kind}: the first line is spoken at once`);
     for (const l of batch) {
       voices.add(l.voice);
-      assert.ok(['drone', 'police', 'racer'].includes(l.voice));
+      assert.notEqual(l.tag, 'RACER', 'the suspect never speaks on the police radio');
+      assert.ok(['drone', 'police'].includes(l.voice));
       assert.ok(l.delay >= 0 && l.delay <= 1200, `${report.kind}: delay ${l.delay}`);
       const full = `${l.tag}: ${l.text}`;
       assert.ok(full.length <= MAX_LINE, `"${full}" is ${full.length} characters`);
@@ -31,7 +32,7 @@ test('every report speaks in known voices, in short lines, with sensible delays,
       assert.doesNotMatch(full, /0x[0-9a-f]{6,}/i, 'no line looks like a real hash');
     }
   }
-  assert.deepEqual([...voices].sort(), ['drone', 'police', 'racer']);
+  assert.deepEqual([...voices].sort(), ['drone', 'police']);
 });
 
 test('the lines carry the numbers they were given', () => {
