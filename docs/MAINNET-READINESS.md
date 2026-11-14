@@ -11,7 +11,7 @@ Nothing in this file was run on a chain. No key, no deploy, no transaction.
 
 | # | Gate | Status | Who |
 |---|---|---|---|
-| 1 | `forge build && forge test -vv` | **Not run.** Foundry could not be run in the build environment. The same tests were compiled with solc-js and the behaviour tests ran in an in-process EVM (49 of 49 pass, see AUDIT-PACKET section 7). | Owner |
+| 1 | `forge build && forge test -vv` | **Partly done.** Owner's run on 2026-11-14: build ok, 31 of 32 tests passed (fuzz and invariants included). The one failure was a test that ran out of gas rendering all 2,487 images in one frame; the test is fixed in the repository but must be re-run. Harness: 46 of 49, the 3 failures fixed by `pnpm install` in `contracts/`. See AUDIT-PACKET section 7. | Owner |
 | 2 | Static analysis (slither, aderyn) | **Not run.** | Owner or auditor |
 | 3 | External audit | **None.** The audit packet (`docs/AUDIT-PACKET.md`) is ready to hand over. The site shows "No external audit yet" until `NEXT_PUBLIC_AUDIT_REPORT_URL` is set. | Owner |
 | 4 | Legal review (Risk page, Terms, region limits, hunt mechanism) | **Pending.** The Risk page still says so. | Owner |

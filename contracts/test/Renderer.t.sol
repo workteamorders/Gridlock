@@ -51,20 +51,28 @@ contract RendererTest is Base {
 
     mapping(bytes32 => bool) internal seenHash;
 
+    /// @dev Hash of one rendered image. It is an external call so the roughly 6 KB image lives in this call's own memory and is
+    ///      freed when the call returns. Rendering all 2,487 images in one frame makes memory grow without bound and exhausts gas.
+    function imageHash(uint8 rank, uint16 serial) external view returns (bytes32) {
+        return keccak256(bytes(renderer.svg(input(rank, serial, 0))));
+    }
+
     /// @dev Reports the unique image count over every rank and serial plus the 12 hidden cars.
+    ///      Gas metering is paused: this is a one-off scan of 2,487 renders, not a gas measurement (gas is measured in test_tokenURI_gasBelow3M).
     function test_uniqueImages_allCombinations() public {
+        vm.pauseGasMetering();
         uint256 n;
         uint256 dup;
         for (uint8 rank = 1; rank <= 15; ++rank) {
             for (uint16 s = 1; s <= caps[rank - 1]; ++s) {
-                bytes32 h = keccak256(bytes(renderer.svg(input(rank, s, 0))));
+                bytes32 h = this.imageHash(rank, s);
                 if (seenHash[h]) ++dup;
                 seenHash[h] = true;
                 ++n;
             }
         }
         for (uint16 i; i < 12; ++i) {
-            bytes32 h = keccak256(bytes(renderer.svg(input(0, i, 0))));
+            bytes32 h = this.imageHash(0, i);
             if (seenHash[h]) ++dup;
             seenHash[h] = true;
             ++n;
