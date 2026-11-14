@@ -1,0 +1,85 @@
+/* Printed comic stock stays visible even with animation disabled. */
+.comic-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  overflow: hidden;
+  pointer-events: none;
+  contain: strict;
+  background: var(--surface);
+}
+.comic-backdrop__dots {
+  position: absolute;
+  inset: -40px -40px -380px;
+  background-image: radial-gradient(circle, color-mix(in srgb, var(--line-dim) 24%, transparent) 1px, transparent 1.5px),
+    repeating-linear-gradient(124deg, transparent 0 120px, color-mix(in srgb, var(--line-dim) 7%, transparent) 121px 123px, transparent 124px 180px);
+  background-size: 12px 12px, auto;
+  transform: translate(var(--comic-x, 0px), calc(var(--comic-y, 0px) + var(--comic-scroll, 0px)));
+  transition: transform 600ms ease-out;
+}
+.comic-backdrop__rails {
+  position: absolute;
+  inset: -80px 0 -400px;
+  transform: translateY(var(--comic-scroll, 0px));
+  transition: transform 800ms ease-out;
+}
+.comic-backdrop__rails i {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: max(24px, calc((100vw - var(--content-max)) / 2 - 28px));
+  background: radial-gradient(circle, var(--surface) 1.4px, transparent 1.8px) 0 0 / 9px 9px,
+    linear-gradient(165deg, var(--action) 0 22%, var(--surface) 22% 24%, var(--brush) 24% 48%, var(--text) 48% 69%, var(--surface) 69% 71%, var(--action) 71%);
+  opacity: 0.75;
+}
+.comic-backdrop__rails i:first-child { left: 0; clip-path: polygon(0 0, 82% 0, 100% 22%, 55% 39%, 90% 65%, 45% 80%, 100% 100%, 0 100%); }
+.comic-backdrop__rails i:last-child { right: 0; transform: scale(-1); clip-path: polygon(0 0, 90% 0, 45% 30%, 100% 50%, 60% 72%, 100% 100%, 0 100%); }
+.comic-backdrop__streaks {
+  position: absolute;
+  inset: -10%;
+  transform: translate(calc(var(--comic-x, 0px) * -1), var(--comic-y, 0px));
+  transition: transform 800ms ease-out;
+}
+.comic-backdrop__streaks i {
+  position: absolute;
+  width: 38%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--brush), transparent);
+  opacity: 0.18;
+  rotate: -28deg;
+}
+.comic-backdrop__streaks i:nth-child(1) { top: 28%; left: -16%; }
+.comic-backdrop__streaks i:nth-child(2) { top: 66%; right: -12%; background: linear-gradient(90deg, transparent, var(--action), transparent); }
+.comic-backdrop__streaks i:nth-child(3) { top: 90%; left: -10%; }
+html[data-motion=full] .comic-backdrop__streaks i { animation: comic-ink-drift 9s ease-in-out infinite alternate; }
+html[data-motion=full] .comic-backdrop__streaks i:nth-child(2) { animation-delay: -4s; }
+html[data-motion=full] .comic-backdrop__streaks i:nth-child(3) { animation-delay: -7s; }
+/* Independent translate keeps idle motion additive to pointer/scroll transforms. */
+html[data-motion=full] .comic-backdrop__dots { animation: comic-paper-drift 18s linear infinite alternate; }
+html[data-motion=full] .comic-backdrop__rails i { animation: comic-margin-drift 12s ease-in-out infinite alternate; }
+html[data-motion=full] .comic-backdrop__rails i:last-child { animation-delay: -12s; }
+@keyframes comic-paper-drift {
+  from { translate: -12px -12px; }
+  to { translate: 12px 12px; }
+}
+@keyframes comic-margin-drift {
+  from { translate: 0 -32px; }
+  to { translate: 0 32px; }
+}
+.comic-backdrop__cursor {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: radial-gradient(circle, color-mix(in srgb, var(--action) 32%, transparent) 1.5px, transparent 2px) 0 0 / 10px 10px;
+  mask-image: radial-gradient(circle 190px at var(--comic-pointer-x, 50%) var(--comic-pointer-y, 50%), var(--surface), transparent);
+  transition: opacity 500ms ease;
+}
+html[data-motion=full] .comic-backdrop[data-tracking] .comic-backdrop__cursor { opacity: 0.75; }
+@keyframes comic-ink-drift { from { transform: translate(-12px, 16px) scaleX(0.75); } to { transform: translate(36px, -20px) scaleX(1.15); } }
+@media (width <= 600px) {
+  .comic-backdrop__rails i { width: 9px; }
+  .comic-backdrop__cursor { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .comic-backdrop * { animation: none !important; transition: none !important; }
+}

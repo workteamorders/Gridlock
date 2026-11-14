@@ -8,6 +8,7 @@ import '@/styles/fx.css';
 import '@/styles/stage.css';
 import '@/styles/panels.css';
 import '@/styles/comic-page.css';
+import '@/styles/comic-backdrop.css';
 
 const anton = localFont({ src: '../fonts/anton-latin-400-normal.woff2', weight: '400', variable: '--font-anton', display: 'swap', adjustFontFallback: 'Arial' });
 const barlow = localFont({

@@ -1,5 +1,6 @@
 import { RouteWipe } from './fx/RouteWipe';
 import { LiveBackground } from './fx/LiveBackground';
+import { ComicBackdrop } from './fx/ComicBackdrop';
 import type { ReactNode } from 'react';
 import { SiteHeader } from './SiteHeader';
 import { SiteFooter } from './SiteFooter';
@@ -12,6 +13,7 @@ import { SoundEffects } from './stage/SoundEffects';
 export function Shell({ current, children }: { current?: string; children: ReactNode }) {
   return (
     <>
+      <ComicBackdrop />
       {current === '/' ? null : <LiveBackground mint={current === '/mint/'} />}
       <RouteWipe />
       {current === '/' ? <IntroStamp /> : null}
