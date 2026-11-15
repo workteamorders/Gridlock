@@ -1,10 +1,10 @@
 {
   "chainId": 4663,
   "deployed": true,
-  "cars": "0xaa53e74E97284fbd89ba87971294633c6951C684",
-  "renderer": "0x88908452b1DbB38830c39Cac13040C13EC3F7B03",
+  "cars": "0x4131460fa8c97985d92f0e3c385e3f901dda5c0c",
+  "renderer": "0xcedca1301df33749d4e2b609db335c37f9984436",
   "expected": {
-    "startTime": 1794848400,
+    "startTime": 1794723163,
     "openTimeout": 604800,
     "heatDecaySeconds": 3600,
     "revealMinDelay": 60,

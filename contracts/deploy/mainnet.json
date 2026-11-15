@@ -1,7 +1,7 @@
 {
-  "_comment": "DEPLOYED on Robinhood Chain mainnet (4663) on 2026-11-15. These values are permanent and match the contracts on chain. Treasury is Account 2 of the owner's MetaMask. Prices: rank 15 = 0.002 ETH, rank 1 = 0.1 ETH (geometric). No external audit. See deployments/4663.json for the addresses.",
+  "_comment": "REDEPLOYED on Robinhood Chain mainnet (4663) with an earlier start time. Previous start time was 1794848400; the previous contracts (see deployments/4663.previous.json) are abandoned. These values are permanent once deployed. Treasury is Account 2 of the owner's MetaMask. Prices: rank 15 = 0.002 ETH, rank 1 = 0.1 ETH (geometric). No external audit.",
   "treasury": "0xa4aCf0C358dacbF9AeeC643E301358889E96a010",
-  "startTime": 1794848400,
+  "startTime": 1794723163,
   "openTimeoutSeconds": 604800,
   "heatDecaySeconds": 3600,
   "revealMinDelaySeconds": 60,
